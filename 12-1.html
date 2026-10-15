@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS 变量</title>
+    <style>
+        :root {
+            --hjy-primary: #667eea;
+            --hjy-secondary: #764ba2;
+            --hjy-accent: #f093fb;
+            --hjy-bg: #f5f7fa;
+            --hjy-card-bg: rgba(255, 255, 255, 0.95);
+            --hjy-text: #333;
+            --hjy-text-light: #777;
+            --hjy-radius: 20px;
+            --hjy-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            --hjy-spacing: 30px;
+            --hjy-font-size: 1.1rem;
+            --hjy-header-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --hjy-transition: 0.3s ease;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: var(--hjy-primary);
+            background: linear-gradient(135deg, var(--hjy-primary) 0%, var(--hjy-secondary) 50%, var(--hjy-accent) 100%);
+            background-attachment: fixed;
+            color: var(--hjy-text);
+            padding: 40px 20px;
+            line-height: 1.6;
+            transition: background var(--hjy-transition);
+        }
+        .hjy-container { max-width: 960px; margin: 0 auto; }
+        .hjy-card {
+            background: var(--hjy-card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: var(--hjy-radius);
+            box-shadow: var(--hjy-shadow);
+            padding: 40px;
+            margin-bottom: var(--hjy-spacing);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        header.hjy-card {
+            text-align: center;
+            background: var(--hjy-header-grad);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        header h1 { font-size: 2.4rem; margin-bottom: 10px; letter-spacing: 2px; }
+        header .hjy-subtitle { font-size: var(--hjy-font-size); opacity: 0.95; }
+        header .hjy-author {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            font-size: 0.95rem;
+        }
+        .hjy-section-title {
+            font-size: 1.4rem;
+            color: var(--hjy-secondary);
+            margin-bottom: 20px;
+            padding-left: 14px;
+            border-left: 5px solid var(--hjy-primary);
+        }
+        .hjy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        .hjy-demo-card {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border: 1px solid #e4e4e4;
+            border-radius: 14px;
+            padding: 22px;
+            text-align: center;
+            transition: transform var(--hjy-transition), box-shadow var(--hjy-transition);
+        }
+        .hjy-demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px color-mix(in srgb, var(--hjy-primary) 35%, transparent);
+            border-color: var(--hjy-primary);
+        }
+        .hjy-demo-name { font-size: 1.1rem; font-weight: bold; color: var(--hjy-secondary); margin-bottom: 6px; }
+        .hjy-demo-desc { font-size: 0.85rem; color: var(--hjy-text-light); margin-bottom: 16px; }
+        .hjy-demo-box {
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            font-weight: bold;
+        }
+        .hjy-demo-basic { background: var(--hjy-primary); color: #fff; }
+        .hjy-demo-gradient { background: linear-gradient(135deg, var(--hjy-primary), var(--hjy-accent)); color: #fff; }
+        .hjy-demo-calc {
+            background: var(--hjy-secondary);
+            color: #fff;
+            width: calc(80% + 20px);
+            margin: 0 auto;
+        }
+        .hjy-demo-shadow { background: #fff; box-shadow: 0 10px 30px color-mix(in srgb, var(--hjy-secondary) 30%, transparent); color: var(--hjy-secondary); }
+        .hjy-demo-spacing { background: var(--hjy-accent); color: #fff; padding: calc(var(--hjy-spacing) / 2); }
+        .hjy-demo-transition { background: var(--hjy-primary); color: #fff; transition: all var(--hjy-transition); cursor: pointer; }
+        .hjy-demo-transition:hover { background: var(--hjy-secondary); transform: scale(1.05); }
+
+        .hjy-scope-demo {
+            background: var(--hjy-primary);
+            color: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .hjy-scope-override {
+            --hjy-primary: #e74c3c;
+            --hjy-secondary: #e67e22;
+            background: var(--hjy-primary);
+            color: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .hjy-scope-nested {
+            --hjy-primary: #27ae60;
+            background: var(--hjy-primary);
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-top: 12px;
+        }
+
+        .hjy-interactive {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+        .hjy-slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.7);
+            padding: 12px 18px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+        }
+        .hjy-slider-group input[type="range"] {
+            width: 120px;
+            accent-color: var(--hjy-primary);
+            cursor: pointer;
+        }
+        .hjy-preview-box {
+            --hjy-preview-size: 80px;
+            width: var(--hjy-preview-size);
+            height: var(--hjy-preview-size);
+            background: linear-gradient(135deg, var(--hjy-primary), var(--hjy-accent));
+            border-radius: calc(var(--hjy-radius) / 2);
+            transition: all var(--hjy-transition);
+            box-shadow: 0 8px 25px color-mix(in srgb, var(--hjy-primary) 40%, transparent);
+        }
+        .hjy-btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #fff;
+            background: var(--hjy-primary);
+            transition: all var(--hjy-transition);
+        }
+        .hjy-btn:hover { background: var(--hjy-secondary); transform: translateY(-2px); }
+        .hjy-btn-accent { background: var(--hjy-accent); }
+        .hjy-btn-accent:hover { background: var(--hjy-secondary); }
+
+        .hjy-theme-dark {
+            --hjy-card-bg: #1a1a2e;
+            --hjy-text: #e0e0e0;
+            --hjy-text-light: #aaa;
+        }
+        .hjy-theme-warm {
+            --hjy-primary: #f093fb;
+            --hjy-secondary: #f5576c;
+            --hjy-accent: #ff9a9e;
+        }
+        .hjy-theme-ocean {
+            --hjy-primary: #4facfe;
+            --hjy-secondary: #00f2fe;
+            --hjy-accent: #43e97b;
+        }
+        .hjy-theme-toggle {
+            padding: 8px 18px;
+            border: 2px solid var(--hjy-primary);
+            border-radius: 20px;
+            background: transparent;
+            color: var(--hjy-primary);
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all var(--hjy-transition);
+        }
+        .hjy-theme-toggle:hover { background: var(--hjy-primary); color: #fff; }
+
+        .hjy-code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            margin: 14px 0;
+        }
+        .hjy-code-comment { color: #75715e; }
+        .hjy-code-prop { color: #66d9ef; }
+        .hjy-code-value { color: #a6e22e; }
+        .hjy-code-sel { color: #f92672; }
+
+        .hjy-fallback-demo {
+            background: var(--hjy-fallback-color, #9b59b6);
+            color: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .hjy-mq-demo {
+            background: var(--hjy-primary);
+            color: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        @media (max-width: 768px) {
+            .hjy-mq-demo {
+                background: var(--hjy-accent);
+                font-size: 0.9rem;
+            }
+        }
+
+        .hjy-rgb-demo {
+            --hjy-r: 102;
+            --hjy-g: 126;
+            --hjy-b: 234;
+            background: rgb(var(--hjy-r), var(--hjy-g), var(--hjy-b));
+            color: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .hjy-rgb-alt {
+            background: rgb(calc(var(--hjy-r) + 50), calc(var(--hjy-g) - 30), calc(var(--hjy-b) - 80));
+        }
+
+        footer.hjy-footer { text-align: center; color: #fff; opacity: 0.9; margin-top: 20px; font-size: 0.9rem; }
+        footer .hjy-heart { color: #ff6b6b; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.7rem; }
+            .hjy-card { padding: 26px 20px; }
+            .hjy-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy-container" id="hjyApp">
+
+    <header class="hjy-card">
+        <h1>CSS 变量</h1>
+        <div class="hjy-subtitle">CSS Custom Properties 课堂实践</div>
+        <div class="hjy-author">学生：胡家瑜</div>
+    </header>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">基本用法</h2>
+        <div class="hjy-grid">
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">纯色变量</div>
+                <div class="hjy-demo-desc"><code>var(--hjy-primary)</code> 引用颜色</div>
+                <div class="hjy-demo-box hjy-demo-basic">var(--hjy-primary)</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">渐变变量</div>
+                <div class="hjy-demo-desc">多个变量组合成渐变</div>
+                <div class="hjy-demo-box hjy-demo-gradient">linear-gradient(var(--hjy-primary), var(--hjy-accent))</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">计算变量</div>
+                <div class="hjy-demo-desc"><code>calc()</code> 与变量混合运算</div>
+                <div class="hjy-demo-box hjy-demo-calc">calc(80% + 20px)</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">阴影变量</div>
+                <div class="hjy-demo-desc"><code>color-mix()</code> 动态透明度</div>
+                <div class="hjy-demo-box hjy-demo-shadow">box-shadow with var</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">间距变量</div>
+                <div class="hjy-demo-desc"><code>var(--hjy-spacing)</code> 控制间距</div>
+                <div class="hjy-demo-box hjy-demo-spacing">padding: calc(var(--hjy-spacing) / 2)</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">过渡变量</div>
+                <div class="hjy-demo-desc"><code>var(--hjy-transition)</code> 统一动画时长</div>
+                <div class="hjy-demo-box hjy-demo-transition">悬停缩放 var(--hjy-transition)</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">作用域与覆盖</h2>
+        <div class="hjy-grid">
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">全局变量</div>
+                <div class="hjy-demo-desc">使用 <code>:root</code> 中定义的值</div>
+                <div class="hjy-scope-demo">全局 --hjy-primary</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">局部覆盖</div>
+                <div class="hjy-demo-desc">在元素内重新定义变量值</div>
+                <div class="hjy-scope-override">
+                    局部覆盖 --hjy-primary
+                    <div class="hjy-scope-nested">嵌套继承覆盖值</div>
+                </div>
+            </div>
+        </div>
+        <div class="hjy-code-block"><span class="hjy-code-comment">/* :root 中定义 */</span>
+<span class="hjy-code-sel">:root</span> {
+    <span class="hjy-code-prop">--hjy-primary</span>: <span class="hjy-code-value">#667eea</span>;
+}
+<span class="hjy-code-comment">/* 局部覆盖 */</span>
+<span class="hjy-code-sel">.hjy-scope-override</span> {
+    <span class="hjy-code-prop">--hjy-primary</span>: <span class="hjy-code-value">#e74c3c</span>;
+    <span class="hjy-code-prop">background</span>: <span class="hjy-code-value">var(--hjy-primary)</span>;
+}</div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">交互式变量 (JS 动态修改)</h2>
+        <div class="hjy-interactive">
+            <div class="hjy-slider-group">
+                <label>色相</label>
+                <input type="range" id="hjyHue" min="0" max="360" value="230" oninput="hjyUpdateVar()">
+            </div>
+            <div class="hjy-slider-group">
+                <label>圆角</label>
+                <input type="range" id="hjyRadius" min="0" max="40" value="20" oninput="hjyUpdateVar()">
+            </div>
+            <div class="hjy-slider-group">
+                <label>尺寸</label>
+                <input type="range" id="hjySize" min="50" max="150" value="80" oninput="hjyUpdateVar()">
+            </div>
+            <div class="hjy-preview-box" id="hjyPreview"></div>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">主题切换</h2>
+        <div class="hjy-interactive">
+            <button class="hjy-btn" onclick="hjySetTheme('')">默认主题</button>
+            <button class="hjy-btn" onclick="hjySetTheme('hjy-theme-dark')">暗色主题</button>
+            <button class="hjy-btn hjy-btn-accent" onclick="hjySetTheme('hjy-theme-warm')">暖色主题</button>
+            <button class="hjy-btn" onclick="hjySetTheme('hjy-theme-ocean')">海洋主题</button>
+        </div>
+        <div class="hjy-grid" style="margin-top: 20px;">
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">暗色主题</div>
+                <div class="hjy-demo-desc">覆盖 <code>--hjy-card-bg</code> 和 <code>--hjy-text</code></div>
+                <div class="hjy-demo-box" style="background: var(--hjy-card-bg); color: var(--hjy-text);">当前卡片背景</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">暖色主题</div>
+                <div class="hjy-demo-desc">覆盖渐变色变量</div>
+                <div class="hjy-demo-box" style="background: linear-gradient(135deg, var(--hjy-primary), var(--hjy-accent)); color: #fff;">渐变预览</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">海洋主题</div>
+                <div class="hjy-demo-desc">蓝绿冷色调变量</div>
+                <div class="hjy-demo-box" style="background: linear-gradient(135deg, var(--hjy-primary), var(--hjy-secondary)); color: #fff;">渐变预览</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">高级技巧</h2>
+        <div class="hjy-grid">
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">回退值 (Fallback)</div>
+                <div class="hjy-demo-desc"><code>var(--hjy-fallback-color, #9b59b6)</code></div>
+                <div class="hjy-fallback-demo">未定义变量时使用默认值</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">RGB 分量变量</div>
+                <div class="hjy-demo-desc">将 RGB 拆分为独立变量</div>
+                <div class="hjy-rgb-demo">rgb(var(--hjy-r), var(--hjy-g), var(--hjy-b))</div>
+                <div class="hjy-rgb-demo hjy-rgb-alt" style="margin-top: 10px;">calc 调整分量</div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">媒体查询中的变量</div>
+                <div class="hjy-demo-desc">响应式覆盖变量值</div>
+                <div class="hjy-mq-demo">移动端时背景变为 accent 色</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="hjy-footer">
+        <p>Made with <span class="hjy-heart">❤</span> by 胡家瑜 · 高级网页设计课程</p>
+    </footer>
+
+</div>
+
+<script>
+    function hjyUpdateVar() {
+        var hue = document.getElementById('hjyHue').value;
+        var radius = document.getElementById('hjyRadius').value;
+        var size = document.getElementById('hjySize').value;
+        var root = document.documentElement.style;
+        root.setProperty('--hjy-primary', 'hsl(' + hue + ', 70%, 65%)');
+        root.setProperty('--hjy-accent', 'hsl(' + ((hue + 60) % 360) + ', 80%, 70%)');
+        root.setProperty('--hjy-radius', radius + 'px');
+        document.getElementById('hjyPreview').style.setProperty('--hjy-preview-size', size + 'px');
+    }
+    function hjySetTheme(theme) {
+        var app = document.getElementById('hjyApp');
+        app.className = 'hjy-container' + (theme ? ' ' + theme : '');
+    }
+</script>
+</body>
+</html>
