@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .flex{
+            display: flex;
+            /*容器，它的子元素在一行显示，超过宽度自动压缩*/
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .flex li{
+            /*项目，容器中的子元素，每个子元素都是一个项目*/
+            width: 20%;
+            height: 150px;
+            border: 1px solid #333;
+            /*float: left;*/
+            list-style: none;
+            display: flex;
+        }
+        .box1{
+            width: 70px;
+            height: 70px;
+            background-color: rgb(255, 231, 235);
+        }
+        .box2{
+            width: 70px;
+            height: 50px;
+            background-color: rgb(255, 231, 235);
+        }
+        .box-top{
+            width: 140px;
+            height: 50px;
+            background-color: rgb(255, 231, 235);
+        }
+        .box-3{
+            display: flex;
+            gap: 8px;
+        }
+        .box-bottom{
+            width: 66px;
+            height: 50px;
+            background-color: rgb(255, 231, 235);
+        }
+        .row{
+            display: flex;
+            flex-wrap: wrap;
+            width: 108px;
+            gap: 8px;
+        }
+        .box4{
+            width: 50px;
+            height: 50px;
+            background-color: rgb(255, 231, 235);
+        }
+        .flex li:nth-child(1){
+            /*水平垂直对齐*/
+            align-items: center;
+            justify-content: center;
+        }
+        .flex li:nth-child(2){
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .flex li:nth-child(3){
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .flex li:nth-child(4){
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <h2>胡家瑜的flex(弹性盒子)</h2>
+    <ul class="flex">
+        <li>
+            <div class="box1"></div>
+        </li>
+        <li>
+            <div class="box2"></div>
+            <div class="box2"></div>
+        </li>
+        <li>
+            <div class="box-top"></div>
+            <div class="box-3">
+            <div class="box-bottom"></div>
+            <div class="box-bottom"></div>
+            </div>
+        </li>
+        <li>
+            <div class="row">
+            <div class="box4"></div>
+            <div class="box4"></div>
+            <div class="box4"></div>
+            <div class="box4"></div>
+            </div>
+        </li>
+    </ul>
+</body>
+</html>

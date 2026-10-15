@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>胡家瑜的《高级网页设计》课堂实践</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 960px; margin: 0 auto; }
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        header.card {
+            text-align: center;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        header h1 { font-size: 2.4rem; margin-bottom: 10px; letter-spacing: 2px; }
+        header .subtitle { font-size: 1.1rem; opacity: 0.95; }
+        header .author {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            font-size: 0.95rem;
+        }
+        .section-title {
+            font-size: 1.4rem;
+            color: #5a4b8c;
+            margin-bottom: 20px;
+            padding-left: 14px;
+            border-left: 5px solid #764ba2;
+        }
+        .link-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px;
+        }
+        .link-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border-radius: 14px;
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            border: 1px solid #e4e4e4;
+        }
+        .link-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(118, 75, 162, 0.35);
+            border-color: #764ba2;
+        }
+        .link-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; font-weight: bold;
+            margin-right: 16px; flex-shrink: 0;
+        }
+        .link-text { flex: 1; }
+        .link-text .name { font-size: 1.05rem; font-weight: 600; color: #2d2d2d; }
+        .link-text .filename { font-size: 0.85rem; color: #888; margin-top: 4px; }
+        .link-arrow { color: #764ba2; font-size: 1.4rem; transition: transform 0.25s ease; }
+        .link-item:hover .link-arrow { transform: translateX(5px); }
+        .prompt-box {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 24px;
+            border-radius: 12px;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 0.92rem;
+            line-height: 1.8;
+            border-left: 5px solid #f093fb;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        footer { text-align: center; color: #fff; opacity: 0.9; margin-top: 20px; font-size: 0.9rem; }
+        footer .heart { color: #ff6b6b; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.7rem; }
+            .card { padding: 26px 20px; }
+            .link-list { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header class="card">
+        <h1>🎨 高级网页设计</h1>
+        <div class="subtitle">胡家瑜的课堂实践作品导航</div>
+        <div class="author">👤 学生：胡家瑜</div>
+    </header>
+
+    <section class="card">
+        <h2 class="section-title">📂 实践作品列表</h2>
+        <div class="link-list">
+            <a href="./1.html" target="_blank" class="link-item">
+                <div class="link-icon">01</div>
+                <div class="link-text">
+                    <div class="name">第一课</div>
+                    <div class="filename">1.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./2-2.html" target="_blank" class="link-item">
+                <div class="link-icon">02</div>
+                <div class="link-text">
+                    <div class="name">超链接与图片</div>
+                    <div class="filename">2-2.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./3.html" target="_blank" class="link-item">
+                <div class="link-icon">03</div>
+                <div class="link-text">
+                    <div class="name">图层样式表css</div>
+                    <div class="filename">3.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./4.html" target="_blank" class="link-item">
+                <div class="link-icon">04</div>
+                <div class="link-text">
+                    <div class="name">css群组选择器和后代选择器</div>
+                    <div class="filename">4.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./5.html" target="_blank" class="link-item">
+                <div class="link-icon">05</div>
+                <div class="link-text">
+                    <div class="name">层叠与继承</div>
+                    <div class="filename">5.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./5-2.html" target="_blank" class="link-item">
+                <div class="link-icon">📦</div>
+                <div class="link-text">
+                    <div class="name">盒模型，框模型，box model</div>
+                    <div class="filename">5-2.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./6.html" target="_blank" class="link-item">
+                <div class="link-icon">06</div>
+                <div class="link-text">
+                    <div class="name">flex(弹性盒子)</div>
+                    <div class="filename">6.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./6-2.html" target="_blank" class="link-item">
+                <div class="link-icon">↔</div>
+                <div class="link-text">
+                    <div class="name">一左一右</div>
+                    <div class="filename">6-2.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./7.html" target="_blank" class="link-item">
+                <div class="link-icon">07</div>
+                <div class="link-text">
+                    <div class="name">上图下文</div>
+                    <div class="filename">7.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./7-2.html" target="_blank" class="link-item">
+                <div class="link-icon">🖼</div>
+                <div class="link-text">
+                    <div class="name">左图右文</div>
+                    <div class="filename">7-2.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./biao.html" target="_blank" class="link-item">
+                <div class="link-icon">📋</div>
+                <div class="link-text">
+                    <div class="name">表单form</div>
+                    <div class="filename">biao.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./8-1.html" target="_blank" class="link-item">
+                <div class="link-icon">✦</div>
+                <div class="link-text">
+                    <div class="name">css3 过渡效果</div>
+                    <div class="filename">8-1.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./9.html" target="_blank" class="link-item">
+                <div class="link-icon">🎬</div>
+                <div class="link-text">
+                    <div class="name">transition 过渡</div>
+                    <div class="filename">9.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./11-1.html" target="_blank" class="link-item">
+                <div class="link-icon">📏</div>
+                <div class="link-text">
+                    <div class="name">Web前端的长度单位</div>
+                    <div class="filename">11-1.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+
+            <a href="./11-3.html" target="_blank" class="link-item">
+                <div class="link-icon">🧊</div>
+                <div class="link-text">
+                    <div class="name">CSS3 3D动画</div>
+                    <div class="filename">11-3.html</div>
+                </div>
+                <div class="link-arrow">→</div>
+            </a>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2 class="section-title">💬 本页生成提示词</h2>
+        <div class="prompt-box">创建一个新页面，包括本目录下的所有网页的超链接，使用原生代码，不使用cdn，新页面名称为index.html，主题为胡家瑜的《高级网页设计》课堂实践，美化页面，页面中包括本提示词，把作品名改成每个文件h2中的内容，每个网页超链接要target="_blank"</div>
+    </section>
+
+    <footer>
+        <p>Made with <span class="heart">❤</span> by 胡家瑜 · 高级网页设计课程</p>
+    </footer>
+
+</div>
+</body>
+</html>

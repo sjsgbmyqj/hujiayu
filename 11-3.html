@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS3 3D动画</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .hjy-container { max-width: 960px; margin: 0 auto; }
+        .hjy-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        header.hjy-card {
+            text-align: center;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        header h1 { font-size: 2.4rem; margin-bottom: 10px; letter-spacing: 2px; }
+        header .hjy-subtitle { font-size: 1.1rem; opacity: 0.95; }
+        header .hjy-author {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            font-size: 0.95rem;
+        }
+        .hjy-section-title {
+            font-size: 1.4rem;
+            color: #5a4b8c;
+            margin-bottom: 20px;
+            padding-left: 14px;
+            border-left: 5px solid #764ba2;
+        }
+        .hjy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        .hjy-demo-card {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border: 1px solid #e4e4e4;
+            border-radius: 14px;
+            padding: 22px;
+            text-align: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .hjy-demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(118, 75, 162, 0.35);
+            border-color: #764ba2;
+        }
+        .hjy-demo-name { font-size: 1.1rem; font-weight: bold; color: #5a4b8c; margin-bottom: 6px; }
+        .hjy-demo-desc { font-size: 0.85rem; color: #777; margin-bottom: 16px; }
+        .hjy-stage {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 600px;
+            background: rgba(102, 126, 234, 0.06);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .hjy-scene { position: relative; transform-style: preserve-3d; }
+
+        .hjy-cube-scene { width: 100px; height: 100px; animation: hjySpin 6s linear infinite; }
+        .hjy-cube-face {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            opacity: 0.92;
+        }
+        .hjy-cube-front  { background: #667eea; transform: translateZ(50px); }
+        .hjy-cube-back   { background: #764ba2; transform: rotateY(180deg) translateZ(50px); }
+        .hjy-cube-right  { background: #f093fb; transform: rotateY(90deg) translateZ(50px); }
+        .hjy-cube-left   { background: #4facfe; transform: rotateY(-90deg) translateZ(50px); }
+        .hjy-cube-top    { background: #43e97b; transform: rotateX(90deg) translateZ(50px); }
+        .hjy-cube-bottom { background: #fa709a; transform: rotateX(-90deg) translateZ(50px); }
+        @keyframes hjySpin {
+            from { transform: rotateX(-20deg) rotateY(0deg); }
+            to   { transform: rotateX(-20deg) rotateY(360deg); }
+        }
+
+        .hjy-flip-card { width: 140px; height: 180px; cursor: pointer; }
+        .hjy-flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hjy-flip-card:hover .hjy-flip-inner { transform: rotateY(180deg); }
+        .hjy-flip-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .hjy-flip-front { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .hjy-flip-back {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            transform: rotateY(180deg);
+        }
+
+        .hjy-ring { width: 90px; height: 90px; border-radius: 50%; border: 8px solid transparent; border-top-color: #667eea; border-right-color: #f093fb; animation: hjyRingSpin 1.5s linear infinite; box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+        @keyframes hjyRingSpin { to { transform: rotateZ(360deg); } }
+
+        .hjy-pyramid-scene { width: 100px; height: 100px; animation: hjyPyramidSpin 8s linear infinite; }
+        .hjy-pyramid-face {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 87px solid #667eea;
+        }
+        .hjy-pyramid-front  { transform: translateZ(28px) rotateX(30deg); transform-origin: bottom; }
+        .hjy-pyramid-back   { transform: rotateY(180deg) translateZ(28px) rotateX(30deg); transform-origin: bottom; border-bottom-color: #764ba2; }
+        .hjy-pyramid-right  { transform: rotateY(90deg) translateZ(28px) rotateX(30deg); transform-origin: bottom; border-bottom-color: #f093fb; }
+        .hjy-pyramid-left   { transform: rotateY(-90deg) translateZ(28px) rotateX(30deg); transform-origin: bottom; border-bottom-color: #4facfe; }
+        @keyframes hjyPyramidSpin {
+            from { transform: rotateX(-15deg) rotateY(0deg); }
+            to   { transform: rotateX(-15deg) rotateY(360deg); }
+        }
+
+        .hjy-float { width: 80px; height: 80px; border-radius: 16px; background: linear-gradient(135deg, #43e97b, #38f9d7); animation: hjyFloat 3s ease-in-out infinite; box-shadow: 0 10px 25px rgba(67, 233, 123, 0.4); }
+        @keyframes hjyFloat {
+            0%, 100% { transform: translateY(0) rotateX(0deg); }
+            50%      { transform: translateY(-30px) rotateX(25deg); }
+        }
+
+        .hjy-torus {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 10px solid #fa709a;
+            border-top-color: transparent;
+            animation: hjyTorusSpin 2s linear infinite;
+            transform-style: preserve-3d;
+            box-shadow: 0 0 15px rgba(250, 112, 154, 0.5);
+        }
+        @keyframes hjyTorusSpin {
+            from { transform: rotateX(70deg) rotateZ(0deg); }
+            to   { transform: rotateX(70deg) rotateZ(360deg); }
+        }
+
+        footer.hjy-footer { text-align: center; color: #fff; opacity: 0.9; margin-top: 20px; font-size: 0.9rem; }
+        footer .hjy-heart { color: #ff6b6b; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.7rem; }
+            .hjy-card { padding: 26px 20px; }
+            .hjy-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy-container">
+
+    <header class="hjy-card">
+        <h1>🧊 CSS3 3D动画</h1>
+        <div class="hjy-subtitle">transform 与 3D 变换课堂实践</div>
+        <div class="hjy-author">👤 学生：胡家瑜</div>
+    </header>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">🎁 3D 立方体</h2>
+        <div class="hjy-grid">
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">旋转立方体 Cube</div>
+                <div class="hjy-demo-desc">6 个面 + <code>preserve-3d</code> + <code>rotateY</code> 无限循环</div>
+                <div class="hjy-stage">
+                    <div class="hjy-scene hjy-cube-scene">
+                        <div class="hjy-cube-face hjy-cube-front">前</div>
+                        <div class="hjy-cube-face hjy-cube-back">后</div>
+                        <div class="hjy-cube-face hjy-cube-right">右</div>
+                        <div class="hjy-cube-face hjy-cube-left">左</div>
+                        <div class="hjy-cube-face hjy-cube-top">顶</div>
+                        <div class="hjy-cube-face hjy-cube-bottom">底</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">🃏 3D 卡片与图形</h2>
+        <div class="hjy-grid">
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">悬停翻牌 Flip</div>
+                <div class="hjy-demo-desc"><code>rotateY(180deg)</code> + <code>backface-visibility</code>，鼠标悬停翻转</div>
+                <div class="hjy-stage">
+                    <div class="hjy-flip-card">
+                        <div class="hjy-flip-inner">
+                            <div class="hjy-flip-face hjy-flip-front">正面</div>
+                            <div class="hjy-flip-face hjy-flip-back">背面</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">3D 金字塔 Pyramid</div>
+                <div class="hjy-demo-desc">4 个三角面围成的锥体，绕 Y 轴旋转</div>
+                <div class="hjy-stage">
+                    <div class="hjy-scene hjy-pyramid-scene">
+                        <div class="hjy-pyramid-face hjy-pyramid-front"></div>
+                        <div class="hjy-pyramid-face hjy-pyramid-back"></div>
+                        <div class="hjy-pyramid-face hjy-pyramid-right"></div>
+                        <div class="hjy-pyramid-face hjy-pyramid-left"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">悬浮方块 Float</div>
+                <div class="hjy-demo-desc"><code>translateY</code> + <code>rotateX</code> 组合出漂浮感</div>
+                <div class="hjy-stage">
+                    <div class="hjy-float"></div>
+                </div>
+            </div>
+            <div class="hjy-demo-card">
+                <div class="hjy-demo-name">圆环旋转 Ring</div>
+                <div class="hjy-demo-desc"><code>rotateX(70deg)</code> 倾斜视角下 <code>rotateZ</code> 旋转</div>
+                <div class="hjy-stage">
+                    <div class="hjy-torus"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="hjy-footer">
+        <p>Made with <span class="hjy-heart">❤</span> by 胡家瑜 · 高级网页设计课程</p>
+    </footer>
+
+</div>
+</body>
+</html>

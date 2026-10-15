@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Animation - 背景颜色切换</title>
+    <style>
+        .box {
+            width: 300px;
+            height: 300px;
+            border-radius: 12px;
+            /* 4种颜色循环切换，每个循环4秒，无限循环 */
+            animation: colorCycle 4s ease-in-out infinite;
+        }
+
+        @keyframes colorCycle {
+            0%   { background-color: #ff6b6b; }   /* 珊瑚红 */
+            25%  { background-color: #4ecdc4; }   /* 青绿色 */
+            50%  { background-color: #ffe66d; }   /* 明黄色 */
+            75%  { background-color: #a29bfe; }   /* 薰衣草紫 */
+            100% { background-color: #ff6b6b; }   /* 回到珊瑚红 */
+        }
+    </style>
+</head>
+<body>
+    <div class="box"></div>
+</body>
+</html>

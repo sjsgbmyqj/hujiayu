@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web前端的长度单位</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 960px; margin: 0 auto; }
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        header.card {
+            text-align: center;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        header h1 { font-size: 2.4rem; margin-bottom: 10px; letter-spacing: 2px; }
+        header .subtitle { font-size: 1.1rem; opacity: 0.95; }
+        header .author {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            font-size: 0.95rem;
+        }
+        .section-title {
+            font-size: 1.4rem;
+            color: #5a4b8c;
+            margin-bottom: 20px;
+            padding-left: 14px;
+            border-left: 5px solid #764ba2;
+        }
+        .unit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        .unit-card {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border: 1px solid #e4e4e4;
+            border-radius: 14px;
+            padding: 22px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .unit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(118, 75, 162, 0.35);
+            border-color: #764ba2;
+        }
+        .unit-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #764ba2;
+            font-family: "Consolas", "Courier New", monospace;
+        }
+        .unit-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-left: 8px;
+            vertical-align: middle;
+            color: #fff;
+        }
+        .tag-abs { background: #e74c3c; }
+        .tag-rel { background: #27ae60; }
+        .unit-desc { margin: 12px 0; font-size: 0.95rem; color: #555; }
+        .demo-area {
+            background: rgba(102, 126, 234, 0.08);
+            border: 1px dashed #b8aede;
+            border-radius: 10px;
+            padding: 16px;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .demo-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            padding: 6px 10px;
+        }
+        code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 0.85em;
+        }
+        .em-parent { font-size: 20px; }
+        .em-child { font-size: 1.5em; }
+        .rem-demo { font-size: 1.25rem; }
+        .percent-wrap { width: 100%; background: #ddd; border-radius: 8px; }
+        .percent-bar { width: 50%; background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; text-align: center; border-radius: 8px; font-size: 0.8rem; padding: 4px 0; }
+        footer { text-align: center; color: #fff; opacity: 0.9; margin-top: 20px; font-size: 0.9rem; }
+        footer .heart { color: #ff6b6b; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.7rem; }
+            .card { padding: 26px 20px; }
+            .unit-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header class="card">
+        <h1>📏 Web前端的长度单位</h1>
+        <div class="subtitle">CSS 长度单位课堂实践</div>
+        <div class="author">👤 学生：胡家瑜</div>
+    </header>
+
+    <section class="card">
+        <h2 class="section-title">📌 绝对单位</h2>
+        <div class="unit-grid">
+            <div class="unit-card">
+                <div class="unit-name">px<span class="unit-tag tag-abs">绝对</span></div>
+                <div class="unit-desc">像素，最常用的绝对单位。1px 对应屏幕上的一个物理像素点（CSS 逻辑像素），大小固定不随环境变化。</div>
+                <div class="demo-area">
+                    <div class="demo-box" style="width: 60px; height: 40px;">60px</div>
+                    <div class="demo-box" style="width: 120px; height: 40px;">120px</div>
+                    <div class="demo-box" style="width: 200px; height: 40px;">200px</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2 class="section-title">📐 相对单位（字体相关）</h2>
+        <div class="unit-grid">
+            <div class="unit-card">
+                <div class="unit-name">em<span class="unit-tag tag-rel">相对</span></div>
+                <div class="unit-desc">相对于<strong>父元素</strong>的字体大小。父元素 <code>font-size: 20px</code> 时，<code>1.5em = 30px</code>。会逐层叠加，常用于组件内部缩放。</div>
+                <div class="demo-area">
+                    <div class="em-parent" style="width: 220px;">
+                        父级 20px
+                        <div class="em-child">子级 1.5em = 30px</div>
+                    </div>
+                </div>
+            </div>
+            <div class="unit-card">
+                <div class="unit-name">rem<span class="unit-tag tag-rel">相对</span></div>
+                <div class="unit-desc">相对于<strong>根元素（html）</strong>的字体大小，默认 <code>1rem = 16px</code>。不受父级影响，适合做全局一致的间距与字号体系。</div>
+                <div class="demo-area">
+                    <div class="demo-box rem-demo">1.25rem = 20px</div>
+                    <div class="demo-box" style="font-size: 2rem;">2rem = 32px</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2 class="section-title">📊 相对单位（尺寸相关）</h2>
+        <div class="unit-grid">
+            <div class="unit-card">
+                <div class="unit-name">%<span class="unit-tag tag-rel">相对</span></div>
+                <div class="unit-desc">相对于<strong>父元素</strong>对应属性的百分比。父元素宽 100% 时，子元素 <code>width: 50%</code> 即占一半，常用于流式布局。</div>
+                <div class="demo-area" style="display: block;">
+                    <div class="percent-wrap">
+                        <div class="percent-bar">width: 50%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="unit-card">
+                <div class="unit-name">vw / vh<span class="unit-tag tag-rel">相对</span></div>
+                <div class="unit-desc">相对于<strong>视口</strong>宽/高的百分比。<code>1vw = 视口宽度的 1%</code>，<code>1vh = 视口高度的 1%</code>，常用于全屏布局与响应式排版。</div>
+                <div class="demo-area">
+                    <div class="demo-box" style="width: 10vw; height: 60px;">10vw</div>
+                    <div class="demo-box" style="width: 100px; height: 10vh;">10vh</div>
+                </div>
+            </div>
+            <div class="unit-card">
+                <div class="unit-name">vmin / vmax<span class="unit-tag tag-rel">相对</span></div>
+                <div class="unit-desc">取视口宽、高中<strong>较小/较大</strong>者的百分比。横竖屏切换时表现稳定，适合做自适应的封面图或容器。</div>
+                <div class="demo-area">
+                    <div class="demo-box" style="width: 20vmin; height: 20vmin;">20vmin</div>
+                    <div class="demo-box" style="width: 20vmax; height: 40px;">20vmax</div>
+                </div>
+            </div>
+            <div class="unit-card">
+                <div class="unit-name">ch / ex<span class="unit-tag tag-rel">相对</span></div>
+                <div class="unit-desc"><code>ch</code> 相对于字符 "0" 的宽度，常用于控制文本每行字数；<code>ex</code> 相对于字母 x 的高度，实际项目中使用较少。</div>
+                <div class="demo-area">
+                    <div class="demo-box" style="width: 20ch;">20ch 字符宽</div>
+                    <div class="demo-box" style="height: 10ex;">10ex</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Made with <span class="heart">❤</span> by 胡家瑜 · 高级网页设计课程</p>
+    </footer>
+
+</div>
+</body>
+</html>

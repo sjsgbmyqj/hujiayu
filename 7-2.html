@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>左图右文</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .box{
+            margin: 8px;
+        }
+        .zy{
+            display: flex;
+            padding:5px 10px;
+            margin-bottom: 5px;
+            border-bottom: 1px dashed #ccc;
+        }
+        .zy img{
+            width: 100px;
+        }
+        .text{
+            margin-left: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: #999;
+            flex-grow: 1;
+        }
+        .text h3{
+            width: 100%;
+            font-size: 16px;
+            color: #333;
+            line-height: 36px;
+        }
+        .author{
+            flex-grow: 1;
+        }
+        .time{
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="zy">
+            <img src="img/daqiao.jpg" alt="">
+            <div class="text">
+                <h3>标题1</h3>
+                <span class="author">大乔</span>
+                <span class="time">2026-09-21</span>
+            </div>
+        </div>
+        <div class="zy">
+            <img src="img/xishi.jpg" alt="">
+            <div class="text">
+                <h3>标题2</h3>
+                <span class="author">西施</span>
+                <span class="time">2026-09-21</span>
+            </div>
+        </div>
+        <div class="zy">
+            <img src="img/haiyue.jpg" alt="">
+            <div class="text">
+                <h3>标题3</h3>
+                <span class="author">海月</span>
+                <span class="time">2026-09-21</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

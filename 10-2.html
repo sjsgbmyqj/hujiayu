@@ -1,0 +1,105 @@
+d:\wangye\10-2.html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Animation 幻灯片 - 10-2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #1a1a2e;
+            font-family: "Microsoft YaHei", sans-serif;
+            gap: 30px;
+        }
+
+        .slideshow {
+            width: min(700px, 90vw);
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .slides-track {
+            display: flex;
+            width: 300%;
+            animation: slideByPosition 9s ease-in-out infinite;
+        }
+
+        .slide {
+            position: relative;
+            width: calc(100% / 3);
+            flex-shrink: 0;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 420px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.65);
+            color: #fff;
+            text-align: center;
+            padding: 14px 20px;
+            font-size: 22px;
+            letter-spacing: 2px;
+        }
+
+        .footer-text {
+            color: #ccc;
+            font-size: 18px;
+            letter-spacing: 4px;
+        }
+
+        @keyframes slideByPosition {
+            0%, 28% {
+                transform: translateX(0);
+            }
+            33%, 62% {
+                transform: translateX(-33.333%);
+            }
+            66%, 95% {
+                transform: translateX(-66.667%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slideshow">
+        <div class="slides-track">
+            <div class="slide">
+                <img src="img/daqiao.jpg" alt="图片一">
+                <div class="overlay">胡家瑜 · 幻灯片一</div>
+            </div>
+            <div class="slide">
+                <img src="img/haiyue.jpg" alt="图片二">
+                <div class="overlay">胡家瑜 · 幻灯片二</div>
+            </div>
+            <div class="slide">
+                <img src="img/xishi.jpg" alt="图片三">
+                <div class="overlay">胡家瑜 · 幻灯片三</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="footer-text">胡家瑜</p>
+
+</body>
+</html>

@@ -1,0 +1,189 @@
+d:\wangye\10-3.html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Query 视口变色 - 10-3</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            font-size: 16px;
+        }
+
+        .fullscreen {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #ff6b6b;
+            color: #fff;
+            font-family: "Microsoft YaHei", sans-serif;
+            transition: background-color 0.5s ease;
+            gap: 20px;
+        }
+
+        .name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 6px;
+        }
+
+        .viewport-info {
+            font-size: 1.2rem;
+            opacity: 0.85;
+        }
+
+        .viewport-info::after {
+            content: " (小屏幕 < 600px)";
+        }
+
+        @media (min-width: 600px) {
+            html { font-size: 20px; }
+            .fullscreen { background-color: #4ecdc4; }
+            .viewport-info::after { content: " (中等屏幕 600-900px)"; }
+        }
+
+        @media (min-width: 900px) {
+            html { font-size: 24px; }
+            .fullscreen { background-color: #a29bfe; }
+            .viewport-info::after { content: " (大屏幕 900-1200px)"; }
+        }
+
+        @media (min-width: 1200px) {
+            html { font-size: 28px; }
+            .fullscreen { background-color: #2d3436; }
+            .viewport-info::after { content: " (超大屏幕 > 1200px)"; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fullscreen">
+        <div class="name">胡家瑜</div>
+        <div class="viewport-info">当前视口宽度</div>
+    </div>
+
+</body>
+</html>d:\wangye\10-4.html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Query 八盒子布局 - 10-4</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-width: 320px;
+            font-family: "Microsoft YaHei", sans-serif;
+            background: #0f0f23;
+            color: #ccc;
+            padding: 30px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            color: #ffe66d;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 18px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.04);
+        }
+
+        .card:nth-child(1) { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .card:nth-child(2) { background: linear-gradient(135deg, #4ecdc4, #0abde3); }
+        .card:nth-child(3) { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+        .card:nth-child(4) { background: linear-gradient(135deg, #ffe66d, #f9ca24); }
+        .card:nth-child(5) { background: linear-gradient(135deg, #fd79a8, #e84393); }
+        .card:nth-child(6) { background: linear-gradient(135deg, #00cec9, #00b894); }
+        .card:nth-child(7) { background: linear-gradient(135deg, #fab1a0, #e17055); }
+        .card:nth-child(8) { background: linear-gradient(135deg, #81ecec, #74b9ff); }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        /* 第1个media: ≥480px，一行2个 */
+        @media (min-width: 480px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* 第2个media: ≥768px，一行4个 */
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .card {
+                min-height: 160px;
+                font-size: 1.6rem;
+            }
+        }
+
+        /* 第3个media: ≥1024px，一行4个 + 更大间距 */
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 28px;
+            }
+            .card {
+                min-height: 200px;
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>胡家瑜 · 响应式八盒子</h1>
+
+    <div class="grid">
+        <div class="card">盒子 1</div>
+        <div class="card">盒子 2</div>
+        <div class="card">盒子 3</div>
+        <div class="card">盒子 4</div>
+        <div class="card">盒子 5</div>
+        <div class="card">盒子 6</div>
+        <div class="card">盒子 7</div>
+        <div class="card">盒子 8</div>
+    </div>
+
+    <p class="footer">胡家瑜</p>
+
+</body>
+</html>
