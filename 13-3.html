@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动端底部导航（字体图标）</title>
+    <link rel="stylesheet" href="font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(160deg, #ff9a44 0%, #fc6076 55%, #ff5e78 100%);
+            background-attachment: fixed;
+            color: #333;
+            line-height: 1.6;
+            padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+        }
+        .hjy-app { width: 100%; max-width: 520px; margin: 0 auto; padding: 0 0 16px; }
+        .hjy-app-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(8px);
+        }
+        .hjy-app-title { font-size: 1.1rem; font-weight: 700; color: #fc6076; }
+        .hjy-app-search {
+            font-size: 0.82rem;
+            color: #888;
+            background: #f4f4f4;
+            border-radius: 16px;
+            padding: 6px 12px;
+        }
+        .hjy-banner {
+            margin: 14px 16px 10px;
+            border-radius: 16px;
+            padding: 26px 22px;
+            color: #fff;
+            background: linear-gradient(135deg, #ffb15c 0%, #ff5e78 100%);
+            box-shadow: 0 12px 30px rgba(252, 96, 118, 0.35);
+        }
+        .hjy-banner h1 { font-size: 1.4rem; margin-bottom: 6px; }
+        .hjy-banner p { font-size: 0.85rem; opacity: 0.92; }
+        .hjy-section-title {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #4a3b3b;
+            margin: 18px 18px 10px;
+            padding-left: 10px;
+            border-left: 4px solid #fc6076;
+        }
+        .hjy-feed { display: flex; flex-direction: column; gap: 12px; padding: 0 16px; }
+        .hjy-feed-card {
+            display: flex;
+            gap: 12px;
+            background: #fff;
+            border-radius: 14px;
+            padding: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        }
+        .hjy-feed-thumb {
+            width: 76px;
+            height: 76px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.8rem;
+        }
+        .hjy-thumb-1 { background: linear-gradient(135deg, #ffb15c, #ff7b54); }
+        .hjy-thumb-2 { background: linear-gradient(135deg, #56ccf2, #2f80ed); }
+        .hjy-thumb-3 { background: linear-gradient(135deg, #a8e063, #56ab2f); }
+        .hjy-thumb-4 { background: linear-gradient(135deg, #f7971e, #ffd200); }
+        .hjy-feed-info { flex: 1; min-width: 0; }
+        .hjy-feed-name { font-size: 0.95rem; font-weight: 700; color: #333; }
+        .hjy-feed-desc { font-size: 0.78rem; color: #999; margin: 4px 0 8px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .hjy-feed-bottom { display: flex; align-items: center; justify-content: space-between; }
+        .hjy-feed-price { color: #fc6076; font-weight: 700; font-size: 1rem; }
+        .hjy-feed-price small { font-size: 0.72rem; font-weight: 400; color: #bbb; margin-left: 4px; }
+        .hjy-feed-btn {
+            font-size: 0.75rem;
+            color: #fff;
+            background: #fc6076;
+            border-radius: 14px;
+            padding: 5px 14px;
+        }
+
+        /* ===== 固定底部导航（全屏宽度 / 自适应） ===== */
+        .hjy-tabbar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            border-top: 1px solid #f0f0f0;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        .hjy-tabbar-item {
+            position: relative;
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 8px 4px 7px;
+            text-decoration: none;
+            color: #9aa0a6;
+            transition: color 0.25s ease;
+        }
+        .hjy-tabbar-item.hjy-active { color: #fc6076; }
+        .hjy-tabbar-icon-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .hjy-tabbar-icon {
+            font-size: 22px;
+            transition: transform 0.25s ease;
+        }
+        .hjy-tabbar-item:active .hjy-tabbar-icon { transform: scale(0.88); }
+        .hjy-tabbar-label { font-size: 11px; font-weight: 500; }
+        /* 数字徽章 */
+        .hjy-tabbar-badge {
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 5px;
+            border-radius: 9px;
+            background: #ff4d4f;
+            color: #fff;
+            font-size: 10px;
+            line-height: 17px;
+            text-align: center;
+            font-weight: 700;
+            border: 2px solid #fff;
+            box-sizing: border-box;
+            transform: translateX(2px);
+        }
+        /* 右上角红点 */
+        .hjy-tabbar-dot {
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #ff4d4f;
+            border: 2px solid #fff;
+            transform: translateX(8px);
+        }
+
+        .hjy-demo-note {
+            margin: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 0.8rem;
+            color: #5a4b8c;
+            line-height: 1.7;
+        }
+        .hjy-demo-note code {
+            background: #f0f0f0;
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-family: "Consolas", monospace;
+            color: #fc6076;
+        }
+        @media (max-width: 360px) {
+            .hjy-tabbar-icon { font-size: 20px; }
+            .hjy-tabbar-label { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy-app">
+
+    <header class="hjy-app-header">
+        <div class="hjy-app-title">美食商城</div>
+        <div class="hjy-app-search">搜索</div>
+    </header>
+
+    <div class="hjy-banner">
+        <h1>今日特惠 · 限时抢购</h1>
+        <p>奶茶甜品 / 蛋糕 / 轻食，满 30 减 10</p>
+    </div>
+
+    <div class="hjy-section-title">猜你喜欢</div>
+
+    <div class="hjy-feed">
+        <div class="hjy-feed-card">
+            <div class="hjy-feed-thumb hjy-thumb-1">莓</div>
+            <div class="hjy-feed-info">
+                <div class="hjy-feed-name">草莓奶油蛋糕</div>
+                <div class="hjy-feed-desc">新鲜草莓 + 动物奶油，6 寸装</div>
+                <div class="hjy-feed-bottom">
+                    <div class="hjy-feed-price">¥39<small>已售 128</small></div>
+                    <div class="hjy-feed-btn">去下单</div>
+                </div>
+            </div>
+        </div>
+        <div class="hjy-feed-card">
+            <div class="hjy-feed-thumb hjy-thumb-2">茶</div>
+            <div class="hjy-feed-info">
+                <div class="hjy-feed-name">杨枝甘露奶茶</div>
+                <div class="hjy-feed-desc">芒果西柚 + 鲜奶，大杯 700ml</div>
+                <div class="hjy-feed-bottom">
+                    <div class="hjy-feed-price">¥18<small>已售 356</small></div>
+                    <div class="hjy-feed-btn">去下单</div>
+                </div>
+            </div>
+        </div>
+        <div class="hjy-feed-card">
+            <div class="hjy-feed-thumb hjy-thumb-3">蔬</div>
+            <div class="hjy-feed-info">
+                <div class="hjy-feed-name">低卡轻食沙拉</div>
+                <div class="hjy-feed-desc">鸡胸肉 + 时蔬，能量约 320kcal</div>
+                <div class="hjy-feed-bottom">
+                    <div class="hjy-feed-price">¥25<small>已售 97</small></div>
+                    <div class="hjy-feed-btn">去下单</div>
+                </div>
+            </div>
+        </div>
+        <div class="hjy-feed-card">
+            <div class="hjy-feed-thumb hjy-thumb-4">包</div>
+            <div class="hjy-feed-info">
+                <div class="hjy-feed-name">现烤牛角包</div>
+                <div class="hjy-feed-desc">黄油酥皮，每日现烤 3 批</div>
+                <div class="hjy-feed-bottom">
+                    <div class="hjy-feed-price">¥12<small>已售 210</small></div>
+                    <div class="hjy-feed-btn">去下单</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hjy-demo-note">
+        本页使用 <code>font/</code> 目录下的 iconfont <b>字体图标</b> 实现底部导航。
+        底部导航 <code>position: fixed</code> 固定于屏幕底部，宽度 100% 全屏，
+        四个导航项使用 <code>flex: 1</code> 自适应均分宽度。
+        「消息」使用<b>数字徽章</b>，「我的」使用<b>右上角红点</b>。
+    </div>
+
+</div>
+
+<!-- ===== 固定底部导航 ===== -->
+<nav class="hjy-tabbar">
+    <a href="#" class="hjy-tabbar-item hjy-active">
+        <span class="hjy-tabbar-icon-wrap">
+            <i class="iconfont icon-shouye hjy-tabbar-icon"></i>
+        </span>
+        <span class="hjy-tabbar-label">首页</span>
+    </a>
+    <a href="#" class="hjy-tabbar-item">
+        <span class="hjy-tabbar-icon-wrap">
+            <i class="iconfont icon-faxian hjy-tabbar-icon"></i>
+        </span>
+        <span class="hjy-tabbar-label">发现</span>
+    </a>
+    <a href="#" class="hjy-tabbar-item">
+        <span class="hjy-tabbar-icon-wrap">
+            <i class="iconfont icon-xiaoxi_1 hjy-tabbar-icon"></i>
+            <span class="hjy-tabbar-badge">3</span>
+        </span>
+        <span class="hjy-tabbar-label">消息</span>
+    </a>
+    <a href="#" class="hjy-tabbar-item">
+        <span class="hjy-tabbar-icon-wrap">
+            <i class="iconfont icon-wode hjy-tabbar-icon"></i>
+            <span class="hjy-tabbar-dot"></span>
+        </span>
+        <span class="hjy-tabbar-label">我的</span>
+    </a>
+</nav>
+
+</body>
+</html>

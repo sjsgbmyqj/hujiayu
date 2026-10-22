@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Font Awesome 字体图标</title>
+    <link rel="stylesheet" href="cdn/fonts/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .hjy-container { max-width: 1000px; margin: 0 auto; }
+        .hjy-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        header.hjy-card {
+            text-align: center;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        header h1 { font-size: 2.4rem; margin-bottom: 10px; letter-spacing: 2px; }
+        header .hjy-subtitle { font-size: 1.1rem; opacity: 0.95; }
+        header .hjy-author {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            font-size: 0.95rem;
+        }
+        .hjy-section-title {
+            font-size: 1.4rem;
+            color: #5a4b8c;
+            margin-bottom: 20px;
+            padding-left: 14px;
+            border-left: 5px solid #764ba2;
+        }
+        .hjy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+        }
+        .hjy-icon-card {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border: 1px solid #e4e4e4;
+            border-radius: 14px;
+            padding: 22px 12px;
+            text-align: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .hjy-icon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(118, 75, 162, 0.35);
+            border-color: #764ba2;
+        }
+        .hjy-icon {
+            display: block;
+            font-size: 2rem;
+            color: #764ba2;
+            margin-bottom: 10px;
+            transition: color 0.25s ease;
+        }
+        .hjy-icon-card:hover .hjy-icon { color: #f5576c; }
+        .hjy-icon-name {
+            font-size: 0.82rem;
+            color: #888;
+            font-family: "Consolas", "Courier New", monospace;
+            word-break: break-all;
+        }
+        .hjy-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 22px;
+            padding: 18px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        .hjy-row:last-child { border-bottom: none; }
+        .hjy-row-label {
+            width: 130px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #5a4b8c;
+        }
+        .hjy-size-demo { color: #764ba2; }
+        .hjy-color-demo { color: #e74c3c; }
+        .hjy-color-demo.hjy-c2 { color: #27ae60; }
+        .hjy-color-demo.hjy-c3 { color: #f39c12; }
+        .hjy-color-demo.hjy-c4 { color: #2980b9; }
+        .hjy-color-demo.hjy-c5 { color: #8e44ad; }
+        .hjy-anim-demo { color: #764ba2; }
+        .hjy-file-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .hjy-file-list li {
+            background: #f5f7fa;
+            border-left: 4px solid #764ba2;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 0.85rem;
+            color: #444;
+        }
+        .hjy-file-list li span { color: #764ba2; font-weight: bold; }
+        .hjy-code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px 22px;
+            border-radius: 12px;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 0.88rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            white-space: pre;
+            border-left: 5px solid #f093fb;
+        }
+        .hjy-code-comment { color: #75715e; }
+        .hjy-code-tag { color: #f92672; }
+        .hjy-code-attr { color: #a6e22e; }
+        footer.hjy-footer { text-align: center; color: #fff; opacity: 0.9; margin-top: 20px; font-size: 0.9rem; }
+        footer .hjy-heart { color: #ff6b6b; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.7rem; }
+            .hjy-card { padding: 26px 20px; }
+            .hjy-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+            .hjy-row-label { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy-container">
+
+    <header class="hjy-card">
+        <h1>Font Awesome 字体图标</h1>
+        <div class="hjy-subtitle">以「字体（Font）」形式渲染的图标库 · 课堂实践</div>
+        <div class="hjy-author">学生：胡家瑜</div>
+    </header>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">基础图标（fa-solid）</h2>
+        <div class="hjy-grid">
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-house"></i><div class="hjy-icon-name">fa-house</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-user"></i><div class="hjy-icon-name">fa-user</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-users"></i><div class="hjy-icon-name">fa-users</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-heart"></i><div class="hjy-icon-name">fa-heart</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-star"></i><div class="hjy-icon-name">fa-star</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-envelope"></i><div class="hjy-icon-name">fa-envelope</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-phone"></i><div class="hjy-icon-name">fa-phone</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-music"></i><div class="hjy-icon-name">fa-music</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-camera"></i><div class="hjy-icon-name">fa-camera</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-gamepad"></i><div class="hjy-icon-name">fa-gamepad</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-gear"></i><div class="hjy-icon-name">fa-gear</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-magnifying-glass"></i><div class="hjy-icon-name">fa-magnifying-glass</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-bell"></i><div class="hjy-icon-name">fa-bell</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-trash-can"></i><div class="hjy-icon-name">fa-trash-can</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-pen-to-square"></i><div class="hjy-icon-name">fa-pen-to-square</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-download"></i><div class="hjy-icon-name">fa-download</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-sun"></i><div class="hjy-icon-name">fa-sun</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-moon"></i><div class="hjy-icon-name">fa-moon</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-play"></i><div class="hjy-icon-name">fa-play</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-bookmark"></i><div class="hjy-icon-name">fa-bookmark</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-folder"></i><div class="hjy-icon-name">fa-folder</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-image"></i><div class="hjy-icon-name">fa-image</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-location-dot"></i><div class="hjy-icon-name">fa-location-dot</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-lock"></i><div class="hjy-icon-name">fa-lock</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-thumbs-up"></i><div class="hjy-icon-name">fa-thumbs-up</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-calendar-days"></i><div class="hjy-icon-name">fa-calendar-days</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-clock"></i><div class="hjy-icon-name">fa-clock</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-mug-hot"></i><div class="hjy-icon-name">fa-mug-hot</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-globe"></i><div class="hjy-icon-name">fa-globe</div></div>
+            <div class="hjy-icon-card"><i class="hjy-icon fa-solid fa-rocket"></i><div class="hjy-icon-name">fa-rocket</div></div>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">尺寸与颜色</h2>
+        <div class="hjy-row">
+            <div class="hjy-row-label">尺寸（fa-*x）</div>
+            <i class="hjy-size-demo fa-solid fa-star fa-2xs"></i>
+            <i class="hjy-size-demo fa-solid fa-star fa-xs"></i>
+            <i class="hjy-size-demo fa-solid fa-star fa-sm"></i>
+            <i class="hjy-size-demo fa-solid fa-star fa-lg"></i>
+            <i class="hjy-size-demo fa-solid fa-star fa-xl"></i>
+            <i class="hjy-size-demo fa-solid fa-star fa-2x"></i>
+            <i class="hjy-size-demo fa-solid fa-star fa-5x"></i>
+            <i class="hjy-size-demo fa-solid fa-star fa-10x"></i>
+        </div>
+        <div class="hjy-row">
+            <div class="hjy-row-label">颜色（CSS color）</div>
+            <i class="hjy-color-demo fa-solid fa-heart"></i>
+            <i class="hjy-color-demo hjy-c2 fa-solid fa-heart"></i>
+            <i class="hjy-color-demo hjy-c3 fa-solid fa-heart"></i>
+            <i class="hjy-color-demo hjy-c4 fa-solid fa-heart"></i>
+            <i class="hjy-color-demo hjy-c5 fa-solid fa-heart"></i>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">动画与修饰</h2>
+        <div class="hjy-row">
+            <div class="hjy-row-label">旋转动画</div>
+            <i class="hjy-anim-demo fa-solid fa-circle-notch fa-spin"></i>
+            <i class="hjy-anim-demo fa-solid fa-gear fa-spin"></i>
+            <i class="hjy-anim-demo fa-solid fa-heart fa-beat"></i>
+            <i class="hjy-anim-demo fa-solid fa-bell fa-shake"></i>
+        </div>
+        <div class="hjy-row">
+            <div class="hjy-row-label">静态变换</div>
+            <i class="hjy-anim-demo fa-solid fa-rotate-right fa-rotate-90"></i>
+            <i class="hjy-anim-demo fa-solid fa-rotate-right fa-rotate-180"></i>
+            <i class="hjy-anim-demo fa-solid fa-rotate-right fa-rotate-270"></i>
+            <i class="hjy-anim-demo fa-solid fa-heart fa-flip-horizontal"></i>
+            <i class="hjy-anim-demo fa-solid fa-heart fa-flip-vertical"></i>
+        </div>
+        <div class="hjy-row">
+            <div class="hjy-row-label">边框 / 对齐</div>
+            <i class="hjy-anim-demo fa-solid fa-flag fa-border"></i>
+            <i class="hjy-anim-demo fa-solid fa-quote-left fa-2x fa-pull-left"></i>
+            <span class="hjy-row-label" style="width:auto;">fa-pull-left 浮动</span>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">本地 CDN 文件</h2>
+        <ul class="hjy-file-list">
+            <li><span>css:</span> cdn/fonts/css/all.min.css</li>
+            <li><span>字体:</span> cdn/fonts/webfonts/fa-solid-900.woff2 / .ttf</li>
+            <li><span>字体:</span> cdn/fonts/webfonts/fa-regular-400.woff2 / .ttf</li>
+            <li><span>字体:</span> cdn/fonts/webfonts/fa-brands-400.woff2 / .ttf</li>
+            <li><span>字体:</span> cdn/fonts/webfonts/fa-v4compatibility.woff2 / .ttf</li>
+        </ul>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">代码示例</h2>
+        <div class="hjy-code-block"><span class="hjy-code-comment">&lt;!-- 引入本地字体图标 CSS --&gt;</span>
+&lt;<span class="hjy-code-tag">link</span> <span class="hjy-code-attr">rel</span>=<span class="hjy-code-attr">"stylesheet"</span> <span class="hjy-code-attr">href</span>=<span class="hjy-code-attr">"cdn/fonts/css/all.min.css"</span>&gt;
+
+<span class="hjy-code-comment">&lt;!-- 用 class 渲染图标，本质是字体 --&gt;</span>
+&lt;<span class="hjy-code-tag">i</span> <span class="hjy-code-attr">class</span>=<span class="hjy-code-attr">"fa-solid fa-house"</span>&gt;&lt;/<span class="hjy-code-tag">i</span>&gt;
+&lt;<span class="hjy-code-tag">i</span> <span class="hjy-code-attr">class</span>=<span class="hjy-code-attr">"fa-solid fa-heart fa-beat"</span>&gt;&lt;/<span class="hjy-code-tag">i</span>&gt;
+&lt;<span class="hjy-code-tag">i</span> <span class="hjy-code-attr">class</span>=<span class="hjy-code-attr">"fa-solid fa-star fa-5x"</span>&gt;&lt;/<span class="hjy-code-tag">i</span>&gt;</div>
+    </section>
+
+    <footer class="hjy-footer">
+        <p>Made with <span class="hjy-heart">❤</span> by 胡家瑜 · 高级网页设计课程</p>
+    </footer>
+
+</div>
+</body>
+</html>

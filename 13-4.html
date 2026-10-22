@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动端底部导航（SVG 图标）</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(160deg, #ff9a44 0%, #fc6076 55%, #ff5e78 100%);
+            background-attachment: fixed;
+            color: #333;
+            line-height: 1.6;
+            padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+        }
+        .hjy-app { width: 100%; max-width: 520px; margin: 0 auto; padding: 0 0 16px; }
+        .hjy-app-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(8px);
+        }
+        .hjy-app-title { font-size: 1.1rem; font-weight: 700; color: #fc6076; }
+        .hjy-app-search {
+            font-size: 0.82rem;
+            color: #888;
+            background: #f4f4f4;
+            border-radius: 16px;
+            padding: 6px 12px;
+        }
+        .hjy-banner {
+            margin: 14px 16px 10px;
+            border-radius: 16px;
+            padding: 26px 22px;
+            color: #fff;
+            background: linear-gradient(135deg, #ffb15c 0%, #ff5e78 100%);
+            box-shadow: 0 12px 30px rgba(252, 96, 118, 0.35);
+        }
+        .hjy-banner h1 { font-size: 1.4rem; margin-bottom: 6px; }
+        .hjy-banner p { font-size: 0.85rem; opacity: 0.92; }
+        .hjy-section-title {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #4a3b3b;
+            margin: 18px 18px 10px;
+            padding-left: 10px;
+            border-left: 4px solid #fc6076;
+        }
+        .hjy-feed { display: flex; flex-direction: column; gap: 12px; padding: 0 16px; }
+        .hjy-feed-card {
+            display: flex;
+            gap: 12px;
+            background: #fff;
+            border-radius: 14px;
+            padding: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        }
+        .hjy-feed-thumb {
+            width: 76px;
+            height: 76px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .hjy-thumb-1 { background: linear-gradient(135deg, #ffb15c, #ff7b54); }
+        .hjy-thumb-2 { background: linear-gradient(135deg, #56ccf2, #2f80ed); }
+        .hjy-thumb-3 { background: linear-gradient(135deg, #a8e063, #56ab2f); }
+        .hjy-thumb-4 { background: linear-gradient(135deg, #f7971e, #ffd200); }
+        .hjy-feed-info { flex: 1; min-width: 0; }
+        .hjy-feed-name { font-size: 0.95rem; font-weight: 700; color: #333; }
+        .hjy-feed-desc { font-size: 0.78rem; color: #999; margin: 4px 0 8px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .hjy-feed-bottom { display: flex; align-items: center; justify-content: space-between; }
+        .hjy-feed-price { color: #fc6076; font-weight: 700; font-size: 1rem; }
+        .hjy-feed-price small { font-size: 0.72rem; font-weight: 400; color: #bbb; margin-left: 4px; }
+        .hjy-feed-btn {
+            font-size: 0.75rem;
+            color: #fff;
+            background: #fc6076;
+            border-radius: 14px;
+            padding: 5px 14px;
+        }
+
+        /* ===== 固定底部导航（全屏宽度 / 自适应） ===== */
+        .hjy-tabbar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            border-top: 1px solid #f0f0f0;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        .hjy-tabbar-item {
+            position: relative;
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 8px 4px 7px;
+            text-decoration: none;
+            color: #9aa0a6;
+            transition: color 0.25s ease;
+        }
+        .hjy-tabbar-item.hjy-active { color: #fc6076; }
+        .hjy-tabbar-icon-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 0;
+        }
+        .hjy-tabbar-svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            display: block;
+            transition: transform 0.25s ease;
+        }
+        .hjy-tabbar-item:active .hjy-tabbar-svg { transform: scale(0.88); }
+        .hjy-tabbar-label { font-size: 11px; font-weight: 500; }
+        /* 数字徽章 */
+        .hjy-tabbar-badge {
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 5px;
+            border-radius: 9px;
+            background: #ff4d4f;
+            color: #fff;
+            font-size: 10px;
+            line-height: 17px;
+            text-align: center;
+            font-weight: 700;
+            border: 2px solid #fff;
+            box-sizing: border-box;
+            transform: translateX(2px);
+        }
+        /* 右上角红点 */
+        .hjy-tabbar-dot {
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #ff4d4f;
+            border: 2px solid #fff;
+            transform: translateX(8px);
+        }
+
+        .hjy-demo-note {
+            margin: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 0.8rem;
+            color: #5a4b8c;
+            line-height: 1.7;
+        }
+        .hjy-demo-note code {
+            background: #f0f0f0;
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-family: "Consolas", monospace;
+            color: #fc6076;
+        }
+        @media (max-width: 360px) {
+            .hjy-tabbar-svg { width: 20px; height: 20px; }
+            .hjy-tabbar-label { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== iconfont 图标转成的 SVG 精灵（symbol 定义） ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="icon-shouye" viewBox="0 0 1024 1024">
+        <path d="M435.499 952.553H188.274V526.435c0-6.992 3.729-13.47 9.792-16.966a19.577 19.577 0 0 1 19.6 0 19.601 19.601 0 0 1 9.797 16.966v386.938h168.844V714.364h232.654v201.285h161.81V511.726c0-10.821 8.773-19.595 19.604-19.595 10.813 0 19.586 8.774 19.586 19.595V954.84H589.773V753.554H435.522v198.999h-0.023z m0 0" />
+        <path d="M511.902 122.416L95.919 504.905c-8.016 6.735-19.91 5.963-27.006-1.733-7.092-7.707-6.868-19.624 0.495-27.063L511.917 69.166l441.951 406.943a19.582 19.582 0 0 1 5.936 18.738 19.59 19.59 0 0 1-13.317 14.46 19.61 19.61 0 0 1-19.177-4.382l-415.406-382.49v-0.019" />
+    </symbol>
+    <symbol id="icon-faxian" viewBox="0 0 1024 1024">
+        <path d="M512 32a480 480 0 1 0 480 480A480 480 0 0 0 512 32z m0 904.5121875A424.5121875 424.5121875 0 1 1 936.5121875 512 425.0878125 425.0878125 0 0 1 512 936.5121875z" />
+        <path d="M776.1921875 258.944375a27.455625 27.455625 0 0 0-37.44-11.1365625L426.7521875 416a28.03125 28.03125 0 0 0-11.3278125 11.3278125L247.80875 738.753125a27.6478125 27.6478125 0 0 0 4.8 32.64 22.08 22.08 0 0 0 6.335625 4.8 27.6478125 27.6478125 0 0 0 25.92 0L597.44 608a28.03125 28.03125 0 0 0 11.3278125-11.3278125L775.8078125 285.63125v-1.92a27.84 27.84 0 0 0 0.384375-24.76875zM340.16 684.8l106.56-198.9121875 91.584375 91.584375z m237.3121875-145.7278125l-91.584375-92.3521875L684.8 340.16" />
+    </symbol>
+    <symbol id="icon-xiaoxi_1" viewBox="0 0 1171 1024">
+        <path d="M622.935462 6.279189a54.506853 54.506853 0 0 0-59.178869 5.450686C500.684377 60.786042 334.049141 207.954545 306.795715 233.650633H94.218989A94.218989 94.218989 0 0 0 0 326.312283v337.942488a94.218989 94.218989 0 0 0 94.218989 93.440319h182.208622c35.04012 34.26145 217.248742 195.446001 287.328982 254.62487a54.506853 54.506853 0 0 0 33.482781 11.68004A60.736208 60.736208 0 0 0 622.935462 1012.31996a113.685722 113.685722 0 0 0 54.506853-93.440319V98.940839A112.128383 112.128383 0 0 0 622.935462 6.279189z m-8.565363 915.715129a56.842861 56.842861 0 0 1-16.352056 35.04012C519.372441 893.183553 311.467731 707.081584 311.467731 705.524245a31.146773 31.146773 0 0 0-23.36008-10.122701H94.218989a31.146773 31.146773 0 0 1-31.925443-31.146773V326.312283a31.146773 31.146773 0 0 1 31.925443-31.146773H311.467731a34.26145 34.26145 0 0 0 17.130725-5.450685 26.474757 26.474757 0 0 0 14.794717-7.008024s185.3233-163.520559 254.62487-218.027412a52.949514 52.949514 0 0 1 16.352056 34.26145v823.053479z m355.073213-408.022727a323.92644 323.92644 0 0 0-104.34169-207.904711 31.146773 31.146773 0 0 0-40.490805 48.277499 257.739547 257.739547 0 0 1 82.538949 163.520558 263.190233 263.190233 0 0 1-81.760279 194.667332 31.925442 31.925442 0 0 0 0 44.384152 31.925442 31.925442 0 0 0 44.384151 0 323.92644 323.92644 0 0 0 99.669674-242.94483z" />
+        <path d="M1138.414556 362.131072a581.665987 581.665987 0 0 0-141.717817-220.36342 31.146773 31.146773 0 1 0-42.048144 46.72016 523.265788 523.265788 0 0 1 125.365762 194.667332 437.612162 437.612162 0 0 1 20.245402 214.134065 581.665987 581.665987 0 0 1-131.595116 270.198256 31.146773 31.146773 0 0 0 4.672016 43.605483 29.589434 29.589434 0 0 0 19.466733 7.008024 28.810765 28.810765 0 0 0 24.138749-11.68004 629.943486 629.943486 0 0 0 144.832495-299.787691 486.668329 486.668329 0 0 0-23.36008-244.502169z" />
+    </symbol>
+    <symbol id="icon-wode" viewBox="0 0 1091 1024">
+        <path d="M545.901727-6.34913734a300.183426 300.183426 0 0 0-185.834452 536.106341A552.015159 552.015159 0 0 0 0.625237 961.44889766a48.629576 48.629576 0 0 0 40.154136 55.576659 49.602168 49.602168 0 0 0 7.850203 0.625237 48.629576 48.629576 0 0 0 47.795926-40.779373 453.088707 453.088707 0 0 1 449.545696-382.089526A300.391839 300.391839 0 0 0 545.901727-6.34913734z m0 503.802409a203.41057 203.41057 0 1 1 203.41057-203.41057 203.618982 203.618982 0 0 1-203.41057 203.41057zM1091.178216 961.44889766A551.459393 551.459393 0 0 0 833.649876 578.24783866a48.629576 48.629576 0 1 0-50.57476 82.670279 454.686536 454.686536 0 0 1 212.441777 315.953303 48.629576 48.629576 0 0 0 47.795926 40.779373 49.602168 49.602168 0 0 0 7.780732-0.625237 48.629576 48.629576 0 0 0 40.084665-55.576659z" />
+    </symbol>
+</svg>
+
+<div class="hjy-app">
+
+    <header class="hjy-app-header">
+        <div class="hjy-app-title">美食商城</div>
+        <div class="hjy-app-search">搜索</div>
+    </header>
+
+    <div class="hjy-banner">
+        <h1>今日特惠 · 限时抢购</h1>
+        <p>奶茶甜品 / 蛋糕 / 轻食，满 30 减 10</p>
+    </div>
+
+    <div class="hjy-section-title">猜你喜欢</div>
+
+    <div class="hjy-feed">
+        <div class="hjy-feed-card">
+            <div class="hjy-feed-thumb hjy-thumb-1">莓</div>
+            <div class="hjy-feed-info">
+                <div class="hjy-feed-name">草莓奶油蛋糕</div>
+                <div class="hjy-feed-desc">新鲜草莓 + 动物奶油，6 寸装</div>
+                <div class="hjy-feed-bottom">
+                    <div class="hjy-feed-price">¥39<small>已售 128</small></div>
+                    <div class="hjy-feed-btn">去下单</div>
+                </div>
+            </div>
+        </div>
+        <div class="hjy-feed-card">
+            <div class="hjy-feed-thumb hjy-thumb-2">茶</div>
+            <div class="hjy-feed-info">
+                <div class="hjy-feed-name">杨枝甘露奶茶</div>
+                <div class="hjy-feed-desc">芒果西柚 + 鲜奶，大杯 700ml</div>
+                <div class="hjy-feed-bottom">
+                    <div class="hjy-feed-price">¥18<small>已售 356</small></div>
+                    <div class="hjy-feed-btn">去下单</div>
+                </div>
+            </div>
+        </div>
+        <div class="hjy-feed-card">
+            <div class="hjy-feed-thumb hjy-thumb-3">蔬</div>
+            <div class="hjy-feed-info">
+                <div class="hjy-feed-name">低卡轻食沙拉</div>
+                <div class="hjy-feed-desc">鸡胸肉 + 时蔬，能量约 320kcal</div>
+                <div class="hjy-feed-bottom">
+                    <div class="hjy-feed-price">¥25<small>已售 97</small></div>
+                    <div class="hjy-feed-btn">去下单</div>
+                </div>
+            </div>
+        </div>
+        <div class="hjy-feed-card">
+            <div class="hjy-feed-thumb hjy-thumb-4">包</div>
+            <div class="hjy-feed-info">
+                <div class="hjy-feed-name">现烤牛角包</div>
+                <div class="hjy-feed-desc">黄油酥皮，每日现烤 3 批</div>
+                <div class="hjy-feed-bottom">
+                    <div class="hjy-feed-price">¥12<small>已售 210</small></div>
+                    <div class="hjy-feed-btn">去下单</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hjy-demo-note">
+        本页使用 <code>font/</code> 目录下 iconfont 导出的 <b>SVG 精灵</b>（symbol）实现底部导航，
+        通过 <code>&lt;svg&gt;&lt;use href="#icon-xxx"&gt;&lt;/use&gt;&lt;/svg&gt;</code> 引用矢量图标。
+        底部导航 <code>position: fixed</code> 固定于屏幕底部，宽度 100% 全屏，
+        四个导航项使用 <code>flex: 1</code> 自适应均分宽度。
+        「消息」使用<b>数字徽章</b>，「我的」使用<b>右上角红点</b>。
+    </div>
+
+</div>
+
+<!-- ===== 固定底部导航 ===== -->
+<nav class="hjy-tabbar">
+    <a href="#" class="hjy-tabbar-item hjy-active">
+        <span class="hjy-tabbar-icon-wrap">
+            <svg class="hjy-tabbar-svg" aria-hidden="true"><use href="#icon-shouye"></use></svg>
+        </span>
+        <span class="hjy-tabbar-label">首页</span>
+    </a>
+    <a href="#" class="hjy-tabbar-item">
+        <span class="hjy-tabbar-icon-wrap">
+            <svg class="hjy-tabbar-svg" aria-hidden="true"><use href="#icon-faxian"></use></svg>
+        </span>
+        <span class="hjy-tabbar-label">发现</span>
+    </a>
+    <a href="#" class="hjy-tabbar-item">
+        <span class="hjy-tabbar-icon-wrap">
+            <svg class="hjy-tabbar-svg" aria-hidden="true"><use href="#icon-xiaoxi_1"></use></svg>
+            <span class="hjy-tabbar-badge">3</span>
+        </span>
+        <span class="hjy-tabbar-label">消息</span>
+    </a>
+    <a href="#" class="hjy-tabbar-item">
+        <span class="hjy-tabbar-icon-wrap">
+            <svg class="hjy-tabbar-svg" aria-hidden="true"><use href="#icon-wode"></use></svg>
+            <span class="hjy-tabbar-dot"></span>
+        </span>
+        <span class="hjy-tabbar-label">我的</span>
+    </a>
+</nav>
+
+</body>
+</html>

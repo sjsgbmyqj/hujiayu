@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucide 图标（SVG 形式）</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .hjy-container { max-width: 1000px; margin: 0 auto; }
+        .hjy-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        header.hjy-card {
+            text-align: center;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        header h1 { font-size: 2.4rem; margin-bottom: 10px; letter-spacing: 2px; }
+        header .hjy-subtitle { font-size: 1.1rem; opacity: 0.95; }
+        header .hjy-author {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            font-size: 0.95rem;
+        }
+        .hjy-section-title {
+            font-size: 1.4rem;
+            color: #5a4b8c;
+            margin-bottom: 20px;
+            padding-left: 14px;
+            border-left: 5px solid #764ba2;
+        }
+        .hjy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+        }
+        .hjy-icon-card {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border: 1px solid #e4e4e4;
+            border-radius: 14px;
+            padding: 22px 12px;
+            text-align: center;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .hjy-icon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(118, 75, 162, 0.35);
+            border-color: #764ba2;
+        }
+        .hjy-lucide {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            background-color: #764ba2;
+            -webkit-mask: var(--hjy-lucide-url) no-repeat center / contain;
+            mask: var(--hjy-lucide-url) no-repeat center / contain;
+            margin-bottom: 10px;
+            transition: background-color 0.25s ease, transform 0.25s ease;
+        }
+        .hjy-icon-card:hover .hjy-lucide {
+            background-color: #f5576c;
+            transform: scale(1.15) rotate(-6deg);
+        }
+        .hjy-icon-name {
+            font-size: 0.82rem;
+            color: #888;
+            font-family: "Consolas", "Courier New", monospace;
+            word-break: break-all;
+        }
+        .hjy-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 22px;
+            padding: 18px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        .hjy-row:last-child { border-bottom: none; }
+        .hjy-row-label {
+            width: 130px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #5a4b8c;
+        }
+        .hjy-c-red { background-color: #e74c3c; }
+        .hjy-c-green { background-color: #27ae60; }
+        .hjy-c-orange { background-color: #f39c12; }
+        .hjy-c-blue { background-color: #2980b9; }
+        .hjy-c-purple { background-color: #8e44ad; }
+        .hjy-file-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .hjy-file-list li {
+            background: #f5f7fa;
+            border-left: 4px solid #764ba2;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 0.85rem;
+            color: #444;
+        }
+        .hjy-file-list li span { color: #764ba2; font-weight: bold; }
+        .hjy-code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px 22px;
+            border-radius: 12px;
+            font-family: "Consolas", "Courier New", monospace;
+            font-size: 0.88rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            white-space: pre;
+            border-left: 5px solid #38f9d7;
+        }
+        .hjy-code-comment { color: #75715e; }
+        .hjy-code-tag { color: #f92672; }
+        .hjy-code-attr { color: #a6e22e; }
+        .hjy-inline-demo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .hjy-inline-demo svg { color: #764ba2; transition: color 0.25s ease, transform 0.25s ease; }
+        .hjy-inline-demo svg:hover { color: #f5576c; transform: scale(1.2); }
+        footer.hjy-footer { text-align: center; color: #fff; opacity: 0.9; margin-top: 20px; font-size: 0.9rem; }
+        footer .hjy-heart { color: #ff6b6b; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.7rem; }
+            .hjy-card { padding: 26px 20px; }
+            .hjy-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+            .hjy-row-label { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy-container">
+
+    <header class="hjy-card">
+        <h1>Lucide 图标（SVG 形式）</h1>
+        <div class="hjy-subtitle">以「可缩放矢量图形（SVG）」形式渲染的图标库 · 课堂实践</div>
+        <div class="hjy-author">学生：胡家瑜</div>
+    </header>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">基础图标（本地 SVG 文件）</h2>
+        <div class="hjy-grid">
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/home.svg')"></span><div class="hjy-icon-name">home.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/user.svg')"></span><div class="hjy-icon-name">user.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/users.svg')"></span><div class="hjy-icon-name">users.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/heart.svg')"></span><div class="hjy-icon-name">heart.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/star.svg')"></span><div class="hjy-icon-name">star.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/mail.svg')"></span><div class="hjy-icon-name">mail.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/phone.svg')"></span><div class="hjy-icon-name">phone.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/music.svg')"></span><div class="hjy-icon-name">music.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/camera.svg')"></span><div class="hjy-icon-name">camera.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/gamepad-2.svg')"></span><div class="hjy-icon-name">gamepad-2.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/settings.svg')"></span><div class="hjy-icon-name">settings.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/search.svg')"></span><div class="hjy-icon-name">search.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/bell.svg')"></span><div class="hjy-icon-name">bell.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/trash-2.svg')"></span><div class="hjy-icon-name">trash-2.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/pen-line.svg')"></span><div class="hjy-icon-name">pen-line.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/download.svg')"></span><div class="hjy-icon-name">download.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/sun.svg')"></span><div class="hjy-icon-name">sun.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/moon.svg')"></span><div class="hjy-icon-name">moon.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/play.svg')"></span><div class="hjy-icon-name">play.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/bookmark.svg')"></span><div class="hjy-icon-name">bookmark.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/folder.svg')"></span><div class="hjy-icon-name">folder.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/image.svg')"></span><div class="hjy-icon-name">image.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/map-pin.svg')"></span><div class="hjy-icon-name">map-pin.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/lock.svg')"></span><div class="hjy-icon-name">lock.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/thumbs-up.svg')"></span><div class="hjy-icon-name">thumbs-up.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/calendar.svg')"></span><div class="hjy-icon-name">calendar.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/clock.svg')"></span><div class="hjy-icon-name">clock.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/coffee.svg')"></span><div class="hjy-icon-name">coffee.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/globe.svg')"></span><div class="hjy-icon-name">globe.svg</div></div>
+            <div class="hjy-icon-card"><span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/rocket.svg')"></span><div class="hjy-icon-name">rocket.svg</div></div>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">尺寸与颜色</h2>
+        <div class="hjy-row">
+            <div class="hjy-row-label">尺寸</div>
+            <span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/star.svg'); width:0.9rem; height:0.9rem;"></span>
+            <span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/star.svg'); width:1.4rem; height:1.4rem;"></span>
+            <span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/star.svg'); width:2rem; height:2rem;"></span>
+            <span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/star.svg'); width:3rem; height:3rem;"></span>
+            <span class="hjy-lucide" style="--hjy-lucide-url:url('cdn/icons/star.svg'); width:4.5rem; height:4.5rem;"></span>
+        </div>
+        <div class="hjy-row">
+            <div class="hjy-row-label">颜色（currentColor）</div>
+            <span class="hjy-lucide hjy-c-red" style="--hjy-lucide-url:url('cdn/icons/heart.svg')"></span>
+            <span class="hjy-lucide hjy-c-green" style="--hjy-lucide-url:url('cdn/icons/heart.svg')"></span>
+            <span class="hjy-lucide hjy-c-orange" style="--hjy-lucide-url:url('cdn/icons/heart.svg')"></span>
+            <span class="hjy-lucide hjy-c-blue" style="--hjy-lucide-url:url('cdn/icons/heart.svg')"></span>
+            <span class="hjy-lucide hjy-c-purple" style="--hjy-lucide-url:url('cdn/icons/heart.svg')"></span>
+        </div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">内联 SVG 示例</h2>
+        <div class="hjy-inline-demo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+                <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            </svg>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21a8 8 0 0 0-16 0" />
+                <circle cx="12" cy="7" r="4" />
+            </svg>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+        </div>
+        <div class="hjy-code-block"><span class="hjy-code-comment">&lt;!-- Lucide 图标就是一段普通 SVG 代码 --&gt;</span>
+&lt;<span class="hjy-code-tag">svg</span> <span class="hjy-code-attr">width</span>=<span class="hjy-code-attr">"24"</span> <span class="hjy-code-attr">height</span>=<span class="hjy-code-attr">"24"</span> <span class="hjy-code-attr">viewBox</span>=<span class="hjy-code-attr">"0 0 24 24"</span>
+     <span class="hjy-code-attr">fill</span>=<span class="hjy-code-attr">"none"</span> <span class="hjy-code-attr">stroke</span>=<span class="hjy-code-attr">"currentColor"</span> <span class="hjy-code-attr">stroke-width</span>=<span class="hjy-code-attr">"2"</span>&gt;
+  &lt;<span class="hjy-code-tag">path</span> <span class="hjy-code-attr">d</span>=<span class="hjy-code-attr">"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"</span> /&gt;
+  &lt;<span class="hjy-code-tag">path</span> <span class="hjy-code-attr">d</span>=<span class="hjy-code-attr">"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"</span> /&gt;
+&lt;/<span class="hjy-code-tag">svg</span>&gt;</div>
+    </section>
+
+    <section class="hjy-card">
+        <h2 class="hjy-section-title">本地 CDN 文件</h2>
+        <ul class="hjy-file-list">
+            <li><span>目录:</span> cdn/icons/（共 30 个 .svg 文件）</li>
+            <li><span>示例:</span> cdn/icons/home.svg · cdn/icons/heart.svg · cdn/icons/rocket.svg</li>
+            <li><span>来源:</span> lucide-static v1.59.0（ISC License）</li>
+        </ul>
+    </section>
+
+    <footer class="hjy-footer">
+        <p>Made with <span class="hjy-heart">❤</span> by 胡家瑜 · 高级网页设计课程</p>
+    </footer>
+
+</div>
+</body>
+</html>
