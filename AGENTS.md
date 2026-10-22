@@ -13,5 +13,9 @@ Static multi-page HTML site (Chinese web-design coursework). No build tooling, n
 
 - Chinese (`zh-CN`) content; match the existing charset (`UTF-8`) and font stack (`"Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif`) in new pages.
 - Exercise pages follow the same card/gradient visual language as `index.html` — copy an existing page as a template rather than starting from scratch.
-- All new CSS class names, ID names, and JS variables must start with `hjy` (e.g. `hjy-card`, `hjyTitle`, `hjyCount`). Existing pages predate this rule — do not mass-refactor them unless asked.
+- All variable names, CSS class names, and ID names must start with `hjy_` (e.g. `hjy_card`, `hjy_title`, `hjy_count`). Existing pages predate this rule — do not mass-refactor them unless asked.
+- Every HTML page must include a comment near the top of the file containing 姓名、日期、功能名称, e.g. `<!-- 姓名：胡家瑜 日期：2026-10-22 功能：CSS3 3D旋转 -->`.
+- Use only native HTML, CSS, and JavaScript — no third-party libraries and no CDN resources (existing pages using them predate this rule).
+- Icons must use the iconfont files in `font/` (referenced by relative path), not other icon libraries.
+- Fetch server-side data with the native `fetch` API.
 - Before executing any user request, append the prompt to `hjy_prompt.md` (never overwrite): timestamp `yyyy-MM-dd-HH:mm`, the model used, and the prompt text. Do this first, then carry out the task.

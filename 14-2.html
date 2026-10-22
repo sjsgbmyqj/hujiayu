@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-10-22 功能：JavaScript第六种基础数据类型Symbol的定义与演示 -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript 第六种基础数据类型：Symbol</title>
+    <link rel="stylesheet" href="font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .hjy_container { max-width: 960px; margin: 0 auto; }
+        .hjy_card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 36px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .hjy_header {
+            text-align: center;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .hjy_header h1 { font-size: 2.1rem; margin-bottom: 10px; letter-spacing: 2px; }
+        .hjy_header .hjy_subtitle { font-size: 1.05rem; opacity: 0.95; }
+        .hjy_header .hjy_author {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            font-size: 0.95rem;
+        }
+        .hjy_section_title {
+            font-size: 1.3rem;
+            color: #5a4b8c;
+            margin-bottom: 18px;
+            padding-left: 14px;
+            border-left: 5px solid #764ba2;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .hjy_section_title .iconfont { color: #764ba2; font-size: 1.5rem; }
+        .hjy_intro p { margin-bottom: 12px; }
+        .hjy_intro strong { color: #764ba2; }
+        .hjy_type_grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+        .hjy_type_item {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border: 1px solid #e4e4e4;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+        .hjy_type_item .hjy_type_name { font-weight: 700; font-size: 1.02rem; color: #2d2d2d; }
+        .hjy_type_item .hjy_type_typeof { font-size: 0.8rem; color: #888; margin-top: 4px; font-family: Consolas, "Courier New", monospace; }
+        .hjy_type_item.hjy_type_symbol {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+        }
+        .hjy_type_item.hjy_type_symbol .hjy_type_name { color: #fff; }
+        .hjy_type_item.hjy_type_symbol .hjy_type_typeof { color: rgba(255, 255, 255, 0.85); }
+        .hjy_type_badge {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 1px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 0.72rem;
+        }
+        .hjy_code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            border-left: 5px solid #667eea;
+            overflow-x: auto;
+            white-space: pre;
+            margin-bottom: 16px;
+        }
+        .hjy_code .hjy_cmt { color: #8a8a9a; }
+        .hjy_btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 28px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(118, 75, 162, 0.4);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .hjy_btn:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(118, 75, 162, 0.55); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_output {
+            margin-top: 16px;
+            background: #1e1e2e;
+            color: #a6e3a1;
+            padding: 18px 20px;
+            border-radius: 12px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.88rem;
+            line-height: 1.9;
+            border-left: 5px solid #f093fb;
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 56px;
+        }
+        .hjy_output.hjy_empty { color: #6b6b7b; }
+        .hjy_footer { text-align: center; color: #fff; opacity: 0.9; margin-top: 10px; font-size: 0.9rem; }
+        .hjy_footer .hjy_heart { color: #ff6b6b; }
+        @media (max-width: 600px) {
+            .hjy_header h1 { font-size: 1.5rem; }
+            .hjy_card { padding: 24px 18px; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_container">
+
+    <header class="hjy_card hjy_header">
+        <h1>JavaScript 第六种基础数据类型：Symbol</h1>
+        <div class="hjy_subtitle">定义 · 特性 · 交互演示 &nbsp;｜&nbsp; 课堂练习 14-2</div>
+        <div class="hjy_author">👤 学生：胡家瑜 · 2026-10-22</div>
+    </header>
+
+    <section class="hjy_card hjy_intro">
+        <h2 class="hjy_section_title"><span class="iconfont icon-shouye"></span>什么是 Symbol？</h2>
+        <p>在 ES6 之前，JavaScript 只有 <strong>五种</strong>基础（原始）数据类型：Undefined、Null、Boolean、Number、String。</p>
+        <p><strong>Symbol（符号）</strong>是 ES6（ECMAScript 2015）引入的<strong>第六种基础数据类型</strong>：它表示一个<strong>独一无二的值</strong>，主要用作对象属性名，从根本上避免属性名冲突，常用于模拟“私有”属性，以及定义语言内部协议（如 Symbol.iterator）。</p>
+        <div class="hjy_type_grid">
+            <div class="hjy_type_item"><div class="hjy_type_name">Undefined</div><div class="hjy_type_typeof">typeof → "undefined"</div></div>
+            <div class="hjy_type_item"><div class="hjy_type_name">Null</div><div class="hjy_type_typeof">typeof → "object"</div></div>
+            <div class="hjy_type_item"><div class="hjy_type_name">Boolean</div><div class="hjy_type_typeof">typeof → "boolean"</div></div>
+            <div class="hjy_type_item"><div class="hjy_type_name">Number</div><div class="hjy_type_typeof">typeof → "number"</div></div>
+            <div class="hjy_type_item"><div class="hjy_type_name">String</div><div class="hjy_type_typeof">typeof → "string"</div></div>
+            <div class="hjy_type_item hjy_type_symbol"><div class="hjy_type_name">Symbol</div><div class="hjy_type_typeof">typeof → "symbol"</div><div class="hjy_type_badge">ES6 新增 · 第六种</div></div>
+        </div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title"><span class="iconfont icon-bianji"></span>一、创建 Symbol 与类型检测</h2>
+        <pre class="hjy_code">const hjy_s1 = Symbol();              <span class="hjy_cmt">// 不带描述</span>
+const hjy_s2 = Symbol('胡家瑜');       <span class="hjy_cmt">// 带描述，仅用于打印提示</span>
+console.log(hjy_s1);                   <span class="hjy_cmt">// Symbol()</span>
+console.log(hjy_s2);                   <span class="hjy_cmt">// Symbol(胡家瑜)</span>
+console.log(typeof hjy_s1);            <span class="hjy_cmt">// "symbol" —— 全新的类型，不是 string/object</span>
+console.log(hjy_s2.description);       <span class="hjy_cmt">// "胡家瑜"（ES2019 的描述属性）</span></pre>
+        <button class="hjy_btn" id="hjy_btn_1"><span class="iconfont icon-shuaxin"></span>运行演示</button>
+        <div class="hjy_output hjy_empty" id="hjy_out_1">▶ 点击「运行演示」查看输出结果</div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title"><span class="iconfont icon-dianzan"></span>二、独一无二：Symbol 的唯一性</h2>
+        <pre class="hjy_code">const hjy_a = Symbol('id');
+const hjy_b = Symbol('id');
+console.log(hjy_a === hjy_b);          <span class="hjy_cmt">// false —— 描述相同，值依然不同</span>
+console.log(Symbol() === Symbol());    <span class="hjy_cmt">// false —— 每个 Symbol 都独一无二</span></pre>
+        <button class="hjy_btn" id="hjy_btn_2"><span class="iconfont icon-shuaxin"></span>运行演示</button>
+        <div class="hjy_output hjy_empty" id="hjy_out_2">▶ 点击「运行演示」查看输出结果</div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title"><span class="iconfont icon-denglu"></span>三、全局注册表：Symbol.for() 与 Symbol.keyFor()</h2>
+        <pre class="hjy_code">const hjy_c = Symbol.for('school');    <span class="hjy_cmt">// 在全局注册表登记，没有则创建</span>
+const hjy_d = Symbol.for('school');    <span class="hjy_cmt">// 再次查询，拿到同一个值</span>
+console.log(hjy_c === hjy_d);          <span class="hjy_cmt">// true —— 共享的 Symbol</span>
+const hjy_e = Symbol('未登记');        <span class="hjy_cmt">// Symbol() 创建的不进注册表</span>
+console.log(Symbol.keyFor(hjy_c));     <span class="hjy_cmt">// "school"（反查注册键）</span>
+console.log(Symbol.keyFor(hjy_e));     <span class="hjy_cmt">// undefined</span></pre>
+        <button class="hjy_btn" id="hjy_btn_3"><span class="iconfont icon-shuaxin"></span>运行演示</button>
+        <div class="hjy_output hjy_empty" id="hjy_out_3">▶ 点击「运行演示」查看输出结果</div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title"><span class="iconfont icon-shoucang"></span>四、作为对象属性名：模拟“私有”属性</h2>
+        <pre class="hjy_code">const hjy_score = Symbol('成绩');
+const hjy_student = {
+    hjy_name: '胡家瑜',                <span class="hjy_cmt">// 普通字符串属性</span>
+    [hjy_score]: 98                    <span class="hjy_cmt">// Symbol 属性：用计算属性名写入</span>
+};
+console.log(hjy_student[hjy_score]);                    <span class="hjy_cmt">// 98</span>
+console.log(Object.keys(hjy_student));                  <span class="hjy_cmt">// 看不到 Symbol 属性</span>
+console.log(Object.getOwnPropertySymbols(hjy_student)); <span class="hjy_cmt">// 专门获取 Symbol 属性</span></pre>
+        <button class="hjy_btn" id="hjy_btn_4"><span class="iconfont icon-shuaxin"></span>运行演示</button>
+        <div class="hjy_output hjy_empty" id="hjy_out_4">▶ 点击「运行演示」查看输出结果</div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title"><span class="iconfont icon-faxian"></span>五、内置 Symbol：Symbol.iterator 迭代器</h2>
+        <pre class="hjy_code">const hjy_class = {
+    hjy_members: ['胡家瑜', '小明', '小红'],
+    [Symbol.iterator]() {               <span class="hjy_cmt">// 实现可迭代协议</span>
+        const hjy_members = this.hjy_members;
+        let hjy_index = 0;
+        return {
+            next() {
+                return hjy_index &lt; hjy_members.length
+                    ? { value: hjy_members[hjy_index++], done: false }
+                    : { value: undefined, done: true };
+            }
+        };
+    }
+};
+for (const hjy_stu of hjy_class) { console.log(hjy_stu); }  <span class="hjy_cmt">// 可被 for...of 遍历</span>
+console.log([...hjy_class]);                                 <span class="hjy_cmt">// 可展开成数组</span></pre>
+        <button class="hjy_btn" id="hjy_btn_5"><span class="iconfont icon-shuaxin"></span>运行演示</button>
+        <div class="hjy_output hjy_empty" id="hjy_out_5">▶ 点击「运行演示」查看输出结果</div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title"><span class="iconfont icon-xiaoxi_1"></span>六、注意事项：Symbol 的限制</h2>
+        <pre class="hjy_code">const hjy_sym = Symbol('x');
+hjy_sym + 'abc';                       <span class="hjy_cmt">// ① 报错：不能与其他类型隐式运算</span>
+Number(hjy_sym);                       <span class="hjy_cmt">// ② 报错：不能转成数字</span>
+JSON.stringify({ [hjy_sym]: 1, hjy_ok: 2 });  <span class="hjy_cmt">// ③ Symbol 属性被忽略</span>
+String(hjy_sym);                       <span class="hjy_cmt">// ④ 正确做法：显式转换 "Symbol(x)"</span>
+hjy_sym.description;                   <span class="hjy_cmt">// ⑤ 或者直接取描述 "x"</span></pre>
+        <button class="hjy_btn" id="hjy_btn_6"><span class="iconfont icon-shuaxin"></span>运行演示</button>
+        <div class="hjy_output hjy_empty" id="hjy_out_6">▶ 点击「运行演示」查看输出结果</div>
+    </section>
+
+    <footer class="hjy_footer">
+        <p>Made with <span class="hjy_heart">❤</span> by 胡家瑜 · 高级网页设计课程 · 原生 HTML / CSS / JavaScript</p>
+    </footer>
+
+</div>
+
+<script>
+    // 姓名：胡家瑜 日期：2026-10-22 功能：Symbol 六组演示的交互逻辑
+    // 把任意值格式化成字符串（模拟控制台显示效果）
+    function hjy_format(hjy_value) {
+        if (typeof hjy_value === 'symbol') return hjy_value.toString();
+        if (Array.isArray(hjy_value)) return '[' + hjy_value.map(hjy_format).join(', ') + ']';
+        if (hjy_value instanceof Error) return hjy_value.name + ': ' + hjy_value.message;
+        if (typeof hjy_value === 'object' && hjy_value !== null) return JSON.stringify(hjy_value);
+        return String(hjy_value);
+    }
+
+    // 向第 hjy_index 个输出框追加一行（模拟 console.log）
+    function hjy_print(hjy_index, ...hjy_values) {
+        const hjy_out = document.getElementById('hjy_out_' + hjy_index);
+        hjy_out.textContent += hjy_values.map(hjy_format).join(' ') + '\n';
+    }
+
+    // 清空输出框并去掉占位样式
+    function hjy_reset(hjy_index) {
+        const hjy_out = document.getElementById('hjy_out_' + hjy_index);
+        hjy_out.classList.remove('hjy_empty');
+        hjy_out.textContent = '';
+    }
+
+    // 演示一：创建 Symbol 与类型检测
+    function hjy_demo1() {
+        hjy_reset(1);
+        const hjy_s1 = Symbol();
+        const hjy_s2 = Symbol('胡家瑜');
+        hjy_print(1, 'hjy_s1              =', hjy_s1);
+        hjy_print(1, 'hjy_s2              =', hjy_s2);
+        hjy_print(1, 'typeof hjy_s1       =', typeof hjy_s1);
+        hjy_print(1, 'hjy_s2.description  =', hjy_s2.description);
+    }
+
+    // 演示二：Symbol 的唯一性
+    function hjy_demo2() {
+        hjy_reset(2);
+        const hjy_a = Symbol('id');
+        const hjy_b = Symbol('id');
+        hjy_print(2, 'hjy_a === hjy_b            =', hjy_a === hjy_b, '（描述都是 "id"，依然不相等）');
+        hjy_print(2, 'Symbol() === Symbol()      =', Symbol() === Symbol());
+        hjy_print(2, '结论：每个 Symbol 值都是独一无二的');
+    }
+
+    // 演示三：全局注册表
+    function hjy_demo3() {
+        hjy_reset(3);
+        const hjy_c = Symbol.for('school');
+        const hjy_d = Symbol.for('school');
+        const hjy_e = Symbol('未登记');
+        hjy_print(3, 'Symbol.for("school") === Symbol.for("school")  =', hjy_c === hjy_d);
+        hjy_print(3, 'Symbol.keyFor(hjy_c)  =', Symbol.keyFor(hjy_c));
+        hjy_print(3, 'Symbol.keyFor(hjy_e)  =', Symbol.keyFor(hjy_e), '（Symbol() 创建的不进注册表）');
+    }
+
+    // 演示四：作为对象属性名
+    function hjy_demo4() {
+        hjy_reset(4);
+        const hjy_score = Symbol('成绩');
+        const hjy_student = { hjy_name: '胡家瑜', [hjy_score]: 98 };
+        hjy_print(4, 'hjy_student.hjy_name                    =', hjy_student.hjy_name);
+        hjy_print(4, 'hjy_student[hjy_score]                  =', hjy_student[hjy_score]);
+        hjy_print(4, 'Object.keys(hjy_student)                =', Object.keys(hjy_student), '（看不到 Symbol 属性）');
+        hjy_print(4, 'Object.getOwnPropertySymbols(...)        =', Object.getOwnPropertySymbols(hjy_student));
+        hjy_print(4, 'for...in 同样遍历不到 Symbol 属性，像“私有”属性');
+    }
+
+    // 演示五：Symbol.iterator
+    function hjy_demo5() {
+        hjy_reset(5);
+        const hjy_class = {
+            hjy_members: ['胡家瑜', '小明', '小红'],
+            [Symbol.iterator]() {
+                const hjy_members = this.hjy_members;
+                let hjy_index = 0;
+                return {
+                    next() {
+                        return hjy_index < hjy_members.length
+                            ? { value: hjy_members[hjy_index++], done: false }
+                            : { value: undefined, done: true };
+                    }
+                };
+            }
+        };
+        hjy_print(5, 'for...of 遍历自定义对象：');
+        for (const hjy_stu of hjy_class) hjy_print(5, '  ', hjy_stu);
+        hjy_print(5, '[...hjy_class] 展开成数组 =', [...hjy_class]);
+    }
+
+    // 演示六：注意事项
+    function hjy_demo6() {
+        hjy_reset(6);
+        const hjy_sym = Symbol('x');
+        try { hjy_sym + 'abc'; } catch (hjy_err) {
+            hjy_print(6, '① hjy_sym + "abc" 报错  →', hjy_err);
+        }
+        try { Number(hjy_sym); } catch (hjy_err) {
+            hjy_print(6, '② Number(hjy_sym) 报错  →', hjy_err);
+        }
+        hjy_print(6, '③ JSON.stringify({ [hjy_sym]: 1, hjy_ok: 2 })  =', JSON.stringify({ [hjy_sym]: 1, hjy_ok: 2 }));
+        hjy_print(6, '④ String(hjy_sym)       =', String(hjy_sym));
+        hjy_print(6, '⑤ hjy_sym.description   =', hjy_sym.description);
+    }
+
+    // 绑定六个按钮
+    const hjy_demos = [hjy_demo1, hjy_demo2, hjy_demo3, hjy_demo4, hjy_demo5, hjy_demo6];
+    hjy_demos.forEach(function (hjy_fn, hjy_i) {
+        document.getElementById('hjy_btn_' + (hjy_i + 1)).addEventListener('click', hjy_fn);
+    });
+</script>
+</body>
+</html>
