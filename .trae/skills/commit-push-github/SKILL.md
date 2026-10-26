@@ -9,7 +9,7 @@ Commit the current project and push it to the GitHub remote repository.
 
 ## Remote Repository
 
-- SSH URL: `git@github.com:sjsgbmyqj/hujiayu.git`（公钥已配置，使用 SSH 推送）
+- SSH URL: `ssh://git@ssh.github.com:443/sjsgbmyqj/hujiayu.git`（公钥已配置；本机网络屏蔽 22 端口，必须走 ssh.github.com 的 443 端口 SSH 通道）
 - Remote name: `github`
 - Branch: `master`
 
@@ -27,13 +27,13 @@ git remote -v
 If the `github` remote is missing:
 
 ```powershell
-git remote add github git@github.com:sjsgbmyqj/hujiayu.git
+git remote add github ssh://git@ssh.github.com:443/sjsgbmyqj/hujiayu.git
 ```
 
 If it exists but points elsewhere:
 
 ```powershell
-git remote set-url github git@github.com:sjsgbmyqj/hujiayu.git
+git remote set-url github ssh://git@ssh.github.com:443/sjsgbmyqj/hujiayu.git
 ```
 
 ### 3. Stage and Commit
