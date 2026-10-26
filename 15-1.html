@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-10-26 功能：数7游戏——100个盒子，满足逢7规则（7的倍数、含7的数）的输出空盒子，不满足的盒子内部显示数字 -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数 7 游戏 · 100 个盒子（逢 7 过）</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-10-26 功能：页面样式（全部类名以 hjy_ 开头） */
+        :root {
+            --hjy_accent: #764ba2;
+            --hjy_accent_2: #667eea;
+            --hjy_pink: #f093fb;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .hjy_container { max-width: 980px; margin: 0 auto; }
+        .hjy_card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 32px;
+            margin-bottom: 26px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* ===== 页头 ===== */
+        .hjy_header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 60%, #f093fb 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .hjy_header h1 { font-size: 2.1rem; letter-spacing: 2px; margin-bottom: 8px; }
+        .hjy_subtitle { font-size: 1.02rem; opacity: 0.95; }
+        .hjy_author {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 30px;
+            font-size: 0.95rem;
+        }
+
+        /* ===== 控制区 ===== */
+        .hjy_controls_row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .hjy_btn {
+            border: none; cursor: pointer;
+            padding: 10px 24px; border-radius: 12px;
+            font-size: 0.95rem; font-family: inherit; font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .hjy_btn:hover { transform: translateY(-2px); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_btn_primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .hjy_btn_plain {
+            background: #fff; color: var(--hjy_accent);
+            border: 1.5px solid #d8d3f0;
+        }
+        .hjy_btn_plain:hover { border-color: var(--hjy_accent); }
+        .hjy_btn .iconfont { margin-right: 5px; font-size: 0.95em; }
+        .hjy_speed_label { font-size: 0.92rem; color: #666; display: flex; align-items: center; }
+        .hjy_select {
+            padding: 9px 12px; margin-left: 6px;
+            border-radius: 10px; border: 1.5px solid #d8d3f0;
+            font-family: inherit; font-size: 0.92rem;
+            color: #5a4b8c; background: #fff; cursor: pointer;
+        }
+        .hjy_stats_row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 18px; }
+        .hjy_stat {
+            flex: 1; min-width: 130px;
+            background: linear-gradient(135deg, #fdfbfb, #f0edf8);
+            border: 1px solid #ece9f5;
+            border-radius: 14px;
+            padding: 14px 10px; text-align: center;
+        }
+        .hjy_stat_num { display: block; font-size: 1.6rem; font-weight: 800; color: #5a4b8c; }
+        .hjy_stat_hit .hjy_stat_num { color: #d6336c; }
+        .hjy_stat_label { font-size: 0.8rem; color: #888; }
+        .hjy_progress_bar {
+            height: 10px; margin-top: 16px;
+            background: #ece9f5; border-radius: 5px; overflow: hidden;
+        }
+        .hjy_progress_fill {
+            height: 100%; width: 0;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #667eea, #f093fb);
+            transition: width 0.18s ease;
+        }
+
+        /* ===== 盒子网格 ===== */
+        .hjy_section_title {
+            font-size: 1.35rem; color: #5a4b8c;
+            margin-bottom: 18px; padding-left: 14px;
+            border-left: 5px solid var(--hjy_accent);
+        }
+        .hjy_legend {
+            display: flex; flex-wrap: wrap; gap: 20px;
+            align-items: center;
+            margin: 4px 0 20px;
+            font-size: 0.88rem; color: #555;
+        }
+        .hjy_legend_item { display: inline-flex; align-items: center; gap: 8px; }
+        .hjy_legend_demo { width: 32px; flex-shrink: 0; font-size: 0.82rem; }
+        .hjy_grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; }
+        .hjy_box {
+            aspect-ratio: 1 / 1;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border: 1px solid #e4e4e4;
+            border-radius: 12px;
+            font-weight: 700; font-size: 1rem; color: #444;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.25s ease, border-color 0.2s ease;
+            user-select: none;
+        }
+        .hjy_box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(118, 75, 162, 0.25);
+            border-color: var(--hjy_accent);
+            z-index: 2;
+        }
+        /* 满足逢 7 规则的空盒子：内部无内容，虚线描边 + 斜纹底 */
+        .hjy_box_hit {
+            background: repeating-linear-gradient(45deg, rgba(240, 147, 251, 0.10) 0 8px, rgba(118, 75, 162, 0.10) 8px 16px);
+            border: 2px dashed rgba(118, 75, 162, 0.55);
+        }
+        /* 演示过程中已数过的盒子 */
+        .hjy_box_done { background: linear-gradient(135deg, #d8d3f0 0%, #f3e7f9 100%); }
+        .hjy_box_hit.hjy_box_done {
+            background: linear-gradient(135deg, #f093fb 0%, #764ba2 100%);
+            border-style: solid; border-color: var(--hjy_accent);
+            box-shadow: 0 6px 16px rgba(118, 75, 162, 0.35);
+        }
+        /* 当前正在数到的盒子 */
+        .hjy_box_current {
+            transform: scale(1.15);
+            box-shadow: 0 0 0 3px rgba(240, 147, 251, 0.85), 0 10px 22px rgba(0, 0, 0, 0.18);
+            border-color: var(--hjy_accent);
+            z-index: 3;
+        }
+        .hjy_box_pop { animation: hjy_pop 0.45s ease; }
+        @keyframes hjy_pop {
+            0% { transform: scale(1); }
+            45% { transform: scale(1.3) rotate(-6deg); }
+            100% { transform: scale(1); }
+        }
+        .hjy_hint { margin-top: 16px; font-size: 0.8rem; color: #999; text-align: center; }
+
+        /* ===== 规则说明 ===== */
+        .hjy_note_list { list-style: none; margin-bottom: 16px; }
+        .hjy_note_list li {
+            font-size: 0.9rem; color: #555;
+            margin-bottom: 9px; padding-left: 16px;
+            position: relative; line-height: 1.7;
+        }
+        .hjy_note_list li::before {
+            content: ''; position: absolute; left: 0; top: 10px;
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--hjy_pink);
+        }
+        .hjy_note_list b { color: #d6336c; }
+        .hjy_code {
+            background: #2d2d2d; color: #f8f8f2;
+            padding: 16px 18px; border-radius: 12px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.84rem; line-height: 1.8;
+            border-left: 5px solid var(--hjy_pink);
+            overflow-x: auto; white-space: pre;
+        }
+
+        /* ===== 页脚 ===== */
+        .hjy_footer { text-align: center; color: #fff; opacity: 0.9; margin-top: 4px; font-size: 0.9rem; }
+        .hjy_heart { color: #ff6b6b; }
+
+        @media (max-width: 640px) {
+            body { padding: 24px 12px; }
+            .hjy_card { padding: 22px 16px; border-radius: 16px; }
+            .hjy_header h1 { font-size: 1.5rem; }
+            .hjy_grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+            .hjy_box { font-size: 0.85rem; border-radius: 9px; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_container">
+
+    <header class="hjy_card hjy_header">
+        <h1>🎲 数 7 游戏 · 100 个盒子</h1>
+        <p class="hjy_subtitle">逢 7 过：满足规则的输出空盒子，不满足规则的盒子内部显示数字</p>
+        <div class="hjy_author">👤 学生：胡家瑜</div>
+    </header>
+
+    <section class="hjy_card">
+        <div class="hjy_controls_row">
+            <button id="hjy_start_btn" class="hjy_btn hjy_btn_primary">开始演示</button>
+            <button id="hjy_reset_btn" class="hjy_btn hjy_btn_plain"><i class="iconfont icon-shuaxin"></i>重置</button>
+            <label class="hjy_speed_label">速度
+                <select id="hjy_speed_select" class="hjy_select">
+                    <option value="500">慢</option>
+                    <option value="220" selected>中</option>
+                    <option value="90">快</option>
+                </select>
+            </label>
+        </div>
+        <div class="hjy_stats_row">
+            <div class="hjy_stat"><span class="hjy_stat_num">100</span><span class="hjy_stat_label">盒子总数</span></div>
+            <div class="hjy_stat hjy_stat_hit"><span class="hjy_stat_num" id="hjy_stat_hit">0</span><span class="hjy_stat_label">空盒子（逢 7 过）</span></div>
+            <div class="hjy_stat"><span class="hjy_stat_num" id="hjy_stat_num">0</span><span class="hjy_stat_label">数字盒子</span></div>
+            <div class="hjy_stat"><span class="hjy_stat_num" id="hjy_stat_current">0</span><span class="hjy_stat_label">当前数到</span></div>
+        </div>
+        <div class="hjy_progress_bar"><div class="hjy_progress_fill" id="hjy_progress_fill"></div></div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">📦 100 个盒子</h2>
+        <div class="hjy_legend">
+            <span class="hjy_legend_item"><span class="hjy_box hjy_box_hit hjy_legend_demo"></span>空盒子：7 的倍数 / 含 7 的数</span>
+            <span class="hjy_legend_item"><span class="hjy_box hjy_legend_demo">8</span>数字盒子：正常报数</span>
+        </div>
+        <div class="hjy_grid" id="hjy_grid"></div>
+        <p class="hjy_hint">提示：将鼠标悬停在空盒子上，可查看它代表的数字与命中原因</p>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">📖 游戏规则</h2>
+        <ul class="hjy_note_list">
+            <li>从 1 数到 100，共 <b>100 个盒子</b>，按顺序排列成 10 × 10 方阵。</li>
+            <li>满足"逢 7"规则的数 —— <b>7 的倍数</b>（7、14、21……）、<b>末尾是 7 的数</b>（7、17、27……）、<b>十位是 7 的数</b>（70～79）等所有含 7 的数 —— 输出<b>空盒子</b>。</li>
+            <li>不满足规则的盒子，内部显示对应的<b>数字</b>。</li>
+            <li>点击"开始演示"可观看从 1 到 100 的报数过程，命中的空盒子会弹跳提示；演示结束后空盒子以渐变色点亮，规律一目了然。</li>
+        </ul>
+        <div class="hjy_code">function hjy_is_hit(n) {
+    return n % 7 === 0 || String(n).indexOf('7') !== -1;
+}</div>
+    </section>
+
+    <footer class="hjy_footer">Made with <span class="hjy_heart">❤</span> by 胡家瑜 · 高级网页设计课程</footer>
+
+</div>
+
+<script>
+    /* 姓名：胡家瑜 日期：2026-10-26 功能：生成100个盒子并按逢7规则区分空盒子/数字盒子，支持报数演示（全部变量以 hjy_ 开头） */
+    (function () {
+        var hjy_total = 100;
+        var hjy_grid = document.getElementById('hjy_grid');
+        var hjy_start_btn = document.getElementById('hjy_start_btn');
+        var hjy_reset_btn = document.getElementById('hjy_reset_btn');
+        var hjy_speed_select = document.getElementById('hjy_speed_select');
+        var hjy_progress_fill = document.getElementById('hjy_progress_fill');
+        var hjy_stat_current = document.getElementById('hjy_stat_current');
+        var hjy_stat_hit = document.getElementById('hjy_stat_hit');
+        var hjy_stat_num = document.getElementById('hjy_stat_num');
+
+        /* 逢 7 规则：7 的倍数，或数字中含有 7（末尾是 7、十位是 7 等） */
+        function hjy_is_hit(hjy_n) {
+            return hjy_n % 7 === 0 || String(hjy_n).indexOf('7') !== -1;
+        }
+
+        function hjy_reason(hjy_n) {
+            var hjy_parts = [];
+            if (hjy_n % 7 === 0) { hjy_parts.push('7 的倍数'); }
+            if (hjy_n % 10 === 7) { hjy_parts.push('末尾是 7'); }
+            else if (String(hjy_n).indexOf('7') !== -1) { hjy_parts.push('含有数字 7'); }
+            return hjy_parts.join('，');
+        }
+
+        /* 生成 100 个盒子：命中规则 → 空盒子；未命中 → 盒子内显示数字 */
+        var hjy_box_list = [];
+        var hjy_hit_count = 0;
+        for (var hjy_i = 1; hjy_i <= hjy_total; hjy_i++) {
+            var hjy_box = document.createElement('div');
+            hjy_box.className = 'hjy_box';
+            if (hjy_is_hit(hjy_i)) {
+                hjy_box.classList.add('hjy_box_hit');
+                hjy_box.title = '第 ' + hjy_i + ' 个：' + hjy_reason(hjy_i) + '，逢 7 过 → 空盒子';
+                hjy_hit_count++;
+            } else {
+                hjy_box.textContent = hjy_i;
+            }
+            hjy_grid.appendChild(hjy_box);
+            hjy_box_list.push(hjy_box);
+        }
+        hjy_stat_hit.textContent = hjy_hit_count;
+        hjy_stat_num.textContent = hjy_total - hjy_hit_count;
+
+        /* 报数演示 */
+        var hjy_timer = null;
+        var hjy_pos = 0;
+        var hjy_running = false;
+
+        function hjy_step() {
+            if (hjy_pos > 0) {
+                var hjy_prev = hjy_box_list[hjy_pos - 1];
+                hjy_prev.classList.remove('hjy_box_current');
+                hjy_prev.classList.add('hjy_box_done');
+            }
+            hjy_pos++;
+            if (hjy_pos > hjy_total) {
+                hjy_pos = hjy_total;
+                hjy_finish();
+                return;
+            }
+            var hjy_cur = hjy_box_list[hjy_pos - 1];
+            hjy_cur.classList.add('hjy_box_current');
+            if (hjy_cur.classList.contains('hjy_box_hit')) {
+                hjy_cur.classList.remove('hjy_box_pop');
+                void hjy_cur.offsetWidth;
+                hjy_cur.classList.add('hjy_box_pop');
+            }
+            hjy_stat_current.textContent = hjy_pos;
+            hjy_progress_fill.style.width = hjy_pos + '%';
+        }
+
+        function hjy_stop_timer() {
+            if (hjy_timer !== null) { clearInterval(hjy_timer); hjy_timer = null; }
+            hjy_running = false;
+        }
+
+        function hjy_finish() {
+            hjy_stop_timer();
+            hjy_start_btn.textContent = '重新演示';
+        }
+
+        function hjy_reset_states() {
+            hjy_box_list.forEach(function (hjy_b) {
+                hjy_b.classList.remove('hjy_box_current', 'hjy_box_done', 'hjy_box_pop');
+            });
+            hjy_pos = 0;
+            hjy_stat_current.textContent = '0';
+            hjy_progress_fill.style.width = '0%';
+        }
+
+        function hjy_start() {
+            if (hjy_pos >= hjy_total) { hjy_reset_states(); }
+            hjy_running = true;
+            hjy_start_btn.textContent = '暂停';
+            hjy_timer = setInterval(hjy_step, parseInt(hjy_speed_select.value, 10));
+        }
+
+        hjy_start_btn.addEventListener('click', function () {
+            if (hjy_running) {
+                hjy_stop_timer();
+                hjy_start_btn.textContent = '继续演示';
+            } else {
+                hjy_start();
+            }
+        });
+
+        hjy_reset_btn.addEventListener('click', function () {
+            hjy_stop_timer();
+            hjy_reset_states();
+            hjy_start_btn.textContent = '开始演示';
+        });
+
+        hjy_speed_select.addEventListener('change', function () {
+            if (hjy_running) {
+                clearInterval(hjy_timer);
+                hjy_timer = setInterval(hjy_step, parseInt(hjy_speed_select.value, 10));
+            }
+        });
+    })();
+</script>
+</body>
+</html>
