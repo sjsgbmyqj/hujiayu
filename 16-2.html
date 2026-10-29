@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-10-29 功能：JavaScript 对象与字符串形象化演示（属性增删改查、遍历、解构、JSON；字符串珠串的查找/截取/替换/分割） -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript 对象与字符串 · 可视化演示</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-10-29 功能：页面样式（所有类名以 hjy_ 开头） */
+        :root {
+            --hjy_accent: #764ba2;
+            --hjy_accent_2: #667eea;
+            --hjy_pink: #f093fb;
+            --hjy_green: #2ecc71;
+            --hjy_red: #e74c3c;
+            --hjy_orange: #f39c12;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            color: #333;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .hjy_container { max-width: 1080px; margin: 0 auto; }
+        .hjy_card {
+            background: rgba(255, 255, 255, 0.93);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 32px;
+            margin-bottom: 26px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* ===== 页头 ===== */
+        .hjy_header {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 60%, #f093fb 100%);
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .hjy_header h1 { font-size: 2.1rem; letter-spacing: 2px; margin-bottom: 8px; }
+        .hjy_subtitle { font-size: 1.02rem; opacity: 0.95; }
+        .hjy_author {
+            display: inline-block; margin-top: 14px; padding: 6px 18px;
+            background: rgba(255, 255, 255, 0.25); border-radius: 30px; font-size: 0.95rem;
+        }
+        .hjy_section_title {
+            font-size: 1.35rem; color: #5a4b8c;
+            margin-bottom: 18px; padding-left: 14px;
+            border-left: 5px solid var(--hjy_accent);
+        }
+
+        /* ===== 概览 ===== */
+        .hjy_overview_row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .hjy_overview_item {
+            background: linear-gradient(135deg, #fdfbfb, #f0edf8);
+            border: 1px solid #ece9f5; border-radius: 14px;
+            padding: 18px 16px; text-align: center;
+        }
+        .hjy_overview_icon { font-size: 1.5rem; color: var(--hjy_accent); }
+        .hjy_overview_name { font-weight: 700; color: #5a4b8c; margin: 6px 0 4px; font-size: 0.95rem; }
+        .hjy_overview_text { font-size: 0.78rem; color: #888; line-height: 1.7; }
+
+        /* ===== 对象档案卡 ===== */
+        .hjy_obj_card {
+            background: #fbfaff; border: 1px dashed #d9d2ee; border-radius: 14px;
+            padding: 16px; min-height: 90px;
+        }
+        .hjy_obj_head {
+            font-family: Consolas, "Courier New", monospace; font-size: 0.85rem;
+            color: var(--hjy_accent); margin-bottom: 12px; font-weight: 700;
+        }
+        .hjy_row {
+            display: flex; align-items: center; gap: 8px;
+            background: #fff; border: 1px solid #ece9f5; border-radius: 10px;
+            padding: 8px 12px; margin-bottom: 8px; font-size: 0.85rem;
+        }
+        .hjy_key { font-family: Consolas, "Courier New", monospace; font-weight: 700; color: var(--hjy_accent); }
+        .hjy_colon { color: #bbb; }
+        .hjy_val { flex: 1; color: #3a3a5a; word-break: break-all; }
+        .hjy_type {
+            font-size: 0.68rem; padding: 2px 8px; border-radius: 20px;
+            background: #eef1fd; color: #5563c1; flex-shrink: 0;
+        }
+        .hjy_row_in { animation: hjy_slide_in 0.45s cubic-bezier(.34, 1.56, .64, 1); }
+        .hjy_row_out { animation: hjy_slide_out 0.4s ease forwards; }
+        .hjy_row_hit {
+            border-color: var(--hjy_pink);
+            box-shadow: 0 0 0 3px rgba(240, 147, 251, 0.3);
+            animation: hjy_pulse 0.5s ease;
+        }
+        .hjy_empty { color: #aaa; font-size: 0.88rem; padding: 14px; }
+        @keyframes hjy_slide_in {
+            0% { transform: translateX(-24px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes hjy_slide_out {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(24px); opacity: 0; }
+        }
+        @keyframes hjy_pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .hjy_meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+        .hjy_tag {
+            padding: 5px 14px; border-radius: 20px; font-size: 0.8rem;
+            background: #f2eefb; color: #6b5b95; border: 1px solid #e3dcf5;
+        }
+        .hjy_tag em { font-style: normal; font-weight: 700; color: var(--hjy_accent); }
+        .hjy_literal {
+            margin-top: 14px; padding: 10px 14px; border-radius: 10px;
+            background: #2d2d2d; color: #a6e22e;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.78rem;
+            overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+        }
+        .hjy_log {
+            margin-top: 14px; background: #f7f5fc; border-left: 4px solid var(--hjy_accent_2);
+            border-radius: 8px; padding: 10px 14px; font-size: 0.8rem; color: #666;
+            max-height: 132px; overflow-y: auto;
+        }
+        .hjy_log_item { padding: 2px 0; border-bottom: 1px dashed #e8e3f5; }
+        .hjy_log_item:last-child { border-bottom: none; }
+        .hjy_log_item b { color: var(--hjy_accent); }
+
+        /* ===== 字符串珠串 ===== */
+        .hjy_beads_wrap {
+            background: repeating-linear-gradient(90deg, #f7f5fc 0 40px, #f1eef9 40px 42px);
+            border: 1px dashed #d9d2ee; border-radius: 14px; padding: 18px 14px;
+        }
+        .hjy_beads { display: flex; flex-wrap: wrap; gap: 8px; }
+        .hjy_bead {
+            position: relative; width: 40px; height: 50px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ffffff 0%, #f3effd 100%);
+            border: 1.5px solid #d9d2ee;
+            box-shadow: 0 5px 12px rgba(118, 75, 162, 0.1);
+            display: flex; align-items: flex-end; justify-content: center;
+            padding-bottom: 9px; font-weight: 700; color: #4a4a6a; font-size: 1rem;
+        }
+        .hjy_bead i {
+            position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+            font-style: normal; font-size: 0.6rem; color: #fff;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 6px; padding: 0 5px;
+        }
+        .hjy_bead_hit {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff; border-color: #764ba2;
+            animation: hjy_bead_pulse 0.5s ease;
+        }
+        .hjy_bead_cut { opacity: 0.32; border-style: dashed; }
+        .hjy_bead_new {
+            background: linear-gradient(135deg, #b9f6d0, #2ecc71);
+            color: #14603c; border-color: #2ecc71;
+        }
+        @keyframes hjy_bead_pulse {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-7px); }
+            100% { transform: translateY(0); }
+        }
+        .hjy_bead_tip { font-size: 0.76rem; color: #aaa; margin-top: 10px; }
+
+        /* ===== 演示卡片 ===== */
+        .hjy_demo_grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .hjy_demo_card {
+            background: #fff; border: 1px solid #eee9f7; border-radius: 16px;
+            padding: 20px; box-shadow: 0 6px 18px rgba(118, 75, 162, 0.07);
+        }
+        .hjy_demo_head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .hjy_demo_badge {
+            width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.78rem; font-weight: 700;
+        }
+        .hjy_demo_title { font-size: 1rem; color: #3a3a3a; }
+        .hjy_demo_desc { font-size: 0.8rem; color: #999; }
+        .hjy_demo_desc b { color: var(--hjy_accent); }
+
+        /* ===== 控件 ===== */
+        .hjy_controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+        .hjy_input {
+            flex: 1; min-width: 100px; max-width: 190px;
+            padding: 9px 12px; border-radius: 10px;
+            border: 1.5px solid #d8d3f0;
+            font-family: inherit; font-size: 0.86rem; outline: none;
+            transition: border-color 0.2s;
+        }
+        .hjy_input:focus { border-color: var(--hjy_accent_2); }
+        .hjy_btn {
+            border: none; cursor: pointer;
+            padding: 9px 16px; border-radius: 12px;
+            font-size: 0.86rem; font-family: inherit; font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s ease, opacity 0.2s;
+        }
+        .hjy_btn:hover { transform: translateY(-2px); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .hjy_btn .iconfont { margin-right: 4px; font-size: 0.88rem; }
+        .hjy_btn_warn { background: linear-gradient(135deg, #ff9a6c, #e74c3c); box-shadow: 0 8px 18px rgba(231, 76, 60, 0.28); }
+        .hjy_btn_ghost {
+            background: #fff; color: var(--hjy_accent);
+            border: 1.5px solid #d8d3f0; box-shadow: none;
+        }
+        .hjy_btn_ghost:hover { border-color: var(--hjy_accent); }
+
+        /* ===== 结果 ===== */
+        .hjy_result {
+            background: #f7f5fc; border-left: 4px solid var(--hjy_accent_2);
+            border-radius: 8px; padding: 10px 14px; margin-top: 12px;
+            font-size: 0.84rem; color: #555; min-height: 42px;
+            word-break: break-all; line-height: 1.7;
+        }
+        .hjy_result em { font-style: normal; color: var(--hjy_accent); font-weight: 700; }
+        .hjy_result_error { color: var(--hjy_red); border-left-color: var(--hjy_red); background: #fdf0ef; }
+        .hjy_chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .hjy_chip {
+            padding: 5px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
+            background: #eef1fd; color: #5563c1; border: 1px solid #dfe4fb;
+            font-family: Consolas, "Courier New", monospace;
+        }
+        .hjy_chip_key { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; }
+        .hjy_chip_new { background: #e8f8f0; color: #1d9e6a; border-color: #bfe9d7; }
+        .hjy_chip_del { background: #fdecea; color: var(--hjy_red); border-color: #f6c9c4; }
+
+        /* ===== 三列对照 ===== */
+        .hjy_cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+        .hjy_col { background: #fbfaff; border: 1px solid #ece9f5; border-radius: 10px; padding: 10px; }
+        .hjy_col h4 { font-size: 0.76rem; color: var(--hjy_accent); margin-bottom: 8px; font-family: Consolas, monospace; }
+
+        .hjy_code {
+            background: #2d2d2d; color: #f8f8f2;
+            padding: 12px 16px; border-radius: 12px; margin-top: 12px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.75rem; line-height: 1.75;
+            border-left: 5px solid var(--hjy_pink);
+            overflow-x: auto; white-space: pre;
+        }
+
+        /* ===== 小结 ===== */
+        .hjy_cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .hjy_cmp_box { border-radius: 14px; padding: 18px; }
+        .hjy_cmp_obj { background: #f2eefb; border: 1px solid #ded5f4; }
+        .hjy_cmp_str { background: #eefaf4; border: 1px solid #c9ecdb; }
+        .hjy_cmp_box h3 { font-size: 0.98rem; margin-bottom: 10px; }
+        .hjy_cmp_obj h3 { color: #6b46c1; }
+        .hjy_cmp_str h3 { color: #1d9e6a; }
+        .hjy_cmp_box p { font-size: 0.82rem; color: #666; }
+
+        .hjy_footer { text-align: center; color: #fff; opacity: 0.92; margin-top: 4px; font-size: 0.9rem; }
+        .hjy_heart { color: #ff6b6b; }
+
+        @media (max-width: 768px) {
+            body { padding: 24px 12px; }
+            .hjy_card { padding: 22px 16px; border-radius: 16px; }
+            .hjy_header h1 { font-size: 1.5rem; }
+            .hjy_demo_grid { grid-template-columns: 1fr; }
+            .hjy_overview_row { grid-template-columns: 1fr; }
+            .hjy_cols { grid-template-columns: 1fr; }
+            .hjy_cmp { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_container">
+
+    <header class="hjy_card hjy_header">
+        <h1>🧱 JavaScript 对象与字符串</h1>
+        <p class="hjy_subtitle">一张"学生档案卡"看懂对象，一串"字符珠链"看懂字符串</p>
+        <div class="hjy_author">👤 学生：胡家瑜 · 2026-10-29</div>
+    </header>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">🗂 一眼看懂：对象 vs 字符串</h2>
+        <div class="hjy_overview_row">
+            <div class="hjy_overview_item">
+                <div class="hjy_overview_icon"><i class="iconfont icon-wode"></i></div>
+                <div class="hjy_overview_name">对象 Object</div>
+                <div class="hjy_overview_text">"键值对"集合，用 <b>{ }</b> 装起来，靠 <b>属性名</b> 取值</div>
+            </div>
+            <div class="hjy_overview_item">
+                <div class="hjy_overview_icon"><i class="iconfont icon-pinglun"></i></div>
+                <div class="hjy_overview_name">字符串 String</div>
+                <div class="hjy_overview_text">一串字符，靠 <b>下标</b> 取值，<b>不可变</b>，方法都返回新串</div>
+            </div>
+            <div class="hjy_overview_item">
+                <div class="hjy_overview_icon"><i class="iconfont icon-shuaxin"></i></div>
+                <div class="hjy_overview_name">共同点</div>
+                <div class="hjy_overview_text">都能用 length / 下标访问 / for…of，都能被解构</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= 对象 ================= -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">🪪 对象实验台 · 学生档案卡</h2>
+        <div class="hjy_obj_card">
+            <div class="hjy_obj_head">var hjy_stu = {</div>
+            <div id="hjy_obj_rows"></div>
+            <div class="hjy_obj_head">}</div>
+        </div>
+        <div class="hjy_literal" id="hjy_obj_json"></div>
+        <div class="hjy_meta">
+            <span class="hjy_tag">属性个数：<em id="hjy_obj_count">0</em></span>
+            <span class="hjy_tag">Object.keys()：<em id="hjy_obj_keys"></em></span>
+            <button class="hjy_btn hjy_btn_ghost" id="hjy_obj_reset"><i class="iconfont icon-shuaxin"></i>重置档案卡</button>
+        </div>
+        <div class="hjy_log" id="hjy_obj_log"><div class="hjy_log_item">操作日志：在下面点按钮，观察档案卡的变化…</div></div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">🧱 一、对象 Object —— 键值对的集合</h2>
+        <div class="hjy_demo_grid">
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">1</span><h3 class="hjy_demo_title">创建对象：字面量 vs 构造函数</h3></div>
+                <p class="hjy_demo_desc">最常用的是 <b>{ } 字面量</b>；new Object() 写法啰嗦，不推荐</p>
+                <div class="hjy_controls">
+                    <button class="hjy_btn" id="hjy_create1_btn"><i class="iconfont icon-dianzan"></i>字面量 {}</button>
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_create2_btn">new Object()</button>
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_create3_btn">Object.create(null)</button>
+                </div>
+                <div class="hjy_result" id="hjy_create_result">等待操作…</div>
+                <pre class="hjy_code">var hjy_stu = {
+    name: '胡家瑜',
+    age: 20,
+    major: '高级网页设计'
+};</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">2</span><h3 class="hjy_demo_title">访问属性：点语法 vs 中括号</h3></div>
+                <p class="hjy_demo_desc"><b>obj.key</b> 简单直观；<b>obj['key']</b> 支持变量与特殊字符，是动态取值的唯一选择</p>
+                <div class="hjy_controls">
+                    <input type="text" class="hjy_input" id="hjy_get_input" placeholder="输入属性名，如 name">
+                    <button class="hjy_btn" id="hjy_get_btn"><i class="iconfont icon-sousuo"></i>取值</button>
+                </div>
+                <div class="hjy_controls">
+                    <input type="text" class="hjy_input" id="hjy_dyn_input" placeholder="动态属性名变量" value="major">
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_dyn_btn">用变量 [key] 取值</button>
+                </div>
+                <div class="hjy_result" id="hjy_get_result">等待操作…</div>
+                <pre class="hjy_code">hjy_stu.name        // '胡家瑜'
+hjy_stu['name']     // 等价写法
+var k = 'age';
+hjy_stu[k]          // 变量名取值，点语法做不到</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">3</span><h3 class="hjy_demo_title">增 / 改 / 删属性</h3></div>
+                <p class="hjy_demo_desc">对象天生可变：<b>赋值即增改</b>，<b>delete</b> 负责删除</p>
+                <div class="hjy_controls">
+                    <input type="text" class="hjy_input" id="hjy_set_key" placeholder="属性名" value="hobby">
+                    <input type="text" class="hjy_input" id="hjy_set_val" placeholder="属性值" value="写代码">
+                    <button class="hjy_btn" id="hjy_set_btn"><i class="iconfont icon-bianji"></i>增 / 改</button>
+                </div>
+                <div class="hjy_controls">
+                    <input type="text" class="hjy_input" id="hjy_del_key" placeholder="要删除的属性名" value="score">
+                    <button class="hjy_btn hjy_btn_warn" id="hjy_del_btn"><i class="iconfont icon-shanchu"></i>delete 删除</button>
+                </div>
+                <div class="hjy_result" id="hjy_set_result">等待操作…</div>
+                <pre class="hjy_code">hjy_stu.hobby = '写代码';  // 没有就新增
+hjy_stu.age = 21;          // 已有就修改
+delete hjy_stu.score;      // 删除属性</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">4</span><h3 class="hjy_demo_title">遍历对象：for…in / keys / values / entries</h3></div>
+                <p class="hjy_demo_desc">for…in 逐个点亮属性行；三个静态方法一次拿到键、值、键值对</p>
+                <div class="hjy_controls">
+                    <button class="hjy_btn" id="hjy_forin_btn"><i class="iconfont icon-shuaxin"></i>for…in 遍历</button>
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_kv_btn">keys / values / entries</button>
+                </div>
+                <div class="hjy_cols" id="hjy_kv_cols"></div>
+                <div class="hjy_result" id="hjy_loop_result">等待操作…</div>
+                <pre class="hjy_code">for (var k in hjy_stu) {
+    console.log(k, hjy_stu[k]);
+}
+Object.keys(hjy_stu);    // ['name','age',...]
+Object.values(hjy_stu);  // ['胡家瑜',20,...]
+Object.entries(hjy_stu); // [['name','胡家瑜'],...]</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">5</span><h3 class="hjy_demo_title">对象的方法与 this</h3></div>
+                <p class="hjy_demo_desc">属性值是函数时就叫<b>方法</b>；方法里的 <b>this 指向调用它的对象</b></p>
+                <div class="hjy_controls">
+                    <button class="hjy_btn" id="hjy_method_btn"><i class="iconfont icon-pinglun"></i>调用 sayHi()</button>
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_this_btn">this 指向谁？</button>
+                </div>
+                <div class="hjy_result" id="hjy_method_result">等待操作…</div>
+                <pre class="hjy_code">var hjy_stu = {
+    name: '胡家瑜',
+    sayHi: function () {
+        return '大家好，我是' + this.name;
+    }
+};
+hjy_stu.sayHi(); // this === hjy_stu</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">6</span><h3 class="hjy_demo_title">解构赋值 & 展开运算符</h3></div>
+                <p class="hjy_demo_desc"><b>{ } 解构</b>一次取出多个属性；<b>… 展开</b>可以浅拷贝 / 合并对象</p>
+                <div class="hjy_controls">
+                    <button class="hjy_btn" id="hjy_des_btn"><i class="iconfont icon-list-icon-fuzhi"></i>解构取值</button>
+                    <button class="hjy_btn" id="hjy_spread_btn">… 浅拷贝并改副本</button>
+                </div>
+                <div class="hjy_chips" id="hjy_des_chips"></div>
+                <div class="hjy_result" id="hjy_des_result">等待操作…</div>
+                <pre class="hjy_code">var { name, age } = hjy_stu;   // 解构
+var { city: hjy_addr = '未知' } = hjy_stu; // 重命名 + 默认值
+var hjy_copy = { ...hjy_stu, age: 21 };    // 展开合并</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">7</span><h3 class="hjy_demo_title">Object.assign 合并 & JSON 序列化</h3></div>
+                <p class="hjy_demo_desc">assign 把后面的对象<b>合并进第一个</b>；JSON 用于<b>存字符串 / 网络传输</b></p>
+                <div class="hjy_controls">
+                    <button class="hjy_btn" id="hjy_assign_btn"><i class="iconfont icon-dianzan"></i>assign 合并</button>
+                    <button class="hjy_btn" id="hjy_json_btn">stringify → parse</button>
+                </div>
+                <div class="hjy_result" id="hjy_json_result">等待操作…</div>
+                <pre class="hjy_code">Object.assign(hjy_stu, { grade: '大二', city: '北京' });
+var hjy_text = JSON.stringify(hjy_stu); // 对象 → 字符串
+var hjy_back = JSON.parse(hjy_text);    // 字符串 → 对象</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">8</span><h3 class="hjy_demo_title">in / hasOwnProperty / 可选链 ?.</h3></div>
+                <p class="hjy_demo_desc"><b>in</b> 判断属性是否存在，<b>?.</b> 让深层取值不再报错</p>
+                <div class="hjy_controls">
+                    <input type="text" class="hjy_input" id="hjy_in_input" placeholder="属性名" value="name">
+                    <button class="hjy_btn" id="hjy_in_btn"><i class="iconfont icon-sousuo"></i>in 判断</button>
+                </div>
+                <div class="hjy_controls">
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_chain_btn">可选链 ?. 安全取值</button>
+                </div>
+                <div class="hjy_result" id="hjy_in_result">等待操作…</div>
+                <pre class="hjy_code">'name' in hjy_stu;             // true
+hjy_stu.hasOwnProperty('name'); // true（只看自身）
+hjy_stu.contact?.phone;        // 有就取，没有给 undefined
+hjy_stu.address?.city;         // 不会报错（对比 address.city）</pre>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ================= 字符串 ================= -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">🔤 字符串实验台 · 字符珠链</h2>
+        <div class="hjy_beads_wrap">
+            <div class="hjy_beads" id="hjy_beads"></div>
+            <p class="hjy_bead_tip">每个盒子是一个字符，盒子上方是它的<b>下标</b>（从 0 开始）；高亮 = 命中，虚线淡出 = 被切掉</p>
+        </div>
+        <div class="hjy_literal" id="hjy_str_literal"></div>
+        <div class="hjy_meta">
+            <span class="hjy_tag">length：<em id="hjy_str_len">0</em></span>
+            <span class="hjy_tag">下标范围：<em id="hjy_str_range">0 ~ 0</em></span>
+            <span class="hjy_tag">typeof：<em>string</em></span>
+            <button class="hjy_btn hjy_btn_ghost" id="hjy_str_reset"><i class="iconfont icon-shuaxin"></i>重置字符串</button>
+        </div>
+        <div class="hjy_log" id="hjy_str_log"><div class="hjy_log_item">操作日志：字符串的方法都不会改变原串，只会返回新串…</div></div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">🔡 二、字符串 String —— 一串不可变的字符</h2>
+        <div class="hjy_demo_grid">
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">9</span><h3 class="hjy_demo_title">length、下标与不可变性</h3></div>
+                <p class="hjy_demo_desc">字符串像数组一样能用 <b>[i]</b> 读字符，但<b>不能改写</b>——这就是"不可变"</p>
+                <div class="hjy_controls">
+                    <input type="number" class="hjy_input" id="hjy_at_input" placeholder="下标" value="0">
+                    <button class="hjy_btn" id="hjy_at_btn"><i class="iconfont icon-sousuo"></i>读取字符</button>
+                </div>
+                <div class="hjy_controls">
+                    <button class="hjy_btn hjy_btn_warn" id="hjy_immutable_btn">尝试 str[0] = 'X'</button>
+                </div>
+                <div class="hjy_result" id="hjy_at_result">等待操作…</div>
+                <pre class="hjy_code">hjy_text.length;   // 字符个数
+hjy_text[0];       // 第一个字符
+hjy_text[0] = 'X'; // 无效！字符串只读
+hjy_text = '新值';  // 只能整体重新赋值</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">10</span><h3 class="hjy_demo_title">查找：indexOf / includes / startsWith / endsWith</h3></div>
+                <p class="hjy_demo_desc">找不到返回 <b>-1</b>；头尾判断返回 true / false</p>
+                <div class="hjy_controls">
+                    <input type="text" class="hjy_input" id="hjy_search_input" placeholder="要查找的内容">
+                    <button class="hjy_btn" id="hjy_search_btn"><i class="iconfont icon-sousuo"></i>查找</button>
+                </div>
+                <div class="hjy_result" id="hjy_search_result">等待操作…</div>
+                <pre class="hjy_code">hjy_text.indexOf('Script');   // 出现位置，没有 -1
+hjy_text.includes('Java');    // true / false
+hjy_text.startsWith('Java');  // 是否以…开头
+hjy_text.endsWith('有趣');     // 是否以…结尾</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">11</span><h3 class="hjy_demo_title">截取：slice() 与 substring()</h3></div>
+                <p class="hjy_demo_desc">都是<b>含头不含尾</b>；区别在负数：slice 支持倒数，substring 把负数当 0</p>
+                <div class="hjy_controls">
+                    <input type="number" class="hjy_input" id="hjy_slice_a" placeholder="start" value="0">
+                    <input type="number" class="hjy_input" id="hjy_slice_b" placeholder="end" value="4">
+                    <button class="hjy_btn" id="hjy_slice_btn"><i class="iconfont icon-list-icon-fuzhi"></i>截取对比</button>
+                </div>
+                <div class="hjy_chips" id="hjy_slice_chips"></div>
+                <div class="hjy_result" id="hjy_slice_result">等待操作…</div>
+                <pre class="hjy_code">hjy_text.slice(0, 4);    // 'Java'
+hjy_text.slice(-3);      // 倒数 3 个字符
+hjy_text.substring(0, 4);// 同为 'Java'
+hjy_text.substring(-3);  // 负数当 0 → 整串</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">12</span><h3 class="hjy_demo_title">替换：replace() 与 replaceAll()</h3></div>
+                <p class="hjy_demo_desc">replace 只换<b>第一个</b>，replaceAll 换<b>全部</b>（也可用正则 /g）</p>
+                <div class="hjy_controls">
+                    <input type="text" class="hjy_input" id="hjy_rep_from" placeholder="被替换">
+                    <input type="text" class="hjy_input" id="hjy_rep_to" placeholder="替换成">
+                    <button class="hjy_btn" id="hjy_rep_btn"><i class="iconfont icon-bianji"></i>replace</button>
+                    <button class="hjy_btn" id="hjy_repall_btn">replaceAll</button>
+                </div>
+                <div class="hjy_result" id="hjy_rep_result">等待操作…</div>
+                <pre class="hjy_code">hjy_text.replace('a', '@');      // 只换第一个
+hjy_text.replaceAll('a', '@');   // 全部替换
+hjy_text.replace(/a/g, '@');     // 正则 + g 等价</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">13</span><h3 class="hjy_demo_title">大小写与整理：toUpperCase / trim / padStart / repeat</h3></div>
+                <p class="hjy_demo_desc">全部返回<b>新字符串</b>：转大小写、去空格、补位、重复</p>
+                <div class="hjy_controls">
+                    <button class="hjy_btn" id="hjy_upper_btn">toUpperCase</button>
+                    <button class="hjy_btn" id="hjy_lower_btn">toLowerCase</button>
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_pad_btn">padStart(20,'★')</button>
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_repeat_btn">repeat(2)</button>
+                </div>
+                <div class="hjy_result" id="hjy_case_result">等待操作…</div>
+                <pre class="hjy_code">hjy_text.toUpperCase();       // 全大写
+'  hi  '.trim();              // 去掉两端空格
+'7'.padStart(3, '0');         // '007'
+'哈'.repeat(3);               // '哈哈哈'</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">14</span><h3 class="hjy_demo_title">split() ↔ join()：字符串与数组互转</h3></div>
+                <p class="hjy_demo_desc">split 拆成数组 → 数组方法处理 → join 拼回字符串（<b>反转字符串</b>经典套路）</p>
+                <div class="hjy_controls">
+                    <input type="text" class="hjy_input" id="hjy_split_sep" placeholder="分隔符（空=逐字符）" value="">
+                    <button class="hjy_btn" id="hjy_split_btn"><i class="iconfont icon-faxian"></i>split 拆分</button>
+                    <button class="hjy_btn" id="hjy_reverse_btn">split→reverse→join 反转</button>
+                </div>
+                <div class="hjy_chips" id="hjy_split_chips"></div>
+                <div class="hjy_result" id="hjy_split_result">等待操作…</div>
+                <pre class="hjy_code">hjy_text.split('');                  // 逐字符拆成数组
+hjy_text.split('').reverse().join(''); // 反转
+'2026-10-29'.split('-');             // ['2026','10','29']</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">15</span><h3 class="hjy_demo_title">模板字符串 ` ` 与 ${ }</h3></div>
+                <p class="hjy_demo_desc">反引号支持<b>换行</b>与<b>插值</b>；比 + 拼接清爽得多</p>
+                <div class="hjy_controls">
+                    <button class="hjy_btn" id="hjy_tpl_btn"><i class="iconfont icon-gengduo"></i>生成自我介绍</button>
+                </div>
+                <div class="hjy_result" id="hjy_tpl_result">等待操作…</div>
+                <pre class="hjy_code">var hjy_info = `大家好，我是${hjy_stu.name}，
+今年 ${hjy_stu.age} 岁，正在学 ${hjy_stu.major}。`;</pre>
+            </div>
+
+            <div class="hjy_demo_card">
+                <div class="hjy_demo_head"><span class="hjy_demo_badge">16</span><h3 class="hjy_demo_title">遍历字符串：for…of 与展开</h3></div>
+                <p class="hjy_demo_desc">字符串是<b>可迭代对象</b>，能 for…of、能展开成数组</p>
+                <div class="hjy_controls">
+                    <button class="hjy_btn" id="hjy_iter_btn"><i class="iconfont icon-shuaxin"></i>for…of 逐个点亮</button>
+                    <button class="hjy_btn hjy_btn_ghost" id="hjy_spread2_btn">[...str] 展开</button>
+                </div>
+                <div class="hjy_result" id="hjy_iter_result">等待操作…</div>
+                <pre class="hjy_code">for (var ch of hjy_text) {
+    console.log(ch);
+}
+[...hjy_text]; // 展开成字符数组</pre>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">⚖️ 小结：对象与字符串的三个关键区别</h2>
+        <div class="hjy_cmp">
+            <div class="hjy_cmp_box hjy_cmp_obj">
+                <h3>🧱 对象 Object（引用类型）</h3>
+                <p>① 用<b>属性名</b>取值：obj.name / obj['name']<br>
+                ② <b>可变</b>：随时增删改属性，原对象直接被改<br>
+                ③ 赋值传的是<b>地址</b>：两个变量指向同一对象，改一个另一个也变<br>
+                ④ 比较的是<b>地址</b>：{} !== {}</p>
+            </div>
+            <div class="hjy_cmp_box hjy_cmp_str">
+                <h3>🔤 字符串 String（基本类型）</h3>
+                <p>① 用<b>下标</b>取值：str[0] / str.charAt(0)<br>
+                ② <b>不可变</b>：所有方法都返回新串，原串纹丝不动<br>
+                ③ 赋值传的是<b>值的副本</b>：互不影响<br>
+                ④ 比较的是<b>内容</b>：'ab' === 'ab' → true</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="hjy_footer">Made with <span class="hjy_heart">❤</span> by 胡家瑜 · 高级网页设计课程</footer>
+
+</div>
+
+<script>
+    /* 姓名：胡家瑜 日期：2026-10-29 功能：对象与字符串交互演示，所有变量以 hjy_ 开头 */
+    (function () {
+        function hjy_id(hjy_name) { return document.getElementById(hjy_name); }
+        function hjy_esc(hjy_text) {
+            return String(hjy_text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        function hjy_chips(hjy_list, hjy_cls) {
+            var hjy_html = '';
+            for (var hjy_i = 0; hjy_i < hjy_list.length; hjy_i++) {
+                hjy_html += '<span class="hjy_chip ' + (hjy_cls || '') + '">' + hjy_esc(hjy_list[hjy_i]) + '</span>';
+            }
+            return hjy_html || '<span class="hjy_chip">（空）</span>';
+        }
+        function hjy_fmt(hjy_v) {
+            if (typeof hjy_v === 'string') { return '"' + hjy_v + '"'; }
+            if (hjy_v === null) { return 'null'; }
+            if (typeof hjy_v === 'function') { return 'ƒ ' + (hjy_v.name || 'anonymous') + '()'; }
+            if (typeof hjy_v === 'object') { return JSON.stringify(hjy_v); }
+            return String(hjy_v);
+        }
+
+        /* ========== 一、对象：学生档案卡 ========== */
+        var hjy_stu_init = {
+            name: '胡家瑜',
+            age: 20,
+            major: '高级网页设计',
+            city: '郑州',
+            score: 95,
+            contact: { phone: '13800138000', email: 'hjy@example.com' }
+        };
+        var hjy_stu = JSON.parse(JSON.stringify(hjy_stu_init));
+        var hjy_obj_rows = hjy_id('hjy_obj_rows');
+        var hjy_obj_json = hjy_id('hjy_obj_json');
+        var hjy_obj_log = hjy_id('hjy_obj_log');
+        var hjy_obj_logs = [];
+
+        function hjy_render_obj(hjy_fx) {
+            hjy_fx = hjy_fx || {};
+            var hjy_keys = Object.keys(hjy_stu);
+            var hjy_html = '';
+            for (var hjy_i = 0; hjy_i < hjy_keys.length; hjy_i++) {
+                var hjy_k = hjy_keys[hjy_i];
+                var hjy_cls = 'hjy_row';
+                if (hjy_fx.hjy_in && hjy_fx.hjy_in.indexOf(hjy_k) >= 0) { hjy_cls += ' hjy_row_in'; }
+                if (hjy_fx.hjy_out && hjy_fx.hjy_out.indexOf(hjy_k) >= 0) { hjy_cls += ' hjy_row_out'; }
+                if (hjy_fx.hjy_hit && hjy_fx.hjy_hit.indexOf(hjy_k) >= 0) { hjy_cls += ' hjy_row_hit'; }
+                hjy_html += '<div class="' + hjy_cls + '" data-hjy-key="' + hjy_esc(hjy_k) + '">' +
+                    '<span class="hjy_key">' + hjy_esc(hjy_k) + '</span>' +
+                    '<span class="hjy_colon">:</span>' +
+                    '<span class="hjy_val">' + hjy_esc(hjy_fmt(hjy_stu[hjy_k])) + '</span>' +
+                    '<span class="hjy_type">' + (hjy_stu[hjy_k] === null ? 'null' : typeof hjy_stu[hjy_k]) + '</span>' +
+                    '</div>';
+            }
+            if (hjy_keys.length === 0) { hjy_html = '<div class="hjy_empty">对象已空 {}, 用"增 / 改"加几个属性吧</div>'; }
+            hjy_obj_rows.innerHTML = hjy_html;
+            hjy_id('hjy_obj_count').textContent = hjy_keys.length;
+            hjy_id('hjy_obj_keys').textContent = hjy_keys.length ? hjy_keys.join('、') : '（无）';
+            hjy_obj_json.textContent = 'JSON.stringify(hjy_stu) → ' + JSON.stringify(hjy_stu);
+        }
+
+        function hjy_obj_write_log(hjy_text) {
+            hjy_obj_logs.unshift(hjy_text);
+            if (hjy_obj_logs.length > 8) { hjy_obj_logs.pop(); }
+            var hjy_html = '';
+            for (var hjy_i = 0; hjy_i < hjy_obj_logs.length; hjy_i++) {
+                hjy_html += '<div class="hjy_log_item">' + (hjy_i === 0 ? '<b>▸ ' : '· ') + hjy_obj_logs[hjy_i] + '</div>';
+            }
+            hjy_obj_log.innerHTML = hjy_html;
+        }
+
+        /* ===== 演示 1：创建对象 ===== */
+        var hjy_create_result = hjy_id('hjy_create_result');
+
+        hjy_id('hjy_create1_btn').addEventListener('click', function () {
+            var hjy_new = { name: '胡家瑜', age: 20, major: '高级网页设计' };
+            hjy_create_result.className = 'hjy_result';
+            hjy_create_result.innerHTML = '字面量创建成功 → <em>' + hjy_esc(JSON.stringify(hjy_new)) +
+                '</em><br>写法最短、可读性最好，日常开发首选 ✅';
+            hjy_obj_write_log('字面量 {} 创建对象（3 个属性）');
+        });
+        hjy_id('hjy_create2_btn').addEventListener('click', function () {
+            var hjy_new = new Object();
+            hjy_new.name = '胡家瑜';
+            hjy_new.age = 20;
+            hjy_create_result.className = 'hjy_result';
+            hjy_create_result.innerHTML = 'new Object() 先得到<em>空对象 {}</em>，再一个个加属性 → ' +
+                hjy_esc(JSON.stringify(hjy_new)) + '<br>效果一样但啰嗦，不推荐';
+            hjy_obj_write_log('new Object() 创建空对象后赋值');
+        });
+        hjy_id('hjy_create3_btn').addEventListener('click', function () {
+            var hjy_new = Object.create(null);
+            hjy_new.name = '胡家瑜';
+            hjy_create_result.className = 'hjy_result';
+            hjy_create_result.innerHTML = 'Object.create(null) → 没有原型的"纯净"对象：' + hjy_esc(JSON.stringify(hjy_new)) +
+                '<br>hasOwnProperty → <em>' + (typeof hjy_new.hasOwnProperty) + '</em>（原型被去掉了，用得较少）';
+            hjy_obj_write_log('Object.create(null) 创建无原型对象');
+        });
+
+        /* ===== 演示 2：取值 ===== */
+        var hjy_get_result = hjy_id('hjy_get_result');
+
+        hjy_id('hjy_get_btn').addEventListener('click', function () {
+            var hjy_k = hjy_id('hjy_get_input').value.trim();
+            if (!hjy_k) {
+                hjy_get_result.className = 'hjy_result hjy_result_error';
+                hjy_get_result.textContent = '请输入属性名！';
+                return;
+            }
+            var hjy_v = hjy_stu[hjy_k];
+            var hjy_has = Object.prototype.hasOwnProperty.call(hjy_stu, hjy_k);
+            hjy_render_obj({ hjy_hit: hjy_has ? [hjy_k] : [] });
+            hjy_get_result.className = 'hjy_result';
+            hjy_get_result.innerHTML = 'hjy_stu.' + hjy_esc(hjy_k) + ' → <em>' + hjy_esc(hjy_fmt(hjy_v)) + '</em>（' +
+                typeof hjy_v + '）<br>hjy_stu["' + hjy_esc(hjy_k) + '"] → 结果完全相同' +
+                (hjy_has ? '' : '<br>⚠️ 该属性不存在，读到的是 undefined');
+            hjy_obj_write_log('hjy_stu.' + hjy_k + ' → ' + hjy_fmt(hjy_v));
+        });
+
+        hjy_id('hjy_dyn_btn').addEventListener('click', function () {
+            var hjy_k = hjy_id('hjy_dyn_input').value.trim();
+            if (!hjy_k) {
+                hjy_get_result.className = 'hjy_result hjy_result_error';
+                hjy_get_result.textContent = '请输入变量名对应的属性名！';
+                return;
+            }
+            hjy_render_obj({ hjy_hit: [hjy_k] });
+            hjy_get_result.className = 'hjy_result';
+            hjy_get_result.innerHTML = 'var key = "' + hjy_esc(hjy_k) + '";<br>hjy_stu[key] → <em>' +
+                hjy_esc(hjy_fmt(hjy_stu[hjy_k])) + '</em><br>✅ 中括号里放变量，运行时才知道要取谁 —— 点语法做不到这件事';
+            hjy_obj_write_log('hjy_stu[' + hjy_k + '] → ' + hjy_fmt(hjy_stu[hjy_k]));
+        });
+
+        /* ===== 演示 3：增改删 ===== */
+        var hjy_set_result = hjy_id('hjy_set_result');
+
+        hjy_id('hjy_set_btn').addEventListener('click', function () {
+            var hjy_k = hjy_id('hjy_set_key').value.trim();
+            var hjy_v = hjy_id('hjy_set_val').value.trim();
+            if (!hjy_k || !hjy_v) {
+                hjy_set_result.className = 'hjy_result hjy_result_error';
+                hjy_set_result.textContent = '属性名与属性值都要填写！';
+                return;
+            }
+            var hjy_is_new = !Object.prototype.hasOwnProperty.call(hjy_stu, hjy_k);
+            hjy_stu[hjy_k] = hjy_v;
+            hjy_render_obj({ hjy_in: [hjy_k] });
+            hjy_set_result.className = 'hjy_result';
+            hjy_set_result.innerHTML = (hjy_is_new ? '新增属性' : '修改已有属性') + '：hjy_stu.' + hjy_esc(hjy_k) +
+                ' = "' + hjy_esc(hjy_v) + '"<br>当前属性个数：<em>' + Object.keys(hjy_stu).length + '</em>' +
+                '<br>✅ 对象是可变的，赋值即增改（没有就新增，已有就覆盖）';
+            hjy_obj_write_log((hjy_is_new ? '新增 ' : '修改 ') + hjy_k + ' = ' + hjy_v);
+        });
+
+        hjy_id('hjy_del_btn').addEventListener('click', function () {
+            var hjy_k = hjy_id('hjy_del_key').value.trim();
+            if (!hjy_k) {
+                hjy_set_result.className = 'hjy_result hjy_result_error';
+                hjy_set_result.textContent = '请输入要删除的属性名！';
+                return;
+            }
+            if (!Object.prototype.hasOwnProperty.call(hjy_stu, hjy_k)) {
+                hjy_set_result.className = 'hjy_result hjy_result_error';
+                hjy_set_result.textContent = '属性 "' + hjy_k + '" 不存在，删不掉哦';
+                return;
+            }
+            hjy_render_obj({ hjy_out: [hjy_k] });
+            setTimeout(function () {
+                var hjy_ok = delete hjy_stu[hjy_k];
+                hjy_render_obj({});
+                hjy_set_result.className = 'hjy_result';
+                hjy_set_result.innerHTML = 'delete hjy_stu.' + hjy_esc(hjy_k) + ' → 返回值 <em>' + hjy_ok +
+                    '</em>（删除成功为 true）<br>剩余属性：<em>' + Object.keys(hjy_stu).join('、') + '</em>';
+                hjy_obj_write_log('delete ' + hjy_k + ' → 剩余 ' + Object.keys(hjy_stu).length + ' 个属性');
+            }, 380);
+        });
+
+        /* ===== 演示 4：遍历 ===== */
+        var hjy_loop_result = hjy_id('hjy_loop_result');
+        var hjy_forin_btn = hjy_id('hjy_forin_btn');
+        var hjy_busy = false;
+
+        hjy_forin_btn.addEventListener('click', function () {
+            if (hjy_busy) { return; }
+            hjy_busy = true;
+            hjy_forin_btn.disabled = true;
+            hjy_render_obj({});
+            var hjy_rows = hjy_obj_rows.children;
+            var hjy_i = 0;
+            var hjy_step = function () {
+                if (hjy_i >= hjy_rows.length) {
+                    hjy_loop_result.innerHTML = 'for…in 遍历结束，共 <em>' + hjy_rows.length +
+                        '</em> 个属性；它会沿原型链找可枚举属性，所以常配合 hasOwnProperty 使用';
+                    hjy_forin_btn.disabled = false;
+                    hjy_busy = false;
+                    hjy_obj_write_log('for…in 遍历 ' + hjy_rows.length + ' 个属性');
+                    return;
+                }
+                var hjy_k = hjy_rows[hjy_i].getAttribute('data-hjy-key');
+                for (var hjy_j = 0; hjy_j < hjy_rows.length; hjy_j++) { hjy_rows[hjy_j].classList.remove('hjy_row_hit'); }
+                hjy_rows[hjy_i].classList.add('hjy_row_hit');
+                hjy_loop_result.className = 'hjy_result';
+                hjy_loop_result.innerHTML = '第 <em>' + (hjy_i + 1) + '</em> 次：key = <em>' + hjy_esc(hjy_k) +
+                    '</em>，value = <em>' + hjy_esc(hjy_fmt(hjy_stu[hjy_k])) + '</em>';
+                hjy_i++;
+                setTimeout(hjy_step, 480);
+            };
+            hjy_step();
+        });
+
+        hjy_id('hjy_kv_btn').addEventListener('click', function () {
+            var hjy_k = Object.keys(hjy_stu);
+            var hjy_v = Object.values(hjy_stu);
+            var hjy_e = Object.entries(hjy_stu);
+            var hjy_html = '';
+            hjy_html += '<div class="hjy_col"><h4>Object.keys()</h4>' +
+                hjy_chips(hjy_k.map(function (x) { return '"' + x + '"'; }), 'hjy_chip_key') + '</div>';
+            hjy_html += '<div class="hjy_col"><h4>Object.values()</h4>' +
+                hjy_chips(hjy_v.map(function (x) { return hjy_fmt(x); }), 'hjy_chip_new') + '</div>';
+            hjy_html += '<div class="hjy_col"><h4>Object.entries()</h4>' +
+                hjy_chips(hjy_e.map(function (p) { return '[' + p[0] + ', ' + hjy_fmt(p[1]) + ']'; }), 'hjy_chip_del') + '</div>';
+            hjy_id('hjy_kv_cols').innerHTML = hjy_html;
+            hjy_render_obj({ hjy_hit: hjy_k });
+            hjy_loop_result.className = 'hjy_result';
+            hjy_loop_result.innerHTML = 'keys 拿到 <em>' + hjy_k.length + '</em> 个属性名，values 拿到对应的值，' +
+                'entries 拿到 <em>[键, 值]</em> 组成的二维数组（方便直接丢进 Map 或 for…of 解构）';
+            hjy_obj_write_log('Object.keys/values/entries → ' + hjy_k.length + ' 项');
+        });
+
+        /* ===== 演示 5：方法与 this ===== */
+        var hjy_method_result = hjy_id('hjy_method_result');
+
+        hjy_stu.sayHi = function () {
+            return '大家好，我是' + this.name + '，今年 ' + this.age + ' 岁，正在学《' + this.major + '》';
+        };
+
+        hjy_id('hjy_method_btn').addEventListener('click', function () {
+            var hjy_msg = hjy_stu.sayHi();
+            hjy_render_obj({ hjy_hit: ['name', 'age', 'major'] });
+            hjy_method_result.className = 'hjy_result';
+            hjy_method_result.innerHTML = 'hjy_stu.sayHi() → <em>' + hjy_esc(hjy_msg) + '</em>' +
+                '<br>✅ 方法就是"属性值为函数"的属性，调用时用 对象.方法名()';
+            hjy_obj_write_log('调用方法 sayHi()');
+        });
+
+        hjy_id('hjy_this_btn').addEventListener('click', function () {
+            var hjy_other = { name: '小明', age: 18, major: '软件工程', sayHi: hjy_stu.sayHi };
+            hjy_method_result.className = 'hjy_result';
+            hjy_method_result.innerHTML = '同一个函数赋给不同对象：<br>hjy_stu.sayHi() → <em>' + hjy_esc(hjy_stu.sayHi()) +
+                '</em><br>hjy_other.sayHi() → <em>' + hjy_esc(hjy_other.sayHi()) +
+                '</em><br>✅ 谁调用，this 就指向谁 —— 这就是 this 的"运行期绑定"';
+            hjy_obj_write_log('this 指向调用者');
+        });
+
+        /* ===== 演示 6：解构与展开 ===== */
+        var hjy_des_result = hjy_id('hjy_des_result');
+
+        hjy_id('hjy_des_btn').addEventListener('click', function () {
+            var hjy_name = hjy_stu.name;
+            var hjy_age = hjy_stu.age;
+            hjy_id('hjy_des_chips').innerHTML = hjy_chips(['name="' + hjy_name + '"', 'age=' + hjy_age], 'hjy_chip_key');
+            hjy_render_obj({ hjy_hit: ['name', 'age'] });
+            hjy_des_result.className = 'hjy_result';
+            hjy_des_result.innerHTML = 'var { name, age } = hjy_stu; → name = <em>' + hjy_esc(hjy_name) +
+                '</em>，age = <em>' + hjy_age + '</em><br>重命名与默认值：var { city: hjy_addr = "未知" } → <em>' +
+                hjy_esc(hjy_stu.city) + '</em>';
+            hjy_obj_write_log('解构 { name, age }');
+        });
+
+        hjy_id('hjy_spread_btn').addEventListener('click', function () {
+            var hjy_copy = {};
+            for (var hjy_key in hjy_stu) {
+                if (Object.prototype.hasOwnProperty.call(hjy_stu, hjy_key)) { hjy_copy[hjy_key] = hjy_stu[hjy_key]; }
+            }
+            hjy_copy.age = 21;
+            hjy_copy.city = '北京';
+            hjy_id('hjy_des_chips').innerHTML = hjy_chips(['副本 age=' + hjy_copy.age, '副本 city=' + hjy_copy.city,
+                '原 age=' + hjy_stu.age, '原 city=' + hjy_stu.city], 'hjy_chip_new');
+            hjy_des_result.className = 'hjy_result';
+            hjy_des_result.innerHTML = 'var hjy_copy = { ...hjy_stu, age: 21, city: "北京" };<br>副本：<em>age ' + hjy_copy.age +
+                '、city ' + hjy_copy.city + '</em>；原对象：<em>age ' + hjy_stu.age + '、city ' + hjy_stu.city +
+                '</em><br>⚠️ 展开是<b>浅拷贝</b>：contact 这类嵌套对象仍与原对象共用同一份';
+            hjy_obj_write_log('浅拷贝副本并修改 age/city（原对象不受影响）');
+        });
+
+        /* ===== 演示 7：assign 与 JSON ===== */
+        var hjy_json_result = hjy_id('hjy_json_result');
+
+        hjy_id('hjy_assign_btn').addEventListener('click', function () {
+            var hjy_back = Object.assign(hjy_stu, { grade: '大二', city: '北京' });
+            hjy_render_obj({ hjy_in: ['grade'] });
+            hjy_json_result.className = 'hjy_result';
+            hjy_json_result.innerHTML = 'Object.assign(hjy_stu, { grade: "大二", city: "北京" })<br>' +
+                '→ 返回值 === 原对象：<em>' + (hjy_back === hjy_stu) + '</em>（合并进<b>第一个参数</b>，会改动它）<br>' +
+                '新增 grade，覆盖 city → ' + hjy_esc(hjy_stu.city) + '；当前属性：<em>' + Object.keys(hjy_stu).join('、') + '</em>';
+            hjy_obj_write_log('Object.assign 合并 grade / city');
+        });
+
+        hjy_id('hjy_json_btn').addEventListener('click', function () {
+            var hjy_text = JSON.stringify(hjy_stu);
+            var hjy_back = JSON.parse(hjy_text);
+            hjy_json_result.className = 'hjy_result';
+            hjy_json_result.innerHTML = 'JSON.stringify → <em>' + hjy_esc(hjy_text) + '</em><br>' +
+                'JSON.parse 还原 → 类型 <em>' + typeof hjy_back + '</em>，属性个数 <em>' +
+                Object.keys(hjy_back).length + '</em>（name = ' + hjy_esc(hjy_back.name) +
+                '）<br>✅ 这是"深拷贝"与前后端传数据最常用的组合';
+            hjy_obj_write_log('JSON.stringify → JSON.parse 往返');
+        });
+
+        /* ===== 演示 8：in / hasOwnProperty / 可选链 ===== */
+        var hjy_in_result = hjy_id('hjy_in_result');
+
+        hjy_id('hjy_in_btn').addEventListener('click', function () {
+            var hjy_k = hjy_id('hjy_in_input').value.trim();
+            if (!hjy_k) {
+                hjy_in_result.className = 'hjy_result hjy_result_error';
+                hjy_in_result.textContent = '请输入属性名！';
+                return;
+            }
+            var hjy_in = hjy_k in hjy_stu;
+            var hjy_own = Object.prototype.hasOwnProperty.call(hjy_stu, hjy_k);
+            hjy_render_obj({ hjy_hit: hjy_own ? [hjy_k] : [] });
+            hjy_in_result.className = 'hjy_result';
+            hjy_in_result.innerHTML = '"' + hjy_esc(hjy_k) + '" in hjy_stu → <em>' + hjy_in +
+                '</em><br>hjy_stu.hasOwnProperty("' + hjy_esc(hjy_k) + '") → <em>' + hjy_own +
+                '</em><br>取值 hjy_stu.' + hjy_esc(hjy_k) + ' → <em>' + hjy_esc(hjy_fmt(hjy_stu[hjy_k])) +
+                '</em><br>in 会看原型链，hasOwnProperty 只查自身属性';
+            hjy_obj_write_log('in / hasOwnProperty("' + hjy_k + '") → ' + hjy_in + ' / ' + hjy_own);
+        });
+
+        hjy_id('hjy_chain_btn').addEventListener('click', function () {
+            var hjy_phone = hjy_stu.contact && hjy_stu.contact.phone;
+            var hjy_city = hjy_stu.address && hjy_stu.address.city;
+            hjy_in_result.className = 'hjy_result';
+            hjy_in_result.innerHTML = 'hjy_stu.contact?.phone → <em>' + hjy_esc(hjy_phone) +
+                '</em>（contact 存在，正常取值）<br>hjy_stu.address?.city → <em>' + hjy_esc(String(hjy_city)) +
+                '</em>（address 不存在，返回 undefined 而<b>不报错</b>）<br>❌ 若直接写 hjy_stu.address.city 会抛出 TypeError';
+            hjy_obj_write_log('可选链 ?. 安全取值');
+        });
+
+        /* ===== 对象重置 ===== */
+        hjy_id('hjy_obj_reset').addEventListener('click', function () {
+            hjy_stu = JSON.parse(JSON.stringify(hjy_stu_init));
+            hjy_stu.sayHi = function () {
+                return '大家好，我是' + this.name + '，今年 ' + this.age + ' 岁，正在学《' + this.major + '》';
+            };
+            hjy_render_obj({ hjy_in: Object.keys(hjy_stu) });
+            hjy_obj_write_log('重置档案卡');
+        });
+
+        /* ========== 二、字符串：字符珠链 ========== */
+        var hjy_text_init = 'JavaScript真有趣';
+        var hjy_text = hjy_text_init;
+        var hjy_beads = hjy_id('hjy_beads');
+        var hjy_str_log = hjy_id('hjy_str_log');
+        var hjy_str_logs = [];
+
+        function hjy_beads_html(hjy_str, hjy_hit, hjy_cut, hjy_cls) {
+            var hjy_html = '';
+            for (var hjy_i = 0; hjy_i < hjy_str.length; hjy_i++) {
+                var hjy_ch = hjy_str.charAt(hjy_i);
+                var hjy_show = hjy_ch === ' ' ? '␣' : hjy_ch;
+                var hjy_cls2 = 'hjy_bead';
+                if (hjy_hit && hjy_hit.indexOf(hjy_i) >= 0) { hjy_cls2 += ' hjy_bead_hit'; }
+                if (hjy_cut && hjy_cut.indexOf(hjy_i) >= 0) { hjy_cls2 += ' hjy_bead_cut'; }
+                if (hjy_cls) { hjy_cls2 += ' ' + hjy_cls; }
+                hjy_html += '<div class="' + hjy_cls2 + '"><i>' + hjy_i + '</i>' + hjy_esc(hjy_show) + '</div>';
+            }
+            return hjy_html;
+        }
+
+        function hjy_render_str(hjy_hit, hjy_cut) {
+            hjy_beads.innerHTML = hjy_beads_html(hjy_text, hjy_hit, hjy_cut);
+            hjy_id('hjy_str_len').textContent = hjy_text.length;
+            hjy_id('hjy_str_range').textContent = hjy_text.length ? '0 ~ ' + (hjy_text.length - 1) : '（空串）';
+            hjy_id('hjy_str_literal').textContent = 'var hjy_text = "' + hjy_text + '";  // length = ' + hjy_text.length;
+        }
+
+        function hjy_str_write_log(hjy_text_log) {
+            hjy_str_logs.unshift(hjy_text_log);
+            if (hjy_str_logs.length > 8) { hjy_str_logs.pop(); }
+            var hjy_html = '';
+            for (var hjy_i = 0; hjy_i < hjy_str_logs.length; hjy_i++) {
+                hjy_html += '<div class="hjy_log_item">' + (hjy_i === 0 ? '<b>▸ ' : '· ') + hjy_str_logs[hjy_i] + '</div>';
+            }
+            hjy_str_log.innerHTML = hjy_html;
+        }
+
+        /* ===== 演示 9：length / 下标 / 不可变 ===== */
+        var hjy_at_result = hjy_id('hjy_at_result');
+
+        hjy_id('hjy_at_btn').addEventListener('click', function () {
+            var hjy_i = parseInt(hjy_id('hjy_at_input').value, 10);
+            if (isNaN(hjy_i)) {
+                hjy_at_result.className = 'hjy_result hjy_result_error';
+                hjy_at_result.textContent = '请输入数字下标！';
+                return;
+            }
+            if (hjy_i < 0 || hjy_i >= hjy_text.length) {
+                hjy_render_str([]);
+                hjy_at_result.className = 'hjy_result hjy_result_error';
+                hjy_at_result.innerHTML = '下标 ' + hjy_i + ' 越界（有效范围 0 ~ ' + (hjy_text.length - 1) +
+                    '）→ 读到 <em>undefined</em>';
+                return;
+            }
+            hjy_render_str([hjy_i]);
+            hjy_at_result.className = 'hjy_result';
+            hjy_at_result.innerHTML = 'hjy_text[' + hjy_i + '] → <em>' + hjy_esc(hjy_text.charAt(hjy_i)) + '</em>；' +
+                'charAt(' + hjy_i + ') → <em>' + hjy_esc(hjy_text.charAt(hjy_i)) + '</em>；' +
+                'charCodeAt(' + hjy_i + ') → <em>' + hjy_text.charCodeAt(hjy_i) + '</em>（Unicode 编码）';
+            hjy_str_write_log('读下标 ' + hjy_i + ' → ' + hjy_text.charAt(hjy_i));
+        });
+
+        hjy_id('hjy_immutable_btn').addEventListener('click', function () {
+            hjy_render_str([0]);
+            hjy_at_result.className = 'hjy_result hjy_result_error';
+            hjy_at_result.innerHTML = "hjy_text[0] = 'X'; 执行后 hjy_text 仍然是 <em>" + hjy_esc(hjy_text) +
+                '</em><br>❌ 字符串<b>不可变</b>：任何"修改"方法都只是<b>返回一个新字符串</b>，原串纹丝不动';
+            hjy_str_write_log('尝试改写 str[0] → 无效（不可变）');
+        });
+
+        /* ===== 演示 10：查找 ===== */
+        var hjy_search_result = hjy_id('hjy_search_result');
+
+        hjy_id('hjy_search_btn').addEventListener('click', function () {
+            var hjy_k = hjy_id('hjy_search_input').value;
+            if (!hjy_k) {
+                hjy_search_result.className = 'hjy_result hjy_result_error';
+                hjy_search_result.textContent = '请输入要查找的内容！';
+                return;
+            }
+            var hjy_pos = hjy_text.indexOf(hjy_k);
+            var hjy_hits = [];
+            if (hjy_pos >= 0) {
+                for (var hjy_i = hjy_pos; hjy_i <= hjy_text.length - hjy_k.length; hjy_i++) {
+                    if (hjy_text.substr(hjy_i, hjy_k.length) === hjy_k) {
+                        for (var hjy_j = 0; hjy_j < hjy_k.length; hjy_j++) { hjy_hits.push(hjy_i + hjy_j); }
+                    }
+                }
+            }
+            hjy_render_str(hjy_hits);
+            hjy_search_result.className = 'hjy_result';
+            hjy_search_result.innerHTML = "indexOf('" + hjy_esc(hjy_k) + "') → <em>" + hjy_pos + '</em>；' +
+                "lastIndexOf → <em>" + hjy_text.lastIndexOf(hjy_k) + '</em>；' +
+                "includes → <em>" + hjy_text.includes(hjy_k) + '</em><br>' +
+                "startsWith → <em>" + hjy_text.startsWith(hjy_k) + '</em>；' +
+                "endsWith → <em>" + hjy_text.endsWith(hjy_k) + '</em>' +
+                (hjy_pos >= 0 ? '<br>命中位置已在上方珠链中高亮' : '<br>没找到：indexOf 返回 -1，includes 返回 false');
+            hjy_str_write_log("indexOf('" + hjy_k + "') → " + hjy_pos);
+        });
+
+        /* ===== 演示 11：截取 ===== */
+        hjy_id('hjy_slice_btn').addEventListener('click', function () {
+            var hjy_a = parseInt(hjy_id('hjy_slice_a').value, 10);
+            var hjy_b = parseInt(hjy_id('hjy_slice_b').value, 10);
+            var hjy_slice_result = hjy_id('hjy_slice_result');
+            if (isNaN(hjy_a) || isNaN(hjy_b)) {
+                hjy_slice_result.className = 'hjy_result hjy_result_error';
+                hjy_slice_result.textContent = 'start 与 end 都要填整数！';
+                return;
+            }
+            var hjy_s1 = hjy_text.slice(hjy_a, hjy_b);
+            var hjy_s2 = hjy_text.substring(hjy_a, hjy_b);
+            var hjy_s3 = hjy_text.slice(-3);
+            var hjy_s4 = hjy_text.substring(-3);
+            var hjy_cut = [];
+            for (var hjy_i = 0; hjy_i < hjy_text.length; hjy_i++) {
+                var hjy_in = hjy_i >= hjy_a && hjy_i < hjy_b;
+                if (!hjy_in) { hjy_cut.push(hjy_i); }
+            }
+            hjy_render_str([], hjy_cut);
+            hjy_id('hjy_slice_chips').innerHTML = hjy_chips(['slice → ' + hjy_s1, 'substring → ' + hjy_s2,
+                'slice(-3) → ' + hjy_s3, 'substring(-3) → ' + hjy_s4], 'hjy_chip_new');
+            hjy_slice_result.className = 'hjy_result';
+            hjy_slice_result.innerHTML = 'slice(' + hjy_a + ', ' + hjy_b + ') → <em>' + hjy_esc(hjy_s1) +
+                '</em>；substring(' + hjy_a + ', ' + hjy_b + ') → <em>' + hjy_esc(hjy_s2) +
+                '</em><br>区别看负数：slice(-3) → <em>' + hjy_esc(hjy_s3) + '</em>，substring(-3)（负数当 0）→ <em>' +
+                hjy_esc(hjy_s4) + '</em><br>原字符串保持不变：<em>' + hjy_esc(hjy_text) + '</em>';
+            hjy_str_write_log('slice(' + hjy_a + ',' + hjy_b + ') → ' + hjy_s1);
+        });
+
+        /* ===== 演示 12：替换 ===== */
+        var hjy_rep_result = hjy_id('hjy_rep_result');
+
+        function hjy_run_replace(hjy_all) {
+            var hjy_from = hjy_id('hjy_rep_from').value;
+            var hjy_to = hjy_id('hjy_rep_to').value;
+            if (!hjy_from) {
+                hjy_rep_result.className = 'hjy_result hjy_result_error';
+                hjy_rep_result.textContent = '请填写"被替换"的内容！';
+                return;
+            }
+            var hjy_out = hjy_all ? hjy_text.split(hjy_from).join(hjy_to) : hjy_text.replace(hjy_from, hjy_to);
+            var hjy_hits = [];
+            var hjy_pos = hjy_text.indexOf(hjy_from);
+            while (hjy_pos >= 0) {
+                for (var hjy_i = 0; hjy_i < hjy_from.length; hjy_i++) { hjy_hits.push(hjy_pos + hjy_i); }
+                hjy_pos = hjy_text.indexOf(hjy_from, hjy_pos + hjy_from.length);
+            }
+            hjy_render_str(hjy_hits);
+            hjy_rep_result.className = 'hjy_result';
+            hjy_rep_result.innerHTML = (hjy_all ? 'replaceAll' : 'replace') + "('" + hjy_esc(hjy_from) + "', '" +
+                hjy_esc(hjy_to) + "') → <em>" + hjy_esc(hjy_out) + '</em><br>匹配到的字符共 <em>' + hjy_hits.length +
+                '</em> 个（已高亮）；原串仍是 <em>' + hjy_esc(hjy_text) + '</em>（方法只返回新串）';
+            hjy_str_write_log((hjy_all ? 'replaceAll' : 'replace') + "('" + hjy_from + "') → " + hjy_out);
+        }
+        hjy_id('hjy_rep_btn').addEventListener('click', function () { hjy_run_replace(false); });
+        hjy_id('hjy_repall_btn').addEventListener('click', function () { hjy_run_replace(true); });
+
+        /* ===== 演示 13：大小写 / 补位 / 重复 ===== */
+        var hjy_case_result = hjy_id('hjy_case_result');
+
+        hjy_id('hjy_upper_btn').addEventListener('click', function () {
+            hjy_render_str([0, hjy_text.length - 1]);
+            hjy_case_result.className = 'hjy_result';
+            hjy_case_result.innerHTML = 'toUpperCase() → <em>' + hjy_esc(hjy_text.toUpperCase()) +
+                '</em><br>原串：<em>' + hjy_esc(hjy_text) + '</em>（中文不受大小写影响）';
+            hjy_str_write_log('toUpperCase()');
+        });
+        hjy_id('hjy_lower_btn').addEventListener('click', function () {
+            hjy_render_str([0, hjy_text.length - 1]);
+            hjy_case_result.className = 'hjy_result';
+            hjy_case_result.innerHTML = 'toLowerCase() → <em>' + hjy_esc(hjy_text.toLowerCase()) +
+                '</em><br>验证码、邮箱比对时经常先统一成小写';
+            hjy_str_write_log('toLowerCase()');
+        });
+        hjy_id('hjy_pad_btn').addEventListener('click', function () {
+            hjy_case_result.className = 'hjy_result';
+            hjy_case_result.innerHTML = "padStart(20, '★') → <em>" + hjy_esc(hjy_text.padStart(20, '★')) +
+                '</em><br>padEnd → <em>' + hjy_esc(hjy_text.padEnd(20, '★')) +
+                "</em><br>常见用法：'7'.padStart(3,'0') → <em>007</em>";
+            hjy_str_write_log('padStart(20)');
+        });
+        hjy_id('hjy_repeat_btn').addEventListener('click', function () {
+            hjy_case_result.className = 'hjy_result';
+            hjy_case_result.innerHTML = 'repeat(2) → <em>' + hjy_esc(hjy_text.repeat(2)) +
+                '</em><br>repeat(0) → <em>""</em>（空串）；负数会报错';
+            hjy_str_write_log('repeat(2)');
+        });
+
+        /* ===== 演示 14：split / join ===== */
+        var hjy_split_result = hjy_id('hjy_split_result');
+
+        hjy_id('hjy_split_btn').addEventListener('click', function () {
+            var hjy_sep = hjy_id('hjy_split_sep').value;
+            var hjy_out = hjy_sep === '' ? hjy_text.split('') : hjy_text.split(hjy_sep);
+            hjy_id('hjy_split_chips').innerHTML = hjy_chips(hjy_out, 'hjy_chip_key');
+            hjy_render_str([]);
+            hjy_split_result.className = 'hjy_result';
+            hjy_split_result.innerHTML = (hjy_sep === '' ? "split('')" : "split('" + hjy_esc(hjy_sep) + "')") +
+                ' → 数组长度 <em>' + hjy_out.length + '</em>：[' + hjy_out.join(' | ') +
+                ']<br>join 拼回去 → <em>' + hjy_esc(hjy_out.join(hjy_sep)) + '</em>';
+            hjy_str_write_log('split → ' + hjy_out.length + ' 项');
+        });
+
+        hjy_id('hjy_reverse_btn').addEventListener('click', function () {
+            var hjy_arr = hjy_text.split('');
+            hjy_arr.reverse();
+            var hjy_out = hjy_arr.join('');
+            hjy_id('hjy_split_chips').innerHTML = hjy_chips(hjy_arr, 'hjy_chip_key');
+            hjy_render_str([hjy_text.length - 1, 0]);
+            hjy_split_result.className = 'hjy_result';
+            hjy_split_result.innerHTML = "split('').reverse().join('') → <em>" + hjy_esc(hjy_out) +
+                '</em><br>✅ 经典套路：字符串不能原地反转，先拆成数组、反转、再拼回';
+            hjy_str_write_log('反转 → ' + hjy_out);
+        });
+
+        /* ===== 演示 15：模板字符串 ===== */
+        hjy_id('hjy_tpl_btn').addEventListener('click', function () {
+            var hjy_info = '大家好，我是' + hjy_stu.name + '，\n今年 ' + hjy_stu.age + ' 岁，正在学《' + hjy_stu.major + '》。\n' +
+                '我的座右铭是：' + hjy_text;
+            hjy_render_obj({ hjy_hit: ['name', 'age', 'major'] });
+            var hjy_tpl_result = hjy_id('hjy_tpl_result');
+            hjy_tpl_result.className = 'hjy_result';
+            hjy_tpl_result.innerHTML = 'var hjy_info = `大家好，我是${hjy_stu.name}，今年 ${hjy_stu.age} 岁…`;<br>结果：<em>' +
+                hjy_esc(hjy_info) + '</em><br>✅ 反引号里可以直接换行，${ } 里能写任意表达式';
+            hjy_str_write_log('模板字符串生成自我介绍');
+        });
+
+        /* ===== 演示 16：for…of 与展开 ===== */
+        var hjy_iter_result = hjy_id('hjy_iter_result');
+        var hjy_iter_btn = hjy_id('hjy_iter_btn');
+        var hjy_iter_busy = false;
+
+        hjy_iter_btn.addEventListener('click', function () {
+            if (hjy_iter_busy) { return; }
+            hjy_iter_busy = true;
+            hjy_iter_btn.disabled = true;
+            hjy_render_str([]);
+            var hjy_kids = hjy_beads.children;
+            var hjy_i = 0;
+            var hjy_step = function () {
+                if (hjy_i >= hjy_kids.length) {
+                    hjy_iter_result.innerHTML = 'for…of 结束，共迭代 <em>' + hjy_kids.length +
+                        '</em> 个字符；字符串是可迭代对象，所以能被 for…of 和 [...str] 使用';
+                    hjy_iter_btn.disabled = false;
+                    hjy_iter_busy = false;
+                    hjy_str_write_log('for…of 迭代 ' + hjy_kids.length + ' 个字符');
+                    return;
+                }
+                for (var hjy_k = 0; hjy_k < hjy_kids.length; hjy_k++) { hjy_kids[hjy_k].classList.remove('hjy_bead_hit'); }
+                hjy_kids[hjy_i].classList.add('hjy_bead_hit');
+                hjy_iter_result.className = 'hjy_result';
+                hjy_iter_result.innerHTML = '第 <em>' + (hjy_i + 1) + '</em> 个字符：下标 <em>' + hjy_i + '</em>，字符 <em>' +
+                    hjy_esc(hjy_text.charAt(hjy_i)) + '</em>';
+                hjy_i++;
+                setTimeout(hjy_step, 380);
+            };
+            hjy_step();
+        });
+
+        hjy_id('hjy_spread2_btn').addEventListener('click', function () {
+            var hjy_arr = hjy_text.split('');
+            hjy_id('hjy_split_chips').innerHTML = hjy_chips(hjy_arr, 'hjy_chip_new');
+            hjy_render_str([]);
+            hjy_iter_result.className = 'hjy_result';
+            hjy_iter_result.innerHTML = '[...hjy_text] → 长度 <em>' + hjy_arr.length + '</em> 的字符数组：[' +
+                hjy_arr.join(' | ') + ']<br>拿到数组后就能用 map / filter / join 等全部数组方法';
+            hjy_str_write_log('[...str] 展开成数组');
+        });
+
+        /* ===== 字符串重置 ===== */
+        hjy_id('hjy_str_reset').addEventListener('click', function () {
+            hjy_text = hjy_text_init;
+            hjy_render_str([]);
+            hjy_str_write_log('重置字符串为 "' + hjy_text_init + '"');
+        });
+
+        /* ===== 初始化 ===== */
+        hjy_render_obj({ hjy_in: Object.keys(hjy_stu) });
+        hjy_render_str([]);
+    })();
+</script>
+</body>
+</html>
