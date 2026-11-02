@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-02 功能：JSON 数据格式讲解与展示（语法规则、语法校验实验台、接口 JSON 的树形 / 格式化 / 压缩三种视图） -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON 数据展示台 · 语法与结构</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-02 功能：页面样式（类名统一 hjy_ 前缀） */
+        :root {
+            --hjy_p1: #667eea;
+            --hjy_p2: #764ba2;
+            --hjy_pink: #f093fb;
+            --hjy_green: #2ecc71;
+            --hjy_red: #e74c3c;
+            --hjy_orange: #f39c12;
+            --hjy_blue: #4facfe;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh; color: #333; line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            padding: 26px 20px 44px;
+        }
+        .hjy_wrap { max-width: 1120px; margin: 0 auto; }
+
+        /* ===== 导航 ===== */
+        .hjy_nav {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap; margin-bottom: 18px;
+        }
+        .hjy_nav_logo { color: #fff; font-weight: 700; letter-spacing: 1px; font-size: 1.02rem; }
+        .hjy_nav_logo small { font-weight: 400; opacity: 0.85; font-size: 0.76rem; margin-left: 8px; }
+        .hjy_nav_links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .hjy_nav_link {
+            color: #fff; text-decoration: none; font-size: 0.82rem;
+            padding: 6px 15px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            transition: background 0.2s;
+        }
+        .hjy_nav_link:hover { background: rgba(255, 255, 255, 0.34); }
+        .hjy_nav_link.hjy_on { background: #fff; color: var(--hjy_p2); font-weight: 700; }
+
+        .hjy_header { text-align: center; color: #fff; margin-bottom: 22px; }
+        .hjy_header h1 { font-size: 1.85rem; letter-spacing: 1px; text-shadow: 0 3px 10px rgba(0, 0, 0, 0.22); }
+        .hjy_header p { font-size: 0.88rem; opacity: 0.94; margin-top: 6px; }
+        .hjy_header .hjy_badge {
+            display: inline-block; margin-top: 12px; padding: 5px 16px; font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.24); border-radius: 30px;
+        }
+
+        /* ===== 卡片 ===== */
+        .hjy_card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 20px; padding: 26px;
+            box-shadow: 0 15px 38px rgba(0, 0, 0, 0.14);
+            margin-bottom: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .hjy_section_title {
+            font-size: 1.1rem; color: #5a4b8c; margin-bottom: 16px;
+            padding-left: 13px; border-left: 5px solid var(--hjy_p2);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .hjy_section_title .hjy_cnt {
+            font-size: 0.73rem; font-weight: 400; color: #9b93b5;
+            background: #f3f0fb; padding: 2px 10px; border-radius: 20px;
+        }
+        .hjy_sp { margin-left: auto; }
+
+        /* ===== 语法高亮 ===== */
+        .hjy_json {
+            background: #2b2b33; border-radius: 14px; padding: 16px 18px;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.78rem;
+            line-height: 1.85; color: #eaeaf2; overflow: auto;
+            white-space: pre; tab-size: 2;
+        }
+        .hjy_j_key { color: #c792ea; }
+        .hjy_j_str { color: #a6e22e; }
+        .hjy_j_num { color: #f78c6c; }
+        .hjy_j_lit { color: #82aaff; }
+        .hjy_j_punc { color: #8d8d9c; }
+
+        /* ===== ① 基础 ===== */
+        .hjy_basic { display: grid; grid-template-columns: 1.05fr 1fr; gap: 20px; }
+        .hjy_rules { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+        .hjy_rules li {
+            display: flex; gap: 10px; font-size: 0.81rem; color: #5f5a72;
+            background: #fbfaff; border: 1px solid #f2edfb; border-radius: 11px; padding: 8px 12px;
+        }
+        .hjy_rules li .hjy_num {
+            flex: 0 0 20px; height: 20px; border-radius: 6px; text-align: center; line-height: 20px;
+            background: linear-gradient(135deg, #a98bdc, #764ba2); color: #fff;
+            font-size: 0.7rem; margin-top: 2px;
+        }
+        .hjy_rules li b { color: #5a3f8f; }
+        .hjy_rules code {
+            font-family: Consolas, monospace; font-size: 0.75rem;
+            background: #f1edfa; color: #6b5b95; padding: 1px 5px; border-radius: 4px;
+        }
+        .hjy_types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+        .hjy_type_card {
+            background: #fbfaff; border: 1px solid #f2edfb; border-radius: 12px; padding: 10px 12px;
+        }
+        .hjy_type_card b { display: block; font-size: 0.8rem; color: #4b4463; margin: 6px 0 2px; }
+        .hjy_type_card code {
+            font-family: Consolas, monospace; font-size: 0.72rem; color: #2d8d5b;
+            display: block; word-break: break-all;
+        }
+        .hjy_type_card em { display: block; font-style: normal; font-size: 0.7rem; color: #b0a9c4; margin-top: 3px; }
+
+        .hjy_type {
+            display: inline-block; font-family: Consolas, monospace; font-size: 0.66rem;
+            padding: 1px 8px; border-radius: 20px; letter-spacing: 0.3px;
+            background: #f1edfa; color: #6b5b95;
+        }
+        .hjy_type_string { background: #e8f9ee; color: #1f7a4d; }
+        .hjy_type_number { background: #fff1e8; color: #b5561f; }
+        .hjy_type_boolean { background: #e9f1ff; color: #3157a8; }
+        .hjy_type_null { background: #f2f2f6; color: #83839a; }
+        .hjy_type_object { background: #f0ebfb; color: #6b3fa0; }
+        .hjy_type_array { background: #fdecf6; color: #a63b83; }
+
+        /* ===== ② 校验实验台 ===== */
+        .hjy_editor_wrap { position: relative; }
+        .hjy_editor {
+            width: 100%; min-height: 210px; resize: vertical;
+            background: #2b2b33; color: #eaeaf2; border: 1px solid #3a3a46;
+            border-radius: 14px; padding: 14px 16px; outline: none;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.8rem; line-height: 1.8;
+            tab-size: 2;
+        }
+        .hjy_editor:focus { border-color: var(--hjy_p1); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.16); }
+        .hjy_presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .hjy_chip {
+            cursor: pointer; border: 1px solid #e6e0f5; background: #fff; color: #6b5b95;
+            font-family: inherit; font-size: 0.75rem; padding: 5px 12px; border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .hjy_chip:hover { border-color: var(--hjy_p2); background: #faf8ff; }
+        .hjy_chip.hjy_chip_on { background: #f0ebfb; border-color: #cbb9ec; color: #5a3f8f; font-weight: 700; }
+        .hjy_chip.hjy_chip_warn { color: #b0603a; border-color: #f3ddcd; }
+        .hjy_chip.hjy_chip_warn:hover { background: #fff8f3; border-color: #e8b48f; }
+
+        .hjy_ka {
+            display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
+            border-radius: 12px; padding: 13px 15px; margin-top: 12px;
+            font-size: 0.8rem; line-height: 1.9; border: 1px solid transparent;
+        }
+        .hjy_ka b { font-size: 0.84rem; }
+        .hjy_ka span { display: block; }
+        .hjy_ka code {
+            font-family: Consolas, monospace; font-size: 0.74rem;
+            background: rgba(255, 255, 255, 0.8); padding: 1px 5px; border-radius: 4px;
+            word-break: break-all;
+        }
+        .hjy_ka_ok { background: #eefaf4; border-color: #cdeede; color: #1d7e55; }
+        .hjy_ka_bad { background: #fdf1f0; border-color: #f7d5d1; color: #a5443a; }
+        .hjy_ka_idle { background: #f7f5fc; border-color: #ece7f7; color: #8b84a3; }
+        .hjy_ka .hjy_demo_txt { color: #6a6480; font-size: 0.76rem; }
+        .hjy_ka .hjy_demo_txt code { color: #3f5bb5; background: #fff; }
+
+        .hjy_actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 12px; }
+        .hjy_btn {
+            border: none; cursor: pointer; font-family: inherit; font-weight: 700;
+            padding: 9px 18px; border-radius: 11px; font-size: 0.8rem; color: #fff;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.28);
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .hjy_btn:hover { transform: translateY(-2px); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .hjy_btn_ghost { background: #fff; color: var(--hjy_p2); border: 1.5px solid #ded8f0; box-shadow: none; }
+        .hjy_btn_ghost:hover { border-color: var(--hjy_p2); }
+        .hjy_btn_mini {
+            padding: 5px 12px; font-size: 0.73rem; border-radius: 9px; font-weight: 400;
+            background: #f4f1fc; color: #6b5b95; border: 1px solid #e8e1f8; box-shadow: none;
+        }
+        .hjy_btn_mini:hover { background: #ece6fa; }
+        .hjy_btn_mini.hjy_on { background: #6b5b95; color: #fff; border-color: #6b5b95; }
+
+        /* ===== ③ 接口展示 ===== */
+        .hjy_tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+        .hjy_tab {
+            cursor: pointer; border: 1.5px solid #e6e0f5; background: #fff; color: #6b5b95;
+            font-family: inherit; font-size: 0.79rem; font-weight: 700;
+            padding: 8px 15px; border-radius: 11px; transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .hjy_tab:hover { border-color: #cbb9ec; background: #faf8ff; }
+        .hjy_tab.hjy_on {
+            background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+            border-color: transparent; box-shadow: 0 8px 18px rgba(102, 126, 234, 0.28);
+        }
+        .hjy_tab small { font-weight: 400; opacity: 0.75; font-size: 0.69rem; }
+
+        .hjy_api_row {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            background: #fbfaff; border: 1px solid #ece7f7; border-radius: 12px;
+            padding: 10px 14px; margin-top: 12px;
+        }
+        .hjy_method {
+            font-family: Consolas, monospace; font-size: 0.7rem; font-weight: 800; color: #fff;
+            background: linear-gradient(135deg, #4facfe, #00b4d8);
+            padding: 2px 9px; border-radius: 6px;
+        }
+        .hjy_api_url {
+            font-family: Consolas, "Courier New", monospace; font-size: 0.78rem;
+            color: #5a4b8c; word-break: break-all; flex: 1; min-width: 180px;
+        }
+
+        .hjy_statusbar {
+            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+            padding: 11px 15px; border-radius: 12px; font-size: 0.78rem; color: #6a6480;
+            background: #f7f5fc; border-left: 4px solid #ddd6f0; margin-top: 12px;
+        }
+        .hjy_statusbar.hjy_load { background: #eef1fd; border-left-color: var(--hjy_p1); }
+        .hjy_statusbar.hjy_ok { background: #eefaf4; border-left-color: var(--hjy_green); }
+        .hjy_statusbar.hjy_bad { background: #fdf1f0; border-left-color: var(--hjy_red); }
+        .hjy_statusbar b { color: #5a4b8c; font-family: Consolas, monospace; }
+        .hjy_badge_s {
+            font-family: Consolas, monospace; font-weight: 800; font-size: 0.78rem;
+            padding: 3px 10px; border-radius: 8px; background: #e8e3f5; color: #5a4b8c;
+        }
+        .hjy_statusbar.hjy_ok .hjy_badge_s { background: #d6f4e5; color: #1d7a54; }
+        .hjy_statusbar.hjy_bad .hjy_badge_s { background: #fadbd8; color: #b03a2e; }
+        .hjy_statusbar.hjy_load .hjy_badge_s { background: #dde3fd; color: #4551a8; }
+
+        .hjy_stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+        .hjy_stat {
+            display: flex; align-items: baseline; gap: 5px;
+            background: #faf8ff; border: 1px solid #f1ecfa; border-radius: 10px;
+            padding: 6px 12px; font-size: 0.73rem; color: #a49cbc;
+        }
+        .hjy_stat b { font-family: Consolas, monospace; font-size: 0.9rem; color: #6b3fa0; }
+
+        .hjy_toolbar {
+            display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+            margin: 16px 0 10px; padding-top: 14px; border-top: 1px dashed #f0ecf9;
+        }
+        .hjy_toolbar .hjy_hint { font-size: 0.73rem; color: #b0a9c4; margin-left: auto; }
+
+        .hjy_view { display: none; }
+        .hjy_view.hjy_on { display: block; animation: hjy_fade 0.3s ease; }
+        @keyframes hjy_fade { from { opacity: 0; } to { opacity: 1; } }
+
+        .hjy_tree {
+            background: #fbfaff; border: 1px solid #f0ecf9; border-radius: 14px;
+            padding: 12px 14px; max-height: 480px; overflow: auto;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.78rem;
+            line-height: 1.95;
+        }
+        .hjy_node { position: relative; }
+        .hjy_node > summary {
+            list-style: none; cursor: pointer; display: flex; align-items: center;
+            gap: 7px; padding: 1px 6px; border-radius: 6px; outline: none;
+            flex-wrap: wrap;
+        }
+        .hjy_node > summary::-webkit-details-marker { display: none; }
+        .hjy_node > summary:hover { background: #f2edfb; }
+        .hjy_node > summary::before {
+            content: "▸"; color: #a99fd0; font-size: 0.72rem; width: 10px;
+            transition: transform 0.2s; flex-shrink: 0;
+        }
+        .hjy_node[open] > summary::before { transform: rotate(90deg); }
+        .hjy_kids { margin-left: 8px; padding-left: 11px; border-left: 1px dashed #e3dcf3; }
+        .hjy_leaf {
+            display: flex; align-items: center; gap: 7px; padding: 1px 6px 1px 16px;
+            border-radius: 6px; flex-wrap: wrap;
+        }
+        .hjy_leaf:hover { background: #f7f4fd; }
+        .hjy_tk { color: #7b4bb3; }
+        .hjy_tk_root { color: #b03a8f; font-weight: 700; }
+        .hjy_colon { color: #b8b2c8; }
+        .hjy_tbrace { color: #8b84a3; }
+        .hjy_meta {
+            font-size: 0.68rem; color: #b0a9c4; background: #f3f0fb;
+            padding: 0 7px; border-radius: 20px;
+        }
+        .hjy_tv { word-break: break-all; }
+        .hjy_tv_string { color: #1f8a5b; }
+        .hjy_tv_number { color: #c2641f; }
+        .hjy_tv_boolean { color: #3157a8; }
+        .hjy_tv_null { color: #9a94ab; font-style: italic; }
+        .hjy_empty_txt { color: #b0a9c4; font-size: 0.75rem; padding-left: 6px; }
+
+        .hjy_err {
+            margin-top: 14px; padding: 14px 16px; border-radius: 12px;
+            background: #fdf1f0; border: 1px solid #f7d5d1; border-left: 5px solid var(--hjy_red);
+            font-size: 0.82rem; color: #a5443a; line-height: 1.85;
+        }
+        .hjy_err[hidden] { display: none; }
+        .hjy_err_title { font-weight: 800; font-size: 0.88rem; margin-bottom: 4px; }
+        .hjy_err code {
+            font-family: Consolas, monospace; font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.72); padding: 1px 5px; border-radius: 4px;
+        }
+
+        /* ===== ④ 讲解 ===== */
+        .hjy_two_col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .hjy_sub_title { font-size: 0.85rem; color: #5a4b8c; font-weight: 700; margin-bottom: 8px; }
+        .hjy_sub_title span { font-weight: 400; color: #a49cbc; font-size: 0.73rem; margin-left: 6px; }
+        .hjy_tips { font-size: 0.81rem; color: #7b7392; line-height: 1.95; }
+        .hjy_tips code {
+            font-family: Consolas, monospace; font-size: 0.75rem;
+            background: #f4f1fc; color: #6b5b95; padding: 1px 5px; border-radius: 4px;
+        }
+        .hjy_tips b { color: #5a4b8c; }
+
+        .hjy_toast {
+            position: fixed; left: 50%; bottom: 34px; transform: translate(-50%, 20px);
+            background: #3f3860; color: #fff; font-size: 0.8rem; padding: 9px 20px;
+            border-radius: 24px; opacity: 0; pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s; z-index: 99;
+        }
+        .hjy_toast.hjy_show { opacity: 1; transform: translate(-50%, 0); }
+
+        .hjy_footer { text-align: center; color: #fff; opacity: 0.9; font-size: 0.82rem; margin-top: 8px; }
+
+        @media (max-width: 900px) {
+            .hjy_basic, .hjy_two_col { grid-template-columns: 1fr; }
+            .hjy_types { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            body { padding: 18px 12px 32px; }
+            .hjy_card { padding: 18px 15px; border-radius: 16px; }
+            .hjy_header h1 { font-size: 1.4rem; }
+            .hjy_types { grid-template-columns: 1fr; }
+            .hjy_tab { flex: 1 1 44%; justify-content: center; }
+            .hjy_tree { font-size: 0.72rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_wrap">
+
+    <nav class="hjy_nav">
+        <div class="hjy_nav_logo">🧾 JSON 展示台 <small>语法 · 校验 · 接口数据</small></div>
+        <div class="hjy_nav_links">
+            <a href="./index.html" class="hjy_nav_link">首页</a>
+            <a href="./17-1.html" class="hjy_nav_link hjy_on">JSON 基础</a>
+            <a href="./17-2.html" class="hjy_nav_link">fetch 取数</a>
+            <a href="./17-3.html" class="hjy_nav_link">商品列表</a>
+            <a href="./17-4.html" class="hjy_nav_link">接口测试</a>
+        </div>
+    </nav>
+
+    <header class="hjy_header">
+        <h1>JSON 数据展示台</h1>
+        <p>先看懂 JSON 的语法，再把接口返回的 JSON 拆成能一层层展开的结构树</p>
+        <div class="hjy_badge">👤 学生：胡家瑜 · 2026-11-02</div>
+    </header>
+
+    <!-- ===== ① JSON 是什么 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">① JSON 是什么 <span class="hjy_cnt">JavaScript Object Notation · 数据交换格式</span></h2>
+        <div class="hjy_basic">
+            <div>
+<pre class="hjy_json"><span class="hjy_j_punc">{</span>
+  <span class="hjy_j_key">"name"</span><span class="hjy_j_punc">:</span> <span class="hjy_j_str">"胡家瑜"</span><span class="hjy_j_punc">,</span>
+  <span class="hjy_j_key">"age"</span><span class="hjy_j_punc">:</span> <span class="hjy_j_num">20</span><span class="hjy_j_punc">,</span>
+  <span class="hjy_j_key">"isStudent"</span><span class="hjy_j_punc">:</span> <span class="hjy_j_lit">true</span><span class="hjy_j_punc">,</span>
+  <span class="hjy_j_key">"skills"</span><span class="hjy_j_punc">:</span> <span class="hjy_j_punc">[</span><span class="hjy_j_str">"HTML"</span><span class="hjy_j_punc">,</span> <span class="hjy_j_str">"CSS"</span><span class="hjy_j_punc">,</span> <span class="hjy_j_str">"JS"</span><span class="hjy_j_punc">]</span><span class="hjy_j_punc">,</span>
+  <span class="hjy_j_key">"address"</span><span class="hjy_j_punc">:</span> <span class="hjy_j_punc">{</span>
+    <span class="hjy_j_key">"city"</span><span class="hjy_j_punc">:</span> <span class="hjy_j_str">"武汉"</span><span class="hjy_j_punc">,</span>
+    <span class="hjy_j_key">"zip"</span><span class="hjy_j_punc">:</span> <span class="hjy_j_lit">null</span>
+  <span class="hjy_j_punc">}</span>
+<span class="hjy_j_punc">}</span></pre>
+                <p class="hjy_tips" style="margin-top:12px">
+                    JSON 是<b>一段纯文本</b>，只是长得像 JS 对象。它不负责逻辑，只负责“把数据装起来”在不同程序之间传递，
+                    所以接口返回的内容基本都是 JSON。
+                </p>
+            </div>
+            <ul class="hjy_rules">
+                <li><span class="hjy_num">1</span><span>键名必须用<b>双引号</b>，单引号或不加引号都不合法：<code>"name"</code> ✔ ／ <code>name</code> ✘</span></li>
+                <li><span class="hjy_num">2</span><span>值只能有 6 种类型：字符串、数字、布尔、<code>null</code>、对象、数组</span></li>
+                <li><span class="hjy_num">3</span><span>不能写注释（<code>//</code> 和 <code>/* */</code> 都不允许）</span></li>
+                <li><span class="hjy_num">4</span><span>最后一个成员后面<b>不能多写逗号</b>：<code>{"a":1,}</code> ✘</span></li>
+                <li><span class="hjy_num">5</span><span>对象用 <code>{}</code>，数组用 <code>[]</code>，成员之间用逗号，结尾不加分号</span></li>
+                <li><span class="hjy_num">6</span><span>顶层可以是一个对象、数组，甚至一个数字，但<b>不能几个 JSON 并排</b></span></li>
+            </ul>
+        </div>
+
+        <div class="hjy_types">
+            <div class="hjy_type_card">
+                <span class="hjy_type hjy_type_string">string</span>
+                <b>字符串</b>
+                <code>"胡家瑜"</code>
+                <em>只能用双引号，换行要写成 \n</em>
+            </div>
+            <div class="hjy_type_card">
+                <span class="hjy_type hjy_type_number">number</span>
+                <b>数字</b>
+                <code>20 / 3.14 / -5</code>
+                <em>没有 int、float 之分，不能带引号</em>
+            </div>
+            <div class="hjy_type_card">
+                <span class="hjy_type hjy_type_boolean">boolean</span>
+                <b>布尔</b>
+                <code>true / false</code>
+                <em>只能小写，不能是 True、TRUE</em>
+            </div>
+            <div class="hjy_type_card">
+                <span class="hjy_type hjy_type_null">null</span>
+                <b>空值</b>
+                <code>null</code>
+                <em>表示“没有值”，不能写 undefined</em>
+            </div>
+            <div class="hjy_type_card">
+                <span class="hjy_type hjy_type_object">object</span>
+                <b>对象</b>
+                <code>{ "k": "v" }</code>
+                <em>无序的键值对集合，用 {}</em>
+            </div>
+            <div class="hjy_type_card">
+                <span class="hjy_type hjy_type_array">array</span>
+                <b>数组</b>
+                <code>[1, "a", true]</code>
+                <em>有序列表，用 []，元素类型可以混用</em>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ② 校验实验台 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">② 动手校验一段 JSON <span class="hjy_cnt">输入即校验 · 用 JSON.parse() 判断合法性</span></h2>
+
+        <div class="hjy_presets" id="hjy_presets">
+            <button class="hjy_chip hjy_chip_on" data-hjy-preset="0">✔ 规范的 JSON</button>
+            <button class="hjy_chip hjy_chip_warn" data-hjy-preset="1">✘ 键没加双引号</button>
+            <button class="hjy_chip hjy_chip_warn" data-hjy-preset="2">✘ 多了逗号</button>
+            <button class="hjy_chip hjy_chip_warn" data-hjy-preset="3">✘ 用了单引号</button>
+            <button class="hjy_chip hjy_chip_warn" data-hjy-preset="4">✘ 写了注释</button>
+            <button class="hjy_chip" data-hjy-preset="5">✔ 顶层是一个数字</button>
+        </div>
+
+        <textarea class="hjy_editor" id="hjy_ed" spellcheck="false"></textarea>
+
+        <div class="hjy_actions">
+            <button class="hjy_btn" id="hjy_btn_check">校验</button>
+            <button class="hjy_btn hjy_btn_ghost" id="hjy_btn_pretty">格式化</button>
+            <button class="hjy_btn hjy_btn_ghost" id="hjy_btn_min">压缩</button>
+            <button class="hjy_btn hjy_btn_ghost" id="hjy_btn_clear">清空</button>
+        </div>
+
+        <div class="hjy_ka hjy_ka_idle" id="hjy_val">
+            <b>等待输入</b>
+        </div>
+        <p class="hjy_tips" style="margin-top:10px">
+            判断标准只有一句：<code>JSON.parse(文本)</code> 不报错就是合法 JSON。格式化 = <code>JSON.stringify(obj, null, 2)</code>，
+            压缩 = <code>JSON.stringify(obj)</code>。
+        </p>
+    </section>
+
+    <!-- ===== ③ 接口 JSON ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">③ 接口返回的 JSON 长什么样 <span class="hjy_cnt">换接口、换视图，同一份数据三种看法</span></h2>
+
+        <div class="hjy_tabs" id="hjy_tabs">
+            <button class="hjy_tab hjy_on" data-hjy-tab="0">用户列表 <small>数组 · 10 条</small></button>
+            <button class="hjy_tab" data-hjy-tab="1">文章列表 <small>数组 · 100 条</small></button>
+            <button class="hjy_tab" data-hjy-tab="2">随机狗狗 <small>对象 · 2 个键</small></button>
+            <button class="hjy_tab" data-hjy-tab="3">商品列表 <small>数组 · 8 条</small></button>
+        </div>
+
+        <div class="hjy_api_row">
+            <span class="hjy_method">GET</span>
+            <span class="hjy_api_url" id="hjy_api_url">https://jsonplaceholder.typicode.com/users</span>
+            <span class="hjy_cnt" style="font-size:0.7rem;color:#1d7e55;background:#eefaf4;border:1px solid #cdeede;padding:2px 9px;border-radius:20px">跨域可用</span>
+        </div>
+
+        <div class="hjy_statusbar hjy_load" id="hjy_statusbar">
+            <span class="hjy_badge_s" id="hjy_badge">请求中…</span>
+            <span>耗时 <b id="hjy_time">—</b></span>
+            <span>大小 <b id="hjy_size">—</b></span>
+            <span style="margin-left:auto">接口 <b id="hjy_api_name">—</b></span>
+        </div>
+
+        <div class="hjy_stats" id="hjy_stats">
+            <span class="hjy_stat">顶层类型 <b id="hjy_st_type">—</b></span>
+            <span class="hjy_stat">成员 <b id="hjy_st_len">—</b></span>
+            <span class="hjy_stat">键总数 <b id="hjy_st_keys">—</b></span>
+            <span class="hjy_stat">最大嵌套 <b id="hjy_st_depth">—</b></span>
+        </div>
+
+        <div class="hjy_err" id="hjy_err" hidden>
+            <div class="hjy_err_title" id="hjy_err_title">请求失败</div>
+            <div id="hjy_err_msg"></div>
+            <button class="hjy_btn_mini" id="hjy_retry">重新请求</button>
+        </div>
+
+        <div class="hjy_toolbar">
+            <button class="hjy_btn_mini hjy_on" id="hjy_v_tree">🌳 树形结构</button>
+            <button class="hjy_btn_mini" id="hjy_v_pretty">格式化 JSON</button>
+            <button class="hjy_btn_mini" id="hjy_v_min">压缩 JSON</button>
+            <button class="hjy_btn_mini" id="hjy_expand">全部展开</button>
+            <button class="hjy_btn_mini" id="hjy_collapse">全部折叠</button>
+            <button class="hjy_btn_mini" id="hjy_copy">复制</button>
+            <span class="hjy_hint" id="hjy_view_hint">点开 ▸ 可以逐层展开看嵌套对象</span>
+        </div>
+
+        <div class="hjy_view hjy_on" id="hjy_view_tree">
+            <div class="hjy_tree" id="hjy_tree">正在请求接口数据…</div>
+        </div>
+        <div class="hjy_view" id="hjy_view_pretty">
+            <pre class="hjy_json" id="hjy_pretty" style="max-height:480px">// 暂无数据</pre>
+        </div>
+        <div class="hjy_view" id="hjy_view_min">
+            <pre class="hjy_json" id="hjy_min" style="max-height:480px">// 暂无数据</pre>
+        </div>
+    </section>
+
+    <!-- ===== ④ 代码 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">④ 代码怎么写</h2>
+        <div class="hjy_two_col">
+            <div>
+                <div class="hjy_sub_title">取数据 + 解析 <span>fetch → res.json() 内部就是 JSON.parse</span></div>
+<pre class="hjy_json">async function hjy_load() {
+    var res = await fetch(
+        'https://jsonplaceholder.typicode.com/users'
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    var data = await res.json();   // 文本 → JS 对象
+
+    // 顶层是数组，取第一项里的嵌套值
+    console.log(data[0].name);
+    console.log(data[0].address.city);
+    console.log(data[0].company.name);
+
+    // 想看规范文本，再转回字符串
+    var text = JSON.stringify(data, null, 2);
+    console.log(text);
+}</pre>
+            </div>
+            <div>
+                <div class="hjy_sub_title">递归渲染结构树 <span>Object.keys + 递归</span></div>
+<pre class="hjy_json">function hjy_tree(value, key, depth) {
+    var isObj = value !== null
+        && typeof value === 'object';
+
+    if (isObj) {
+        var keys = Array.isArray(value)
+            ? value.map(function (v, i) { return i; })
+            : Object.keys(value);
+
+        // 对象 / 数组：递归展开子节点
+        return keys.map(function (k) {
+            return hjy_tree(value[k], k, depth + 1);
+        });
+    }
+
+    // 基本类型：直接显示
+    return key + ' : ' + JSON.stringify(value);
+}</pre>
+            </div>
+        </div>
+        <p class="hjy_tips" style="margin-top:14px">
+            <b>记住三件事：</b>① 接口给的永远是<b>字符串</b>，要 <code>res.json()</code> 或 <code>JSON.parse()</code> 之后才能点出属性
+            （<code>data.name</code>）；② 想存起来或发给后端，用 <code>JSON.stringify()</code> 转回字符串，它看不见函数、undefined 和注释；
+            ③ 结构树、<code>console.log</code> 的层级，其实就是在递归 <code>Object.keys()</code>——数组看下标，对象看键名。
+        </p>
+    </section>
+
+    <footer class="hjy_footer">Made with ❤ by 胡家瑜 · 高级网页设计课程</footer>
+</div>
+
+<div class="hjy_toast" id="hjy_toast">已复制</div>
+
+<script>
+    /* 姓名：胡家瑜 日期：2026-11-02 功能：JSON 语法校验（JSON.parse）+ 接口 JSON 的树形 / 格式化 / 压缩展示 */
+    (function () {
+        function hjy_id(hjy_n) { return document.getElementById(hjy_n); }
+        function hjy_esc(hjy_t) {
+            return String(hjy_t)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function hjy_hl(hjy_text) {
+            return hjy_esc(hjy_text).replace(/("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}\[\],:])/g,
+                function (hjy_m, hjy_s, hjy_c, hjy_l, hjy_num, hjy_punc) {
+                    if (hjy_s) {
+                        return hjy_c ? '<span class="hjy_j_key">' + hjy_s + '</span><span class="hjy_j_punc">' + hjy_c + '</span>'
+                                     : '<span class="hjy_j_str">' + hjy_s + '</span>';
+                    }
+                    if (hjy_l) { return '<span class="hjy_j_lit">' + hjy_l + '</span>'; }
+                    if (hjy_num !== undefined) { return '<span class="hjy_j_num">' + hjy_num + '</span>'; }
+                    return '<span class="hjy_j_punc">' + hjy_punc + '</span>';
+                });
+        }
+        function hjy_kind(hjy_v) {
+            if (hjy_v === null) { return 'null'; }
+            if (Array.isArray(hjy_v)) { return 'array'; }
+            var hjy_t = typeof hjy_v;
+            if (hjy_t === 'object') { return 'object'; }
+            return hjy_t;
+        }
+        function hjy_count(hjy_v) {
+            var hjy_keys = 0, hjy_depth = 0;
+            (function hjy_walk(hjy_x, hjy_d) {
+                if (hjy_x !== null && typeof hjy_x === 'object') {
+                    if (hjy_d > hjy_depth) { hjy_depth = hjy_d; }
+                    var hjy_ks = Array.isArray(hjy_x)
+                        ? hjy_x.map(function (hjy_v2, hjy_i) { return hjy_i; })
+                        : Object.keys(hjy_x);
+                    hjy_keys += hjy_ks.length;
+                    for (var hjy_i = 0; hjy_i < hjy_ks.length; hjy_i++) {
+                        hjy_walk(hjy_x[hjy_ks[hjy_i]], hjy_d + 1);
+                    }
+                }
+            })(hjy_v, 1);
+            return { keys: hjy_keys, depth: hjy_depth || 1 };
+        }
+        function hjy_members(hjy_v) {
+            var hjy_k = hjy_kind(hjy_v);
+            if (hjy_k === 'array') { return hjy_v.length; }
+            if (hjy_k === 'object') { return Object.keys(hjy_v).length; }
+            return 0;
+        }
+
+        /* ================= ② 语法校验 ================= */
+        var HJY_SAMPLES = [
+            '{\n  "name": "胡家瑜",\n  "age": 20,\n  "isStudent": true,\n  "skills": ["HTML", "CSS", "JavaScript"],\n  "address": {\n    "city": "武汉",\n    "zip": null\n  }\n}',
+            '{ name: "胡家瑜", age: 20 }',
+            '{\n  "name": "胡家瑜",\n  "age": 20,\n}',
+            "{ 'name': '胡家瑜', 'age': 20 }",
+            '{\n  "name": "胡家瑜", // 这是注释\n  "age": 20\n}',
+            '42'
+        ];
+
+        function hjy_line_col(hjy_text, hjy_pos) {
+            var hjy_before = hjy_text.slice(0, hjy_pos).split('\n');
+            return { line: hjy_before.length, col: hjy_before[hjy_before.length - 1].length + 1 };
+        }
+        function hjy_reason(hjy_text, hjy_msg) {
+            if (/\/\/|\/\*/.test(hjy_text)) { return 'JSON 不支持注释，把 // 或 /* */ 删掉。'; }
+            if (/,\s*[}\]]/.test(hjy_text)) { return '最后一个成员后面多了一个逗号，删掉它。'; }
+            if (/'/.test(hjy_text)) { return '键名和字符串只能用双引号 " "，单引号 \' \' 不合法。'; }
+            if (/[{,]\s*[A-Za-z_$][\w$]*\s*:/.test(hjy_text)) { return '键名没有加双引号，要写成 "name": ...。'; }
+            if (/undefined|NaN/.test(hjy_text)) { return 'JSON 里没有 undefined 和 NaN，用 null 代替。'; }
+            if (/Expected|Unexpected|position/i.test(hjy_msg)) { return '检查括号是否成对、逗号是否漏写或多写。'; }
+            return '';
+        }
+        function hjy_demo(hjy_data) {
+            var hjy_k = hjy_kind(hjy_data);
+            if (hjy_k === 'array') {
+                if (!hjy_data.length) { return 'data.length → 0'; }
+                var hjy_first = hjy_data[0];
+                var hjy_fk = hjy_kind(hjy_first);
+                if (hjy_fk === 'object') {
+                    var hjy_key = Object.keys(hjy_first)[0];
+                    return 'data[0].' + hjy_key + ' → ' + JSON.stringify(hjy_first[hjy_key]).slice(0, 40);
+                }
+                return 'data[0] → ' + JSON.stringify(hjy_first);
+            }
+            if (hjy_k === 'object') {
+                var hjy_ks = Object.keys(hjy_data);
+                if (!hjy_ks.length) { return 'Object.keys(data) → []'; }
+                return 'data.' + hjy_ks[0] + ' → ' + JSON.stringify(hjy_data[hjy_ks[0]]).slice(0, 40);
+            }
+            return 'data → ' + JSON.stringify(hjy_data);
+        }
+
+        function hjy_validate() {
+            var hjy_text = hjy_id('hjy_ed').value.trim();
+            var hjy_box = hjy_id('hjy_val');
+
+            if (!hjy_text) {
+                hjy_box.className = 'hjy_ka hjy_ka_idle';
+                hjy_box.innerHTML = '<b>等待输入</b><span>输入一段 JSON 文本，会自动校验；也可以直接点上面的示例。</span>';
+                return;
+            }
+
+            try {
+                var hjy_data = JSON.parse(hjy_text);
+                var hjy_type = hjy_kind(hjy_data);
+                var hjy_info = hjy_count(hjy_data);
+                hjy_box.className = 'hjy_ka hjy_ka_ok';
+                hjy_box.innerHTML =
+                    '<b>✓ 合法 JSON</b>' +
+                    '<span>顶层类型 <code>' + hjy_type + '</code> · 成员 <code>' +
+                        hjy_members(hjy_data) + '</code> 个 · 键总数 <code>' + hjy_info.keys +
+                        '</code> · 最大嵌套 <code>' + hjy_info.depth + '</code> 层 · 文本 <code>' +
+                        hjy_text.length + '</code> 字符</span>' +
+                    '<span class="hjy_demo_txt">JSON.parse 之后可以直接点属性：<code>' + hjy_esc(hjy_demo(hjy_data)) + '</code></span>';
+            } catch (hjy_err) {
+                var hjy_msg = hjy_err.message;
+                var hjy_lc = hjy_msg.match(/line (\d+) column (\d+)/i);
+                var hjy_pos = hjy_msg.match(/position (\d+)/i);
+                var hjy_line = '', hjy_col = '';
+                if (hjy_lc) {
+                    hjy_line = hjy_lc[1]; hjy_col = hjy_lc[2];
+                } else if (hjy_pos) {
+                    var hjy_calc = hjy_line_col(hjy_text, parseInt(hjy_pos[1], 10));
+                    hjy_line = hjy_calc.line; hjy_col = hjy_calc.col;
+                }
+                var hjy_why = hjy_reason(hjy_text, hjy_msg);
+
+                hjy_box.className = 'hjy_ka hjy_ka_bad';
+                hjy_box.innerHTML =
+                    '<b>✗ 不是合法 JSON</b>' +
+                    '<span>' + (hjy_line ? '第 <code>' + hjy_line + '</code> 行、第 <code>' + hjy_col + '</code> 列附近出错：'
+                                        : '出错信息：') +
+                        '<code>' + hjy_esc(hjy_msg) + '</code></span>' +
+                    (hjy_why ? '<span class="hjy_demo_txt">可能原因：' + hjy_why + '</span>' : '');
+            }
+        }
+
+        var hjy_wait = null;
+        function hjy_validate_later() {
+            if (hjy_wait) { clearTimeout(hjy_wait); }
+            hjy_wait = setTimeout(hjy_validate, 260);
+        }
+
+        function hjy_apply_preset(hjy_i) {
+            hjy_id('hjy_ed').value = HJY_SAMPLES[hjy_i];
+            var hjy_chips = hjy_id('hjy_presets').querySelectorAll('.hjy_chip');
+            for (var hjy_k = 0; hjy_k < hjy_chips.length; hjy_k++) {
+                hjy_chips[hjy_k].className = 'hjy_chip' +
+                    (/\u2718/.test(hjy_chips[hjy_k].textContent) ? ' hjy_chip_warn' : '') +
+                    (hjy_k === hjy_i ? ' hjy_chip_on' : '');
+            }
+            hjy_validate();
+        }
+
+        hjy_id('hjy_presets').addEventListener('click', function (hjy_e) {
+            var hjy_btn = hjy_e.target.closest('[data-hjy-preset]');
+            if (!hjy_btn) { return; }
+            hjy_apply_preset(parseInt(hjy_btn.getAttribute('data-hjy-preset'), 10));
+        });
+        hjy_id('hjy_ed').addEventListener('input', hjy_validate_later);
+        hjy_id('hjy_btn_check').addEventListener('click', hjy_validate);
+
+        hjy_id('hjy_btn_pretty').addEventListener('click', function () {
+            try {
+                var hjy_obj = JSON.parse(hjy_id('hjy_ed').value);
+                hjy_id('hjy_ed').value = JSON.stringify(hjy_obj, null, 2);
+                hjy_validate();
+            } catch (hjy_e) {
+                hjy_validate();
+                hjy_toast('先改成合法 JSON 才能格式化');
+            }
+        });
+        hjy_id('hjy_btn_min').addEventListener('click', function () {
+            try {
+                var hjy_obj = JSON.parse(hjy_id('hjy_ed').value);
+                hjy_id('hjy_ed').value = JSON.stringify(hjy_obj);
+                hjy_validate();
+            } catch (hjy_e) {
+                hjy_validate();
+                hjy_toast('先改成合法 JSON 才能压缩');
+            }
+        });
+        hjy_id('hjy_btn_clear').addEventListener('click', function () {
+            hjy_id('hjy_ed').value = '';
+            hjy_validate();
+        });
+
+        /* ================= ③ 接口 JSON 展示 ================= */
+        var HJY_APIS = [
+            { name: '用户列表', url: 'https://jsonplaceholder.typicode.com/users' },
+            { name: '文章列表', url: 'https://jsonplaceholder.typicode.com/posts' },
+            { name: '随机狗狗', url: 'https://dog.ceo/api/breeds/image/random' },
+            { name: '商品列表', url: 'https://dummyjson.com/products?limit=8' }
+        ];
+
+        var hjy_cur = 0;
+        var hjy_ctrl = null;
+        var hjy_timer = null;
+        var hjy_busy = false;
+        var hjy_t0 = 0;
+        var hjy_pretty_text = '';
+        var hjy_min_text = '';
+
+        function hjy_tree(hjy_v, hjy_key, hjy_depth) {
+            var hjy_type = hjy_kind(hjy_v);
+            var hjy_key_html = (hjy_key === null)
+                ? '<span class="hjy_tk hjy_tk_root">$</span>'
+                : '<span class="hjy_tk">' + hjy_esc(hjy_key) + '</span>';
+
+            if (hjy_type === 'object' || hjy_type === 'array') {
+                var hjy_keys = (hjy_type === 'array')
+                    ? hjy_v.map(function (hjy_x, hjy_i) { return hjy_i; })
+                    : Object.keys(hjy_v);
+                var hjy_html = '<details class="hjy_node"' + (hjy_depth === 0 ? ' open' : '') + '>' +
+                    '<summary>' + hjy_key_html +
+                        '<span class="hjy_colon">:</span>' +
+                        '<span class="hjy_tbrace">' + (hjy_type === 'array' ? '[ ]' : '{ }') + '</span>' +
+                        '<span class="hjy_meta">' + hjy_keys.length + (hjy_type === 'array' ? ' 项' : ' 个键') + '</span>' +
+                        '<span class="hjy_type hjy_type_' + hjy_type + '">' + hjy_type + '</span>' +
+                    '</summary><div class="hjy_kids">';
+
+                for (var hjy_i = 0; hjy_i < hjy_keys.length; hjy_i++) {
+                    var hjy_k = hjy_keys[hjy_i];
+                    hjy_html += hjy_tree(hjy_v[hjy_k], hjy_type === 'array' ? '[' + hjy_k + ']' : hjy_k, hjy_depth + 1);
+                }
+                if (!hjy_keys.length) {
+                    hjy_html += '<div class="hjy_leaf"><span class="hjy_empty_txt">（空）</span></div>';
+                }
+                return hjy_html + '</div></details>';
+            }
+
+            var hjy_show;
+            if (hjy_type === 'string') {
+                hjy_show = '"' + hjy_esc(hjy_v.length > 90 ? hjy_v.slice(0, 90) + '…' : hjy_v) + '"';
+            } else if (hjy_type === 'null') {
+                hjy_show = 'null';
+            } else {
+                hjy_show = hjy_esc(String(hjy_v));
+            }
+            return '<div class="hjy_leaf">' + hjy_key_html +
+                '<span class="hjy_colon">:</span>' +
+                '<span class="hjy_tv hjy_tv_' + hjy_type + '">' + hjy_show + '</span>' +
+                '<span class="hjy_type hjy_type_' + hjy_type + '">' + hjy_type + '</span></div>';
+        }
+
+        function hjy_show_data(hjy_data, hjy_ms) {
+            var hjy_type = hjy_kind(hjy_data);
+            var hjy_info = hjy_count(hjy_data);
+
+            hjy_pretty_text = JSON.stringify(hjy_data, null, 2);
+            hjy_min_text = JSON.stringify(hjy_data);
+
+            hjy_id('hjy_tree').innerHTML = hjy_tree(hjy_data, null, 0);
+            hjy_id('hjy_pretty').innerHTML = hjy_hl(hjy_pretty_text);
+            hjy_id('hjy_min').innerHTML = hjy_hl(hjy_min_text);
+
+            hjy_id('hjy_st_type').textContent = hjy_type;
+            hjy_id('hjy_st_len').textContent = hjy_members(hjy_data);
+            hjy_id('hjy_st_keys').textContent = hjy_info.keys;
+            hjy_id('hjy_st_depth').textContent = hjy_info.depth + ' 层';
+
+            hjy_id('hjy_statusbar').className = 'hjy_statusbar hjy_ok';
+            hjy_id('hjy_badge').textContent = 'HTTP 200 OK';
+            hjy_id('hjy_time').textContent = hjy_ms + ' ms';
+            hjy_id('hjy_size').textContent = hjy_pretty_text.length.toLocaleString() + ' 字符';
+            hjy_id('hjy_api_name').textContent = HJY_APIS[hjy_cur].name;
+        }
+
+        function hjy_fail(hjy_err) {
+            var hjy_ms = Math.round(performance.now() - hjy_t0);
+            var hjy_msg = hjy_err.name === 'AbortError'
+                ? '超过 12 秒没有响应，已中止请求。'
+                : (hjy_err instanceof TypeError
+                    ? '网络异常或接口未开放跨域（TypeError: Failed to fetch）。'
+                    : hjy_esc(hjy_err.message || String(hjy_err)));
+
+            hjy_id('hjy_statusbar').className = 'hjy_statusbar hjy_bad';
+            hjy_id('hjy_badge').textContent = '请求失败';
+            hjy_id('hjy_time').textContent = hjy_ms + ' ms';
+            hjy_id('hjy_size').textContent = '—';
+            hjy_id('hjy_err_title').textContent = '请求失败';
+            hjy_id('hjy_err_msg').innerHTML = hjy_esc(hjy_msg) + ' 可点下面的按钮重试，或换一个接口。';
+            hjy_id('hjy_err').hidden = false;
+            hjy_id('hjy_tree').innerHTML = '<div class="hjy_empty_txt">没有数据可展示，请重试。</div>';
+            hjy_id('hjy_pretty').textContent = '// 暂无数据';
+            hjy_id('hjy_min').textContent = '// 暂无数据';
+            hjy_id('hjy_st_type').textContent = '—';
+            hjy_id('hjy_st_len').textContent = '—';
+            hjy_id('hjy_st_keys').textContent = '—';
+            hjy_id('hjy_st_depth').textContent = '—';
+
+            hjy_busy = false;
+            hjy_set_tabs(false);
+        }
+
+        function hjy_set_tabs(hjy_disabled) {
+            var hjy_btns = hjy_id('hjy_tabs').querySelectorAll('.hjy_tab');
+            for (var hjy_i = 0; hjy_i < hjy_btns.length; hjy_i++) {
+                hjy_btns[hjy_i].disabled = hjy_disabled;
+                hjy_btns[hjy_i].style.opacity = hjy_disabled ? '0.55' : '1';
+            }
+        }
+
+        async function hjy_load(hjy_i) {
+            if (hjy_busy) { return; }
+
+            hjy_cur = hjy_i;
+            hjy_busy = true;
+            hjy_t0 = performance.now();
+
+            var hjy_api = HJY_APIS[hjy_i];
+            hjy_id('hjy_api_url').textContent = hjy_api.url;
+            hjy_id('hjy_api_name').textContent = hjy_api.name;
+            hjy_id('hjy_statusbar').className = 'hjy_statusbar hjy_load';
+            hjy_id('hjy_badge').textContent = '请求中…';
+            hjy_id('hjy_time').textContent = '—';
+            hjy_id('hjy_size').textContent = '—';
+            hjy_id('hjy_err').hidden = true;
+            hjy_id('hjy_tree').innerHTML = '<div class="hjy_empty_txt">正在请求 ' + hjy_esc(hjy_api.name) + '…</div>';
+            hjy_id('hjy_pretty').textContent = '// 加载中…';
+            hjy_id('hjy_min').textContent = '// 加载中…';
+            hjy_set_tabs(true);
+
+            var hjy_tabs = hjy_id('hjy_tabs').querySelectorAll('.hjy_tab');
+            for (var hjy_k = 0; hjy_k < hjy_tabs.length; hjy_k++) {
+                hjy_tabs[hjy_k].className = 'hjy_tab' + (hjy_k === hjy_i ? ' hjy_on' : '');
+            }
+
+            if (hjy_ctrl) { hjy_ctrl.abort(); }
+            hjy_ctrl = new AbortController();
+            if (hjy_timer) { clearTimeout(hjy_timer); }
+            hjy_timer = setTimeout(function () { hjy_ctrl.abort(); }, 12000);
+
+            try {
+                var hjy_res = await fetch(hjy_api.url, { signal: hjy_ctrl.signal, cache: 'no-store' });
+                if (!hjy_res.ok) { throw new Error('HTTP ' + hjy_res.status); }
+                var hjy_data = await hjy_res.json();
+
+                clearTimeout(hjy_timer);
+                hjy_timer = null;
+                hjy_show_data(hjy_data, Math.round(performance.now() - hjy_t0));
+                hjy_busy = false;
+                hjy_set_tabs(false);
+            } catch (hjy_err) {
+                clearTimeout(hjy_timer);
+                hjy_timer = null;
+                hjy_fail(hjy_err);
+            }
+        }
+
+        function hjy_view(hjy_name) {
+            var hjy_map = { tree: 'hjy_view_tree', pretty: 'hjy_view_pretty', min: 'hjy_view_min' };
+            ['tree', 'pretty', 'min'].forEach(function (hjy_key) {
+                hjy_id(hjy_map[hjy_key]).className = 'hjy_view' + (hjy_key === hjy_name ? ' hjy_on' : '');
+            });
+            hjy_id('hjy_v_tree').className = 'hjy_btn_mini' + (hjy_name === 'tree' ? ' hjy_on' : '');
+            hjy_id('hjy_v_pretty').className = 'hjy_btn_mini' + (hjy_name === 'pretty' ? ' hjy_on' : '');
+            hjy_id('hjy_v_min').className = 'hjy_btn_mini' + (hjy_name === 'min' ? ' hjy_on' : '');
+            hjy_id('hjy_view_hint').textContent = hjy_name === 'tree'
+                ? '点开 ▸ 可以逐层展开看嵌套对象'
+                : '高亮颜色：键 紫 · 字符串 绿 · 数字 橙 · 布尔/null 蓝';
+        }
+
+        function hjy_toast(hjy_text) {
+            var hjy_t = hjy_id('hjy_toast');
+            hjy_t.textContent = hjy_text;
+            hjy_t.className = 'hjy_toast hjy_show';
+            setTimeout(function () { hjy_t.className = 'hjy_toast'; }, 1600);
+        }
+
+        hjy_id('hjy_tabs').addEventListener('click', function (hjy_e) {
+            var hjy_btn = hjy_e.target.closest('[data-hjy-tab]');
+            if (!hjy_btn || hjy_btn.disabled) { return; }
+            hjy_load(parseInt(hjy_btn.getAttribute('data-hjy-tab'), 10));
+        });
+        hjy_id('hjy_retry').addEventListener('click', function () { hjy_load(hjy_cur); });
+        hjy_id('hjy_v_tree').addEventListener('click', function () { hjy_view('tree'); });
+        hjy_id('hjy_v_pretty').addEventListener('click', function () { hjy_view('pretty'); });
+        hjy_id('hjy_v_min').addEventListener('click', function () { hjy_view('min'); });
+
+        hjy_id('hjy_expand').addEventListener('click', function () {
+            var hjy_nodes = hjy_id('hjy_tree').querySelectorAll('details');
+            for (var hjy_i = 0; hjy_i < hjy_nodes.length; hjy_i++) { hjy_nodes[hjy_i].open = true; }
+            hjy_view('tree');
+        });
+        hjy_id('hjy_collapse').addEventListener('click', function () {
+            var hjy_nodes = hjy_id('hjy_tree').querySelectorAll('details');
+            for (var hjy_i = 0; hjy_i < hjy_nodes.length; hjy_i++) { hjy_nodes[hjy_i].open = false; }
+            var hjy_root = hjy_id('hjy_tree').querySelector('details');
+            if (hjy_root) { hjy_root.open = true; }
+            hjy_view('tree');
+        });
+        hjy_id('hjy_copy').addEventListener('click', function () {
+            var hjy_text = hjy_pretty_text || '';
+            if (!hjy_text) { hjy_toast('还没有数据可复制'); return; }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(hjy_text).then(function () {
+                    hjy_toast('已复制格式化 JSON');
+                }).catch(function () { hjy_toast('复制失败，请手动选择'); });
+            } else {
+                var hjy_ta = document.createElement('textarea');
+                hjy_ta.value = hjy_text;
+                document.body.appendChild(hjy_ta);
+                hjy_ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(hjy_ta);
+                hjy_toast('已复制格式化 JSON');
+            }
+        });
+
+        /* 初始化：默认示例 + 首个接口 */
+        hjy_apply_preset(0);
+        hjy_view('tree');
+        hjy_load(0);
+    })();
+</script>
+</body>
+</html>

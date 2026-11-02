@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-02 功能：用原生 fetch 跨域获取用户接口数据，并把返回的数组渲染成用户名片列表（含加载骨架、四步状态、超时中止、错误处理与原始 JSON 查看） -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fetch 获取接口数据 · 用户名片墙</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-02 功能：页面样式（类名统一 hjy_ 前缀） */
+        :root {
+            --hjy_p1: #667eea;
+            --hjy_p2: #764ba2;
+            --hjy_pink: #f093fb;
+            --hjy_green: #2ecc71;
+            --hjy_red: #e74c3c;
+            --hjy_orange: #f39c12;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh; color: #333; line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            padding: 26px 20px 44px;
+        }
+        .hjy_wrap { max-width: 1120px; margin: 0 auto; }
+
+        /* ===== 导航 ===== */
+        .hjy_nav {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap; margin-bottom: 18px;
+        }
+        .hjy_nav_logo { color: #fff; font-weight: 700; letter-spacing: 1px; font-size: 1.02rem; }
+        .hjy_nav_logo small { font-weight: 400; opacity: 0.85; font-size: 0.76rem; margin-left: 8px; }
+        .hjy_nav_links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .hjy_nav_link {
+            color: #fff; text-decoration: none; font-size: 0.82rem;
+            padding: 6px 15px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            transition: background 0.2s;
+        }
+        .hjy_nav_link:hover { background: rgba(255, 255, 255, 0.34); }
+        .hjy_nav_link.hjy_on { background: #fff; color: var(--hjy_p2); font-weight: 700; }
+
+        .hjy_header { text-align: center; color: #fff; margin-bottom: 22px; }
+        .hjy_header h1 { font-size: 1.85rem; letter-spacing: 1px; text-shadow: 0 3px 10px rgba(0, 0, 0, 0.22); }
+        .hjy_header p { font-size: 0.88rem; opacity: 0.94; margin-top: 6px; }
+        .hjy_header .hjy_badge {
+            display: inline-block; margin-top: 12px; padding: 5px 16px; font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.24); border-radius: 30px;
+        }
+
+        /* ===== 卡片 ===== */
+        .hjy_card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 20px; padding: 26px;
+            box-shadow: 0 15px 38px rgba(0, 0, 0, 0.14);
+            margin-bottom: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .hjy_section_title {
+            font-size: 1.1rem; color: #5a4b8c; margin-bottom: 16px;
+            padding-left: 13px; border-left: 5px solid var(--hjy_p2);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .hjy_section_title .hjy_cnt {
+            font-size: 0.73rem; font-weight: 400; color: #9b93b5;
+            background: #f3f0fb; padding: 2px 10px; border-radius: 20px;
+        }
+        .hjy_section_title .hjy_sp { margin-left: auto; }
+
+        /* ===== 接口地址 ===== */
+        .hjy_api_row {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            background: #fbfaff; border: 1px solid #ece7f7; border-radius: 12px;
+            padding: 11px 14px;
+        }
+        .hjy_method {
+            font-family: Consolas, monospace; font-size: 0.72rem; font-weight: 800; color: #fff;
+            background: linear-gradient(135deg, #4facfe, #00b4d8);
+            padding: 3px 10px; border-radius: 7px; letter-spacing: 0.5px;
+        }
+        .hjy_api_url {
+            font-family: Consolas, "Courier New", monospace; font-size: 0.8rem;
+            color: #5a4b8c; word-break: break-all; flex: 1; min-width: 200px;
+        }
+        .hjy_api_tag {
+            font-size: 0.7rem; color: #1d7e55; background: #eefaf4;
+            border: 1px solid #cdeede; padding: 2px 9px; border-radius: 20px;
+        }
+
+        .hjy_controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+        .hjy_btn {
+            border: none; cursor: pointer; font-family: inherit; font-weight: 700;
+            padding: 10px 20px; border-radius: 12px; font-size: 0.84rem; color: #fff;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .hjy_btn:hover { transform: translateY(-2px); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .hjy_btn_ghost {
+            background: #fff; color: var(--hjy_p2); border: 1.5px solid #ded8f0; box-shadow: none;
+        }
+        .hjy_btn_ghost:hover { border-color: var(--hjy_p2); }
+        .hjy_btn_mini {
+            padding: 6px 13px; font-size: 0.75rem; border-radius: 9px;
+            background: #f4f1fc; color: #6b5b95; border: 1px solid #e8e1f8; box-shadow: none;
+        }
+        .hjy_btn_mini:hover { background: #ece6fa; }
+        .hjy_input {
+            width: 88px; padding: 9px 11px; border-radius: 10px;
+            border: 1.5px solid #ded8f0; font-family: Consolas, monospace;
+            font-size: 0.82rem; outline: none; color: #5a4b8c;
+        }
+        .hjy_input:focus { border-color: var(--hjy_p1); }
+        .hjy_hint { font-size: 0.76rem; color: #a49cbc; }
+        .hjy_hint code {
+            font-family: Consolas, monospace; font-size: 0.74rem;
+            background: #f4f1fc; color: #6b5b95; padding: 1px 5px; border-radius: 4px;
+        }
+
+        /* ===== 状态条 ===== */
+        .hjy_statusbar {
+            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+            padding: 12px 16px; border-radius: 12px; font-size: 0.79rem; color: #6a6480;
+            background: #f7f5fc; border-left: 4px solid #ddd6f0;
+        }
+        .hjy_statusbar.hjy_load { background: #eef1fd; border-left-color: var(--hjy_p1); }
+        .hjy_statusbar.hjy_ok { background: #eefaf4; border-left-color: var(--hjy_green); }
+        .hjy_statusbar.hjy_bad { background: #fdf1f0; border-left-color: var(--hjy_red); }
+        .hjy_statusbar b { color: #5a4b8c; font-family: Consolas, monospace; }
+        .hjy_badge_s {
+            font-family: Consolas, monospace; font-weight: 800; font-size: 0.8rem;
+            padding: 3px 11px; border-radius: 8px; background: #e8e3f5; color: #5a4b8c;
+        }
+        .hjy_statusbar.hjy_ok .hjy_badge_s { background: #d6f4e5; color: #1d7a54; }
+        .hjy_statusbar.hjy_bad .hjy_badge_s { background: #fadbd8; color: #b03a2e; }
+        .hjy_statusbar.hjy_load .hjy_badge_s { background: #dde3fd; color: #4551a8; }
+
+        /* ===== 四步状态 ===== */
+        .hjy_steps {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px;
+        }
+        .hjy_st {
+            display: flex; gap: 9px; align-items: flex-start;
+            background: #fbfaff; border: 1px solid #f0ecf9; border-radius: 12px;
+            padding: 10px 12px; transition: background 0.25s, border-color 0.25s;
+        }
+        .hjy_dot {
+            width: 9px; height: 9px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
+            background: #ded8f0;
+        }
+        .hjy_st_txt b {
+            display: block; font-family: Consolas, monospace; font-size: 0.76rem; color: #6a6480;
+        }
+        .hjy_st_txt span { font-size: 0.72rem; color: #b0a9c4; font-family: Consolas, monospace; word-break: break-all; }
+        .hjy_st_run { background: #f2f5fe; border-color: #c9d2f7; }
+        .hjy_st_run .hjy_dot { background: var(--hjy_p1); animation: hjy_blink 0.9s ease infinite; }
+        .hjy_st_run .hjy_st_txt b { color: #4257b2; }
+        .hjy_st_run .hjy_st_txt span { color: #5563c1; }
+        .hjy_st_ok { background: #f2fcf7; border-color: #cdeede; }
+        .hjy_st_ok .hjy_dot { background: var(--hjy_green); }
+        .hjy_st_ok .hjy_st_txt b { color: #1d7e55; }
+        .hjy_st_ok .hjy_st_txt span { color: #389e77; }
+        .hjy_st_bad { background: #fdf3f2; border-color: #f6c9c4; }
+        .hjy_st_bad .hjy_dot { background: var(--hjy_red); }
+        .hjy_st_bad .hjy_st_txt b { color: #b03a2e; }
+        .hjy_st_bad .hjy_st_txt span { color: #c2605a; }
+        @keyframes hjy_blink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.6); }
+            50% { opacity: 0.55; box-shadow: 0 0 0 5px rgba(102, 126, 234, 0); }
+        }
+
+        /* ===== 错误提示 ===== */
+        .hjy_err {
+            margin-top: 14px; padding: 14px 16px; border-radius: 12px;
+            background: #fdf1f0; border: 1px solid #f7d5d1; border-left: 5px solid var(--hjy_red);
+            font-size: 0.82rem; color: #a5443a; line-height: 1.85;
+        }
+        .hjy_err[hidden] { display: none; }
+        .hjy_err_title { font-weight: 800; font-size: 0.88rem; margin-bottom: 4px; }
+        .hjy_err code {
+            font-family: Consolas, monospace; font-size: 0.76rem;
+            background: rgba(255, 255, 255, 0.75); padding: 1px 5px; border-radius: 4px;
+        }
+        .hjy_err .hjy_btn_mini { margin-top: 8px; background: #fff; border-color: #f0c7c2; color: #b03a2e; }
+
+        /* ===== 统计 ===== */
+        .hjy_stats { display: flex; gap: 22px; flex-wrap: wrap; }
+        .hjy_stat { font-size: 0.76rem; color: #a49cbc; }
+        .hjy_stat b {
+            font-family: Consolas, monospace; font-size: 1rem; color: var(--hjy_p2); margin-right: 3px;
+        }
+
+        /* ===== 用户卡片 ===== */
+        .hjy_grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
+            gap: 16px; margin-top: 16px;
+        }
+        .hjy_user {
+            background: #fff; border: 1px solid #eee9f7; border-radius: 16px;
+            padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 11px;
+            animation: hjy_up 0.45s ease both;
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+        }
+        .hjy_user:hover {
+            transform: translateY(-4px); border-color: #ddd2f3;
+            box-shadow: 0 14px 30px rgba(118, 75, 162, 0.14);
+        }
+        @keyframes hjy_up {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hjy_uhead { display: flex; gap: 12px; align-items: center; }
+        .hjy_avatar {
+            width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 800; font-size: 0.94rem; letter-spacing: 0.5px;
+            font-family: Consolas, monospace;
+            box-shadow: 0 6px 14px rgba(118, 75, 162, 0.22);
+        }
+        .hjy_uinfo { min-width: 0; flex: 1; }
+        .hjy_urow { display: flex; align-items: center; gap: 7px; }
+        .hjy_urow h3 {
+            font-size: 0.95rem; color: #3f3860; font-weight: 700;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .hjy_uid {
+            font-family: Consolas, monospace; font-size: 0.68rem; color: #9b93b5;
+            background: #f4f1fc; padding: 1px 6px; border-radius: 6px; flex-shrink: 0;
+        }
+        .hjy_handle { font-family: Consolas, monospace; font-size: 0.74rem; color: #a49cbc; }
+
+        .hjy_meta { display: flex; flex-direction: column; gap: 4px; }
+        .hjy_mrow { display: flex; gap: 8px; font-size: 0.76rem; line-height: 1.6; }
+        .hjy_k {
+            flex: 0 0 32px; color: #b6aecd; font-size: 0.72rem;
+            background: #faf8ff; border-radius: 5px; text-align: center; height: 20px; line-height: 20px;
+        }
+        .hjy_v { color: #5f5a72; word-break: break-all; text-decoration: none; flex: 1; }
+        a.hjy_v:hover { color: var(--hjy_p2); text-decoration: underline; }
+
+        .hjy_company {
+            background: #faf8ff; border: 1px solid #f2edfb; border-radius: 10px;
+            padding: 8px 10px; font-size: 0.76rem; color: #4b4463;
+        }
+        .hjy_ctag {
+            font-size: 0.66rem; color: #fff; background: linear-gradient(135deg, #a98bdc, #764ba2);
+            padding: 1px 7px; border-radius: 5px; margin-right: 6px; letter-spacing: 0.5px;
+        }
+        .hjy_company b { font-weight: 700; }
+        .hjy_company em {
+            display: block; font-style: normal; font-size: 0.72rem; color: #a49cbc; margin-top: 2px;
+        }
+        .hjy_foot {
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
+            border-top: 1px dashed #f0ecf9; padding-top: 9px; margin-top: auto;
+            font-size: 0.72rem; color: #a49cbc;
+        }
+        .hjy_geo {
+            font-family: Consolas, monospace; font-size: 0.68rem; color: #b6aecd;
+            background: #f7f4fd; padding: 1px 7px; border-radius: 6px; white-space: nowrap;
+        }
+
+        /* ===== 骨架屏 ===== */
+        .hjy_skel {
+            background: #fff; border: 1px solid #f2edfb; border-radius: 16px; padding: 16px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .hjy_sk {
+            border-radius: 7px;
+            background: linear-gradient(90deg, #f3f0fa 25%, #eae4f7 37%, #f3f0fa 63%);
+            background-size: 400% 100%;
+            animation: hjy_shimmer 1.3s ease infinite;
+        }
+        @keyframes hjy_shimmer {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+        .hjy_sk_av { width: 46px; height: 46px; border-radius: 14px; }
+        .hjy_sk_head { display: flex; gap: 12px; }
+        .hjy_sk_col { flex: 1; display: flex; flex-direction: column; gap: 7px; justify-content: center; }
+        .hjy_sk_l1 { height: 11px; width: 62%; }
+        .hjy_sk_l2 { height: 9px; width: 40%; }
+        .hjy_sk_l3 { height: 9px; width: 100%; }
+        .hjy_sk_l4 { height: 9px; width: 84%; }
+        .hjy_sk_block { height: 34px; border-radius: 10px; }
+
+        /* ===== 空状态 ===== */
+        .hjy_empty {
+            grid-column: 1 / -1; text-align: center; padding: 44px 20px;
+            color: #a49cbc; font-size: 0.84rem;
+        }
+        .hjy_empty .hjy_empty_icon { font-size: 2.2rem; display: block; margin-bottom: 8px; }
+
+        /* ===== 原始 JSON ===== */
+        .hjy_details {
+            border: 1px solid #f0ecf9; border-radius: 12px; background: #fbfaff;
+            padding: 12px 16px;
+        }
+        .hjy_details summary {
+            cursor: pointer; font-size: 0.82rem; color: #6b5b95; font-weight: 700; outline: none;
+        }
+        .hjy_details summary span { font-weight: 400; color: #a49cbc; font-size: 0.74rem; margin-left: 6px; }
+        .hjy_code {
+            background: #2d2d2d; color: #f8f8f2; padding: 14px 16px; border-radius: 12px;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.74rem;
+            line-height: 1.8; border-left: 5px solid var(--hjy_p1);
+            overflow: auto; max-height: 420px; margin-top: 12px;
+            white-space: pre; tab-size: 2;
+        }
+        .hjy_j_key { color: #c792ea; }
+        .hjy_j_str { color: #a6e22e; }
+        .hjy_j_num { color: #f78c6c; }
+        .hjy_j_lit { color: #82aaff; }
+
+        /* ===== 接口清单 ===== */
+        .hjy_api_list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .hjy_api_item {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            background: #fbfaff; border: 1px solid #f2edfb; border-radius: 11px;
+            padding: 9px 13px; font-size: 0.77rem;
+        }
+        .hjy_api_item.hjy_api_on { background: #f4f6fe; border-color: #c9d2f7; }
+        .hjy_api_item code {
+            font-family: Consolas, monospace; color: #5a4b8c; word-break: break-all; flex: 1; min-width: 180px;
+        }
+        .hjy_api_item .hjy_desc { color: #a49cbc; font-size: 0.73rem; }
+        .hjy_api_item .hjy_use {
+            font-size: 0.68rem; color: #4551a8; background: #dde3fd;
+            padding: 1px 8px; border-radius: 20px; white-space: nowrap;
+        }
+
+        .hjy_tips { font-size: 0.81rem; color: #7b7392; line-height: 1.95; }
+        .hjy_tips code {
+            font-family: Consolas, monospace; font-size: 0.75rem;
+            background: #f4f1fc; color: #6b5b95; padding: 1px 5px; border-radius: 4px;
+        }
+        .hjy_two_col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .hjy_sub_title { font-size: 0.86rem; color: #5a4b8c; font-weight: 700; }
+        .hjy_sub_title span { font-weight: 400; color: #a49cbc; font-size: 0.74rem; margin-left: 6px; }
+
+        .hjy_footer { text-align: center; color: #fff; opacity: 0.9; font-size: 0.82rem; margin-top: 8px; }
+
+        @media (max-width: 900px) {
+            .hjy_steps { grid-template-columns: 1fr 1fr; }
+            .hjy_two_col { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            body { padding: 18px 12px 32px; }
+            .hjy_card { padding: 18px 15px; border-radius: 16px; }
+            .hjy_header h1 { font-size: 1.4rem; }
+            .hjy_controls .hjy_btn { flex: 1 1 100%; }
+            .hjy_grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_wrap">
+
+    <nav class="hjy_nav">
+        <div class="hjy_nav_logo">🛰️ fetch 取数据 <small>原生 JS · 跨域接口</small></div>
+        <div class="hjy_nav_links">
+            <a href="./index.html" class="hjy_nav_link">首页</a>
+            <a href="./17-2.html" class="hjy_nav_link hjy_on">fetch 基础</a>
+            <a href="./17-3.html" class="hjy_nav_link">商品列表</a>
+            <a href="./17-4.html" class="hjy_nav_link">接口测试</a>
+            <a href="./17-6.html" class="hjy_nav_link">异步流程</a>
+        </div>
+    </nav>
+
+    <header class="hjy_header">
+        <h1>获取接口数据并展示</h1>
+        <p>用 fetch 请求远程用户接口，把返回的 JSON 数组渲染成一张张“用户名片”</p>
+        <div class="hjy_badge">👤 学生：胡家瑜 · 2026-11-02</div>
+    </header>
+
+    <!-- ===== 接口与控制 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">① 接口信息 <span class="hjy_cnt">返回 10 个用户对象的数组</span></h2>
+        <div class="hjy_api_row">
+            <span class="hjy_method">GET</span>
+            <span class="hjy_api_url">https://jsonplaceholder.typicode.com/users</span>
+            <span class="hjy_api_tag">Access-Control-Allow-Origin: *</span>
+        </div>
+
+        <div class="hjy_controls">
+            <button class="hjy_btn" id="hjy_btn_async">async / await 请求</button>
+            <button class="hjy_btn hjy_btn_ghost" id="hjy_btn_promise">Promise .then() 请求</button>
+            <span class="hjy_hint">超时</span>
+            <input type="number" class="hjy_input" id="hjy_timeout" value="10000" min="1000" step="1000">
+            <span class="hjy_hint">毫秒</span>
+        </div>
+        <p class="hjy_hint" style="margin-top:12px">
+            该接口由 JSONPlaceholder 提供，响应头带 <code>Access-Control-Allow-Origin: *</code>，
+            所以本地双击打开（<code>file://</code>）也能正常取到数据；两个按钮跑的是同一份数据，只是写法不同。
+        </p>
+    </section>
+
+    <!-- ===== 请求状态 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">② 请求过程 <span class="hjy_cnt">fetch → res.ok → res.json() → 渲染</span></h2>
+
+        <div class="hjy_statusbar hjy_load" id="hjy_statusbar">
+            <span class="hjy_badge_s" id="hjy_badge">等待请求</span>
+            <span>耗时 <b id="hjy_time">—</b></span>
+            <span>数据量 <b id="hjy_count">0 条</b></span>
+            <span style="margin-left:auto">写法：<b id="hjy_mode">—</b></span>
+        </div>
+
+        <div class="hjy_steps" id="hjy_steps">
+            <div class="hjy_st hjy_st_wait" id="hjy_st1">
+                <span class="hjy_dot"></span>
+                <div class="hjy_st_txt"><b>① fetch()</b><span id="hjy_std1">等待发出请求</span></div>
+            </div>
+            <div class="hjy_st hjy_st_wait" id="hjy_st2">
+                <span class="hjy_dot"></span>
+                <div class="hjy_st_txt"><b>② 检查 res.ok</b><span id="hjy_std2">等待响应</span></div>
+            </div>
+            <div class="hjy_st hjy_st_wait" id="hjy_st3">
+                <span class="hjy_dot"></span>
+                <div class="hjy_st_txt"><b>③ res.json()</b><span id="hjy_std3">等待解析</span></div>
+            </div>
+            <div class="hjy_st hjy_st_wait" id="hjy_st4">
+                <span class="hjy_dot"></span>
+                <div class="hjy_st_txt"><b>④ 渲染 DOM</b><span id="hjy_std4">等待数据</span></div>
+            </div>
+        </div>
+
+        <div class="hjy_err" id="hjy_err" hidden>
+            <div class="hjy_err_title" id="hjy_err_title">请求失败</div>
+            <div id="hjy_err_msg"></div>
+            <button class="hjy_btn_mini" id="hjy_retry">重新请求</button>
+        </div>
+    </section>
+
+    <!-- ===== 数据展示 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">
+            ③ 用户名片墙
+            <span class="hjy_cnt" id="hjy_grid_cnt">共 0 位</span>
+            <span class="hjy_sp hjy_stats">
+                <span class="hjy_stat"><b id="hjy_stat_users">0</b>位用户</span>
+                <span class="hjy_stat"><b id="hjy_stat_cities">0</b>个城市</span>
+                <span class="hjy_stat"><b id="hjy_stat_companies">0</b>家公司</span>
+            </span>
+        </h2>
+        <div class="hjy_grid" id="hjy_grid">
+            <div class="hjy_empty">
+                <span class="hjy_empty_icon">🛰️</span>
+                正在准备请求…
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 原始数据 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">④ 接口返回的原始 JSON</h2>
+        <details class="hjy_details">
+            <summary>展开查看 <span id="hjy_raw_tip">（请求成功后显示）</span></summary>
+            <pre class="hjy_code" id="hjy_raw">// 暂无数据</pre>
+        </details>
+        <p class="hjy_tips" style="margin-top:12px">
+            页面上每张名片都是从这份 JSON 里读出来的：<code>users[i].name</code>、<code>users[i].address.city</code>、
+            <code>users[i].company.name</code> …… 会写 <code>map()</code> 或 <code>for</code> 循环，就能把数组变成 HTML。
+        </p>
+    </section>
+
+    <!-- ===== 代码 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">⑤ 这么写就够用了</h2>
+        <div class="hjy_two_col">
+            <div>
+                <div class="hjy_sub_title">async / await <span>更像同步代码，推荐</span></div>
+                <pre class="hjy_code">async function hjy_load() {
+    try {
+        var res = await fetch(
+            'https://jsonplaceholder.typicode.com/users'
+        );
+
+        // 404 / 500 不会让 fetch 报错，必须自己判断
+        if (!res.ok) {
+            throw new Error('HTTP ' + res.status);
+        }
+
+        var users = await res.json();  // 解析成 JS 数组
+        hjy_render(users);             // 渲染到页面
+    } catch (err) {
+        console.error('请求失败：', err.message);
+    }
+}</pre>
+            </div>
+            <div>
+                <div class="hjy_sub_title">Promise .then() <span>链式写法，理解 Promise 的基础</span></div>
+                <pre class="hjy_code">fetch('https://jsonplaceholder.typicode.com/users')
+    .then(function (res) {
+        if (!res.ok) {
+            throw new Error('HTTP ' + res.status);
+        }
+        return res.json();            // 返回 Promise
+    })
+    .then(function (users) {
+        // users 是 10 个用户对象组成的数组
+        hjy_render(users);
+    })
+    .catch(function (err) {
+        console.error('请求失败：', err.message);
+    });</pre>
+            </div>
+        </div>
+        <p class="hjy_tips" style="margin-top:14px">
+            <b>四个要点：</b>① <code>fetch()</code> 返回 Promise，要 <code>await</code> 或 <code>.then()</code> 拿结果；
+            ② <code>res.ok</code> 为 <code>false</code> 时要自己 throw，否则会把错误页面当成正常数据；
+            ③ 数据只能用一次 <code>res.json()</code>，解析后存成变量，反复渲染都用这个变量；
+            ④ 断网或跨域被拦会抛 <code>TypeError: Failed to fetch</code>，要用 <code>try/catch</code> 兜住并提示用户。
+        </p>
+    </section>
+
+    <!-- ===== 接口清单 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">⑥ 其他可用接口（来自 接口.txt）<span class="hjy_cnt">都可跨域访问</span></h2>
+        <div class="hjy_api_list">
+            <div class="hjy_api_item">
+                <span class="hjy_method">GET</span>
+                <code>https://dog.ceo/api/breeds/image/random</code>
+                <span class="hjy_desc">随机一张狗狗图片</span>
+            </div>
+            <div class="hjy_api_item hjy_api_on">
+                <span class="hjy_method">GET</span>
+                <code>https://jsonplaceholder.typicode.com/users</code>
+                <span class="hjy_desc">10 位用户（姓名、邮箱、公司、地址）</span>
+                <span class="hjy_use">本页使用</span>
+            </div>
+            <div class="hjy_api_item">
+                <span class="hjy_method">GET</span>
+                <code>https://dog.ceo/api/breed/hound/images/random/3</code>
+                <span class="hjy_desc">3 张猎犬图片</span>
+            </div>
+            <div class="hjy_api_item">
+                <span class="hjy_method">GET</span>
+                <code>https://jsonplaceholder.typicode.com/posts</code>
+                <span class="hjy_desc">100 篇文章</span>
+            </div>
+            <div class="hjy_api_item">
+                <span class="hjy_method">GET</span>
+                <code>https://dummyjson.com/products</code>
+                <span class="hjy_desc">商品列表（17-3 使用）</span>
+            </div>
+            <div class="hjy_api_item">
+                <span class="hjy_method">GET</span>
+                <code>https://fakestoreapi.com/products</code>
+                <span class="hjy_desc">另一份商品列表</span>
+            </div>
+        </div>
+        <p class="hjy_tips" style="margin-top:12px">
+            想换接口试，可以打开 <a href="./17-4.html" style="color:#764ba2">17-4 接口测试页</a>，
+            把地址粘进去就能看到返回结构和状态码。
+        </p>
+    </section>
+
+    <footer class="hjy_footer">Made with ❤ by 胡家瑜 · 高级网页设计课程</footer>
+</div>
+
+<script>
+    /* 姓名：胡家瑜 日期：2026-11-02 功能：fetch 请求用户接口 → 判断 res.ok → 解析 JSON → 渲染用户名片墙 */
+    (function () {
+        var HJY_API = 'https://jsonplaceholder.typicode.com/users';
+        var HJY_COLORS = [
+            ['#667eea', '#764ba2'],
+            ['#f6a26b', '#e8705f'],
+            ['#43c6ac', '#1f7a6f'],
+            ['#4facfe', '#00b4d8'],
+            ['#f093fb', '#e05a8e'],
+            ['#a18cd1', '#6a3093']
+        ];
+
+        var hjy_ctrl = null;
+        var hjy_timer = null;
+        var hjy_busy = false;
+        var hjy_t0 = 0;
+        var hjy_timeout_ms = 10000;
+
+        function hjy_id(hjy_n) { return document.getElementById(hjy_n); }
+        function hjy_esc(hjy_t) {
+            return String(hjy_t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function hjy_hl(hjy_text) {
+            return hjy_esc(hjy_text).replace(/("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+                function (hjy_m, hjy_s, hjy_c, hjy_l, hjy_num) {
+                    if (hjy_s) {
+                        return hjy_c ? '<span class="hjy_j_key">' + hjy_s + '</span>' + hjy_c
+                                     : '<span class="hjy_j_str">' + hjy_s + '</span>';
+                    }
+                    if (hjy_l) { return '<span class="hjy_j_lit">' + hjy_l + '</span>'; }
+                    return '<span class="hjy_j_num">' + hjy_num + '</span>';
+                });
+        }
+        function hjy_initials(hjy_name) {
+            var hjy_parts = String(hjy_name).trim().split(/\s+/);
+            var hjy_out = '';
+            for (var hjy_i = 0; hjy_i < hjy_parts.length && hjy_out.length < 2; hjy_i++) {
+                hjy_out += hjy_parts[hjy_i].charAt(0);
+            }
+            return hjy_out.toUpperCase();
+        }
+
+        /* ===== 界面状态 ===== */
+        function hjy_step(hjy_i, hjy_state, hjy_text) {
+            var hjy_box = hjy_id('hjy_st' + hjy_i);
+            hjy_box.className = 'hjy_st hjy_st_' + hjy_state;
+            hjy_id('hjy_std' + hjy_i).textContent = hjy_text;
+        }
+        function hjy_skeleton() {
+            var hjy_html = '';
+            for (var hjy_i = 0; hjy_i < 6; hjy_i++) {
+                hjy_html += '<div class="hjy_skel">' +
+                    '<div class="hjy_sk_head">' +
+                        '<div class="hjy_sk hjy_sk_av"></div>' +
+                        '<div class="hjy_sk_col">' +
+                            '<div class="hjy_sk hjy_sk_l1"></div>' +
+                            '<div class="hjy_sk hjy_sk_l2"></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="hjy_sk hjy_sk_l3"></div>' +
+                    '<div class="hjy_sk hjy_sk_block"></div>' +
+                    '<div class="hjy_sk hjy_sk_l4"></div>' +
+                '</div>';
+            }
+            hjy_id('hjy_grid').innerHTML = hjy_html;
+        }
+        function hjy_set_buttons(hjy_disabled) {
+            hjy_id('hjy_btn_async').disabled = hjy_disabled;
+            hjy_id('hjy_btn_promise').disabled = hjy_disabled;
+            hjy_id('hjy_retry').disabled = hjy_disabled;
+        }
+
+        function hjy_begin(hjy_mode) {
+            if (hjy_busy) { return false; }
+
+            hjy_busy = true;
+            hjy_t0 = performance.now();
+            hjy_timeout_ms = parseInt(hjy_id('hjy_timeout').value, 10);
+            if (!hjy_timeout_ms || hjy_timeout_ms < 1000) { hjy_timeout_ms = 10000; }
+
+            hjy_id('hjy_err').hidden = true;
+            hjy_id('hjy_statusbar').className = 'hjy_statusbar hjy_load';
+            hjy_id('hjy_badge').textContent = '请求中…';
+            hjy_id('hjy_time').textContent = '—';
+            hjy_id('hjy_count').textContent = '0 条';
+            hjy_id('hjy_mode').textContent = hjy_mode === 'promise' ? 'Promise .then()' : 'async / await';
+            hjy_step(1, 'run', '正在请求接口…');
+            hjy_step(2, 'wait', '等待响应');
+            hjy_step(3, 'wait', '等待解析');
+            hjy_step(4, 'wait', '等待数据');
+            hjy_skeleton();
+            hjy_set_buttons(true);
+
+            hjy_id('hjy_raw').textContent = '// 请求中…';
+            hjy_id('hjy_raw_tip').textContent = '（请求成功后显示）';
+            hjy_id('hjy_grid_cnt').textContent = '共 0 位';
+            hjy_id('hjy_stat_users').textContent = '0';
+            hjy_id('hjy_stat_cities').textContent = '0';
+            hjy_id('hjy_stat_companies').textContent = '0';
+
+            hjy_ctrl = new AbortController();
+            hjy_clear_timer();
+            hjy_timer = setTimeout(function () { hjy_ctrl.abort(); }, hjy_timeout_ms);
+            return true;
+        }
+
+        function hjy_clear_timer() {
+            if (hjy_timer) { clearTimeout(hjy_timer); hjy_timer = null; }
+        }
+        function hjy_end() {
+            hjy_clear_timer();
+            hjy_busy = false;
+            hjy_set_buttons(false);
+        }
+
+        /* ===== 渲染 ===== */
+        function hjy_render(hjy_users) {
+            var hjy_html = '';
+            var hjy_cities = {};
+            var hjy_comps = {};
+
+            for (var hjy_i = 0; hjy_i < hjy_users.length; hjy_i++) {
+                var hjy_u = hjy_users[hjy_i];
+                var hjy_c = HJY_COLORS[(hjy_u.id - 1) % HJY_COLORS.length];
+                var hjy_site = hjy_u.website || '';
+                var hjy_href = /^https?:/i.test(hjy_site) ? hjy_site : 'https://' + hjy_site;
+                var hjy_addr = hjy_u.address.suite + '，' + hjy_u.address.street;
+
+                hjy_cities[hjy_u.address.city] = 1;
+                hjy_comps[hjy_u.company.name] = 1;
+
+                hjy_html += '<article class="hjy_user" style="animation-delay:' + (hjy_i * 45) + 'ms">' +
+                    '<div class="hjy_uhead">' +
+                        '<div class="hjy_avatar" style="background:linear-gradient(135deg,' + hjy_c[0] + ',' + hjy_c[1] + ')">' +
+                            hjy_esc(hjy_initials(hjy_u.name)) +
+                        '</div>' +
+                        '<div class="hjy_uinfo">' +
+                            '<div class="hjy_urow">' +
+                                '<h3>' + hjy_esc(hjy_u.name) + '</h3>' +
+                                '<span class="hjy_uid">#' + hjy_u.id + '</span>' +
+                            '</div>' +
+                            '<div class="hjy_handle">@' + hjy_esc(hjy_u.username) + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="hjy_meta">' +
+                        '<div class="hjy_mrow"><span class="hjy_k">邮箱</span>' +
+                            '<a class="hjy_v" href="mailto:' + hjy_esc(hjy_u.email) + '">' + hjy_esc(hjy_u.email) + '</a></div>' +
+                        '<div class="hjy_mrow"><span class="hjy_k">电话</span>' +
+                            '<span class="hjy_v">' + hjy_esc(hjy_u.phone) + '</span></div>' +
+                        '<div class="hjy_mrow"><span class="hjy_k">网址</span>' +
+                            '<a class="hjy_v" href="' + hjy_esc(hjy_href) + '" target="_blank" rel="noopener">' +
+                            hjy_esc(hjy_site) + '</a></div>' +
+                        '<div class="hjy_mrow"><span class="hjy_k">地址</span>' +
+                            '<span class="hjy_v">' + hjy_esc(hjy_addr) + '</span></div>' +
+                    '</div>' +
+                    '<div class="hjy_company">' +
+                        '<span class="hjy_ctag">公司</span><b>' + hjy_esc(hjy_u.company.name) + '</b>' +
+                        '<em>“' + hjy_esc(hjy_u.company.catchPhrase) + '”</em>' +
+                    '</div>' +
+                    '<div class="hjy_foot">' +
+                        '<span>📍 ' + hjy_esc(hjy_u.address.city) + '</span>' +
+                        '<span class="hjy_geo">' + hjy_esc(hjy_u.address.geo.lat) + ', ' + hjy_esc(hjy_u.address.geo.lng) + '</span>' +
+                    '</div>' +
+                '</article>';
+            }
+
+            hjy_id('hjy_grid').innerHTML = hjy_html;
+            hjy_id('hjy_grid_cnt').textContent = '共 ' + hjy_users.length + ' 位';
+            hjy_id('hjy_stat_users').textContent = hjy_users.length;
+            hjy_id('hjy_stat_cities').textContent = Object.keys(hjy_cities).length;
+            hjy_id('hjy_stat_companies').textContent = Object.keys(hjy_comps).length;
+
+            var hjy_raw = JSON.stringify(hjy_users, null, 2);
+            hjy_id('hjy_raw').innerHTML = hjy_hl(hjy_raw);
+            hjy_id('hjy_raw_tip').textContent = '（' + hjy_users.length + ' 个用户对象，' + hjy_raw.length + ' 个字符）';
+        }
+
+        /* ===== 成功 / 失败 ===== */
+        function hjy_success(hjy_users) {
+            var hjy_ms = Math.round(performance.now() - hjy_t0);
+
+            hjy_id('hjy_statusbar').className = 'hjy_statusbar hjy_ok';
+            hjy_id('hjy_badge').textContent = 'HTTP 200 OK';
+            hjy_id('hjy_time').textContent = hjy_ms + ' ms';
+            hjy_id('hjy_count').textContent = hjy_users.length + ' 条';
+
+            hjy_step(4, 'run', '生成 ' + hjy_users.length + ' 张名片…');
+            hjy_render(hjy_users);
+            hjy_step(4, 'ok', '已渲染 ' + hjy_users.length + ' 张名片');
+            hjy_end();
+        }
+
+        function hjy_fail(hjy_err) {
+            var hjy_ms = Math.round(performance.now() - hjy_t0);
+            var hjy_title = '请求失败';
+            var hjy_msg = hjy_esc(hjy_err.message || String(hjy_err));
+
+            if (hjy_err.name === 'AbortError') {
+                hjy_title = '请求超时';
+                hjy_msg = '超过 <code>' + hjy_timeout_ms + ' ms</code> 还没有响应，已用 <code>AbortController</code> 主动中止请求。' +
+                    '可以点“重新请求”，或把超时时间调大一点。';
+                hjy_step(1, 'bad', '超时中止');
+            } else if (hjy_err instanceof TypeError) {
+                hjy_title = '网络错误 / 跨域被拦截';
+                hjy_msg = '浏览器没有拿到任何响应（<code>TypeError: Failed to fetch</code>）。常见原因：断网、域名写错、' +
+                    '接口没有设置 <code>Access-Control-Allow-Origin</code>。可打开 F12 控制台看具体报错。';
+                hjy_step(1, 'bad', '请求失败');
+            } else if (hjy_err.hjy_http) {
+                hjy_title = '接口返回错误状态';
+                hjy_msg = '接口响应的状态码是 <b>' + hjy_esc(hjy_err.message) + '</b>。' +
+                    '注意：4xx / 5xx 不会让 fetch 自动报错，必须靠 <code>res.ok</code> 判断。';
+                hjy_step(2, 'bad', hjy_esc(hjy_err.message));
+            } else {
+                hjy_msg = '请求过程中出现异常：' + hjy_esc(hjy_err.message || String(hjy_err));
+                hjy_step(3, 'bad', '解析或渲染失败');
+            }
+
+            hjy_id('hjy_statusbar').className = 'hjy_statusbar hjy_bad';
+            hjy_id('hjy_badge').textContent = '请求失败';
+            hjy_id('hjy_time').textContent = hjy_ms + ' ms';
+            hjy_id('hjy_count').textContent = '0 条';
+            hjy_id('hjy_err_title').textContent = hjy_title;
+            hjy_id('hjy_err_msg').innerHTML = hjy_msg;
+            hjy_id('hjy_err').hidden = false;
+
+            hjy_id('hjy_grid').innerHTML = '<div class="hjy_empty">' +
+                '<span class="hjy_empty_icon">😕</span>' + hjy_title + '，暂时没有数据' +
+                '<br><span style="font-size:0.75rem">点上面的“重新请求”再试一次</span></div>';
+            hjy_id('hjy_grid_cnt').textContent = '共 0 位';
+            hjy_end();
+        }
+
+        /* ===== 两种写法：async / await ===== */
+        async function hjy_load_async() {
+            if (!hjy_begin('async')) { return; }
+
+            try {
+                var hjy_res = await fetch(HJY_API, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    signal: hjy_ctrl.signal
+                });
+                hjy_step(1, 'ok', '已收到响应');
+
+                hjy_step(2, 'run', '检查 res.ok …');
+                if (!hjy_res.ok) {
+                    var hjy_http = new Error('HTTP ' + hjy_res.status + ' ' + (hjy_res.statusText || ''));
+                    hjy_http.hjy_http = true;
+                    throw hjy_http;
+                }
+                hjy_step(2, 'ok', hjy_res.status + ' ' + (hjy_res.statusText || 'OK'));
+
+                hjy_step(3, 'run', '调用 res.json() 解析…');
+                var hjy_users = await hjy_res.json();
+                hjy_step(3, 'ok', '解析出 ' + hjy_users.length + ' 条记录');
+
+                hjy_success(hjy_users);
+            } catch (hjy_err) {
+                hjy_fail(hjy_err);
+            }
+        }
+
+        /* ===== 两种写法：Promise .then() ===== */
+        function hjy_load_promise() {
+            if (!hjy_begin('promise')) { return; }
+
+            fetch(HJY_API, {
+                method: 'GET',
+                cache: 'no-store',
+                signal: hjy_ctrl.signal
+            })
+                .then(function (hjy_res) {
+                    hjy_step(1, 'ok', '已收到响应');
+
+                    hjy_step(2, 'run', '检查 res.ok …');
+                    if (!hjy_res.ok) {
+                        var hjy_http = new Error('HTTP ' + hjy_res.status + ' ' + (hjy_res.statusText || ''));
+                        hjy_http.hjy_http = true;
+                        throw hjy_http;
+                    }
+                    hjy_step(2, 'ok', hjy_res.status + ' ' + (hjy_res.statusText || 'OK'));
+
+                    hjy_step(3, 'run', '调用 res.json() 解析…');
+                    return hjy_res.json();
+                })
+                .then(function (hjy_users) {
+                    hjy_step(3, 'ok', '解析出 ' + hjy_users.length + ' 条记录');
+                    hjy_success(hjy_users);
+                })
+                .catch(function (hjy_err) {
+                    hjy_fail(hjy_err);
+                });
+        }
+
+        /* ===== 事件 ===== */
+        hjy_id('hjy_btn_async').addEventListener('click', function () { hjy_load_async(); });
+        hjy_id('hjy_btn_promise').addEventListener('click', function () { hjy_load_promise(); });
+        hjy_id('hjy_retry').addEventListener('click', function () { hjy_load_async(); });
+
+        /* 打开页面先自动请求一次 */
+        setTimeout(function () { hjy_load_async(); }, 260);
+    })();
+</script>
+</body>
+</html>

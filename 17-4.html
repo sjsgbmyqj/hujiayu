@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-02 功能：接口测试工具——用原生 fetch 发送 GET/POST/PUT/PATCH/DELETE/HEAD 请求，展示响应数据、响应头、请求信息与各类错误提示 -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>接口测试工具 · fetch 的 GET / POST 实战</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-02 功能：接口测试页样式（类名统一 hjy_ 前缀） */
+        :root {
+            --hjy_p1: #667eea;
+            --hjy_p2: #764ba2;
+            --hjy_pink: #f093fb;
+            --hjy_green: #2ecc71;
+            --hjy_red: #e74c3c;
+            --hjy_orange: #f39c12;
+            --hjy_text: #3a3a5a;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            min-height: 100vh; color: #333; line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            padding: 26px 20px 44px;
+        }
+        .hjy_wrap { max-width: 1120px; margin: 0 auto; }
+
+        /* ===== 导航 ===== */
+        .hjy_nav {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap; margin-bottom: 18px;
+        }
+        .hjy_nav_logo { color: #fff; font-weight: 700; letter-spacing: 1px; font-size: 1.02rem; }
+        .hjy_nav_logo small { font-weight: 400; opacity: 0.85; font-size: 0.76rem; margin-left: 8px; }
+        .hjy_nav_links { display: flex; gap: 10px; flex-wrap: wrap; }
+        .hjy_nav_link {
+            color: #fff; text-decoration: none; font-size: 0.82rem;
+            padding: 6px 15px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            transition: background 0.2s;
+        }
+        .hjy_nav_link:hover { background: rgba(255, 255, 255, 0.34); }
+        .hjy_nav_link.hjy_on { background: #fff; color: var(--hjy_p2); font-weight: 700; }
+
+        .hjy_header { text-align: center; color: #fff; margin-bottom: 22px; }
+        .hjy_header h1 { font-size: 1.85rem; letter-spacing: 1px; text-shadow: 0 3px 10px rgba(0, 0, 0, 0.22); }
+        .hjy_header p { font-size: 0.88rem; opacity: 0.94; margin-top: 6px; }
+        .hjy_header .hjy_badge {
+            display: inline-block; margin-top: 12px; padding: 5px 16px; font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.24); border-radius: 30px;
+        }
+
+        /* ===== 卡片 ===== */
+        .hjy_card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 20px; padding: 24px 26px;
+            box-shadow: 0 15px 38px rgba(0, 0, 0, 0.14);
+            margin-bottom: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .hjy_section_title {
+            font-size: 1.08rem; color: #5a4b8c; margin-bottom: 16px;
+            padding-left: 13px; border-left: 5px solid var(--hjy_p2);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .hjy_section_title .hjy_cnt {
+            font-size: 0.73rem; font-weight: 400; color: #9b93b5;
+            background: #f3f0fb; padding: 2px 10px; border-radius: 20px;
+        }
+
+        /* ===== 地址栏 ===== */
+        .hjy_urlbar { display: flex; gap: 10px; flex-wrap: wrap; }
+        .hjy_method {
+            padding: 11px 10px; border-radius: 12px; font-family: inherit;
+            font-size: 0.84rem; font-weight: 800; color: #fff; border: none; cursor: pointer;
+            background: linear-gradient(135deg, #667eea, #764ba2); outline: none;
+            min-width: 108px; text-align: center;
+        }
+        .hjy_method option { color: #333; font-weight: 600; background: #fff; }
+        .hjy_method.hjy_m_get { background: linear-gradient(135deg, #4facfe, #00b4d8); }
+        .hjy_method.hjy_m_post { background: linear-gradient(135deg, #43d97b, #1d9e6a); }
+        .hjy_method.hjy_m_put, .hjy_method.hjy_m_patch { background: linear-gradient(135deg, #ffb347, #e67e22); }
+        .hjy_method.hjy_m_delete { background: linear-gradient(135deg, #ff8a8a, #e74c3c); }
+        .hjy_method.hjy_m_head { background: linear-gradient(135deg, #a1a1b5, #77778c); }
+
+        .hjy_url_input {
+            flex: 1 1 320px; min-width: 220px;
+            padding: 11px 15px; border-radius: 12px; outline: none;
+            border: 1.5px solid #ded8f0; background: #fdfcff;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.83rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .hjy_url_input:focus { border-color: var(--hjy_p1); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.13); }
+        .hjy_btn {
+            border: none; cursor: pointer; font-family: inherit; font-weight: 700;
+            padding: 11px 22px; border-radius: 12px; font-size: 0.86rem; color: #fff;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 8px 18px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .hjy_btn:hover { transform: translateY(-2px); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .hjy_btn_ghost {
+            background: #fff; color: var(--hjy_p2); border: 1.5px solid #ded8f0; box-shadow: none;
+            font-weight: 600; padding: 8px 14px; font-size: 0.78rem; border-radius: 10px;
+        }
+        .hjy_btn_ghost:hover { border-color: var(--hjy_p2); }
+        .hjy_btn_mini {
+            background: #f4f1fc; color: #6b5b95; border: 1px solid #e8e1f8; box-shadow: none;
+            padding: 6px 12px; font-size: 0.75rem; border-radius: 9px; font-weight: 600;
+        }
+        .hjy_btn_mini:hover { background: #ece6fa; }
+
+        .hjy_presets { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+        .hjy_presets_label { font-size: 0.75rem; color: #a49cbc; margin-right: 2px; }
+        .hjy_preset {
+            cursor: pointer; font-family: inherit; font-size: 0.73rem;
+            padding: 5px 11px; border-radius: 20px;
+            border: 1px solid #e4ddf5; background: #fbfaff; color: #6b5b95;
+            transition: all 0.18s;
+        }
+        .hjy_preset:hover { background: #f1ecfb; border-color: #d3c8ee; }
+        .hjy_preset b { color: var(--hjy_p2); }
+        .hjy_preset.hjy_warn b { color: var(--hjy_red); }
+
+        /* ===== Tabs ===== */
+        .hjy_tabs { display: flex; gap: 6px; margin: 18px 0 0; border-bottom: 1px solid #eee9f7; }
+        .hjy_tab {
+            cursor: pointer; border: none; background: none; font-family: inherit;
+            font-size: 0.81rem; color: #9b93b5; padding: 9px 14px; border-radius: 10px 10px 0 0;
+            border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.18s;
+        }
+        .hjy_tab:hover { color: var(--hjy_p2); }
+        .hjy_tab.hjy_on { color: var(--hjy_p2); font-weight: 700; border-bottom-color: var(--hjy_p2); background: #fbfaff; }
+        .hjy_tab .hjy_num {
+            display: inline-block; min-width: 17px; padding: 0 5px; margin-left: 4px;
+            font-size: 0.68rem; border-radius: 9px; background: #f0ebfa; color: #8a7fae;
+        }
+        .hjy_panel { display: none; padding-top: 14px; }
+        .hjy_panel.hjy_on { display: block; }
+
+        /* ===== 请求头行 ===== */
+        .hjy_hrow { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .hjy_hrow input {
+            padding: 9px 12px; border-radius: 10px; border: 1.5px solid #e7e1f5;
+            background: #fdfcff; font-family: Consolas, monospace; font-size: 0.79rem;
+            outline: none; transition: border-color 0.2s;
+        }
+        .hjy_hrow input:focus { border-color: var(--hjy_p1); }
+        .hjy_hk { flex: 0 0 38%; }
+        .hjy_hv { flex: 1; }
+        .hjy_hdel {
+            width: 30px; height: 30px; flex-shrink: 0; cursor: pointer;
+            border: 1px solid #f0d9d6; background: #fdf3f2; color: #d1605a;
+            border-radius: 9px; font-size: 1rem; line-height: 1;
+        }
+        .hjy_hdel:hover { background: #fbe7e5; }
+        .hjy_hint { font-size: 0.75rem; color: #a49cbc; margin-top: 10px; line-height: 1.8; }
+        .hjy_hint code { font-family: Consolas, monospace; background: #f4f1fc; color: #6b5b95; padding: 1px 5px; border-radius: 4px; }
+
+        /* ===== 请求体编辑 ===== */
+        .hjy_body_wrap { position: relative; }
+        .hjy_body {
+            width: 100%; min-height: 150px; resize: vertical;
+            padding: 13px 15px; border-radius: 12px; outline: none;
+            border: 1.5px solid #e7e1f5; background: #2d2d2d; color: #e8e8e8;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.8rem; line-height: 1.8;
+            transition: border-color 0.2s;
+        }
+        .hjy_body:focus { border-color: var(--hjy_p1); }
+        .hjy_body:disabled { opacity: 0.55; cursor: not-allowed; }
+        .hjy_body_tools { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+        .hjy_json_state { font-size: 0.75rem; color: #a49cbc; }
+        .hjy_json_ok { color: #1d9e6a; }
+        .hjy_json_no { color: #e67e22; }
+
+        /* ===== 响应状态栏 ===== */
+        .hjy_respbar {
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+            padding: 12px 15px; border-radius: 12px; background: #f7f5fc;
+            border-left: 4px solid #ddd6f0; font-size: 0.79rem; color: #6a6480;
+        }
+        .hjy_respbar.hjy_r_ok { background: #eefaf4; border-left-color: var(--hjy_green); }
+        .hjy_respbar.hjy_r_warn { background: #fdf6e9; border-left-color: var(--hjy_orange); }
+        .hjy_respbar.hjy_r_err { background: #fdf1f0; border-left-color: var(--hjy_red); }
+        .hjy_respbar.hjy_r_load { background: #eef1fd; border-left-color: var(--hjy_p1); }
+        .hjy_status {
+            font-family: Consolas, monospace; font-weight: 800; font-size: 0.83rem;
+            padding: 3px 11px; border-radius: 8px; background: #e8e3f5; color: #5a4b8c;
+        }
+        .hjy_respbar.hjy_r_ok .hjy_status { background: #d6f4e5; color: #1d7a54; }
+        .hjy_respbar.hjy_r_warn .hjy_status { background: #fbe9c9; color: #a86a06; }
+        .hjy_respbar.hjy_r_err .hjy_status { background: #fadbd8; color: #b03a2e; }
+        .hjy_respbar b { color: #5a4b8c; }
+        .hjy_respbar .hjy_sp { margin-left: auto; display: flex; gap: 8px; }
+
+        /* ===== 错误提示 ===== */
+        .hjy_alert {
+            margin-top: 14px; padding: 14px 16px; border-radius: 12px;
+            background: #fdf1f0; border: 1px solid #f7d5d1; border-left: 5px solid var(--hjy_red);
+            font-size: 0.82rem; color: #a5443a; line-height: 1.85;
+        }
+        .hjy_alert.hjy_alert_warn {
+            background: #fdf8ec; border-color: #f6e7c8; border-left-color: var(--hjy_orange); color: #96690c;
+        }
+        .hjy_alert_title { font-weight: 800; font-size: 0.88rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .hjy_alert code {
+            font-family: Consolas, monospace; font-size: 0.76rem;
+            background: rgba(255, 255, 255, 0.72); padding: 1px 5px; border-radius: 4px;
+        }
+        .hjy_alert ul { margin: 6px 0 0 18px; }
+        .hjy_alert li { margin-bottom: 2px; }
+
+        /* ===== 数据展示 ===== */
+        .hjy_json_view {
+            background: #2d2d2d; color: #e8e8e8; padding: 16px 18px; border-radius: 12px;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.79rem; line-height: 1.8;
+            border-left: 5px solid var(--hjy_p1);
+            overflow: auto; white-space: pre-wrap; word-break: break-all;
+            max-height: 460px; margin-top: 14px;
+        }
+        .hjy_j_key { color: #c792ea; }
+        .hjy_j_str { color: #a6e22e; }
+        .hjy_j_num { color: #f78c6c; }
+        .hjy_j_lit { color: #82aaff; }
+        .hjy_placeholder { color: #8f8f8f; font-style: italic; }
+
+        .hjy_hlist { margin-top: 14px; }
+        .hjy_hitem {
+            display: flex; gap: 10px; font-size: 0.78rem; padding: 7px 0;
+            border-bottom: 1px dashed #eee9f7; font-family: Consolas, monospace;
+            word-break: break-all;
+        }
+        .hjy_hitem:last-child { border-bottom: none; }
+        .hjy_hitem .hjy_hname { color: var(--hjy_p2); font-weight: 700; flex: 0 0 40%; }
+        .hjy_hitem .hjy_hval { color: #5f5a72; flex: 1; }
+
+        .hjy_reqinfo {
+            background: #2d2d2d; color: #e8e8e8; padding: 16px 18px; border-radius: 12px;
+            font-family: Consolas, monospace; font-size: 0.78rem; line-height: 1.85;
+            margin-top: 14px; white-space: pre-wrap; word-break: break-all;
+            border-left: 5px solid var(--hjy_pink);
+        }
+        .hjy_reqinfo .hjy_k { color: #c792ea; }
+
+        /* ===== 历史 ===== */
+        .hjy_history { display: flex; flex-direction: column; gap: 8px; }
+        .hjy_his_item {
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+            padding: 9px 13px; border-radius: 11px; background: #fbfaff;
+            border: 1px solid #f0ecf9; font-size: 0.78rem; transition: all 0.18s;
+        }
+        .hjy_his_item:hover { border-color: #ddd3f5; background: #f6f2fd; }
+        .hjy_his_m {
+            font-family: Consolas, monospace; font-weight: 800; font-size: 0.72rem;
+            padding: 2px 8px; border-radius: 6px; background: #ece6fa; color: #6b5b95;
+        }
+        .hjy_his_url { flex: 1; color: #6a6480; font-family: Consolas, monospace; font-size: 0.74rem; word-break: break-all; }
+        .hjy_his_st { font-family: Consolas, monospace; font-weight: 700; }
+        .hjy_his_time { color: #b0a9c4; font-size: 0.72rem; }
+        .hjy_ok_t { color: #1d9e6a; }
+        .hjy_no_t { color: #e74c3c; }
+        .hjy_empty_small { font-size: 0.8rem; color: #b0a9c4; padding: 8px 0; }
+
+        /* ===== 代码 ===== */
+        .hjy_code {
+            background: #2d2d2d; color: #f8f8f2; padding: 14px 17px; border-radius: 12px;
+            font-family: Consolas, "Courier New", monospace; font-size: 0.75rem;
+            line-height: 1.85; border-left: 5px solid var(--hjy_pink);
+            overflow-x: auto; white-space: pre; margin-top: 12px;
+        }
+        .hjy_tips { font-size: 0.81rem; color: #7b7392; line-height: 1.95; }
+        .hjy_tips code {
+            font-family: Consolas, monospace; font-size: 0.75rem;
+            background: #f4f1fc; color: #6b5b95; padding: 1px 5px; border-radius: 4px;
+        }
+
+        .hjy_toast {
+            position: fixed; left: 50%; bottom: 36px; transform: translate(-50%, 20px);
+            background: rgba(45, 45, 45, 0.94); color: #fff; font-size: 0.83rem;
+            padding: 11px 22px; border-radius: 30px; opacity: 0; pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s; z-index: 99;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+        }
+        .hjy_toast.hjy_show { opacity: 1; transform: translate(-50%, 0); }
+
+        .hjy_footer { text-align: center; color: #fff; opacity: 0.9; font-size: 0.82rem; margin-top: 8px; }
+
+        @media (max-width: 768px) {
+            body { padding: 18px 12px 32px; }
+            .hjy_card { padding: 18px 15px; border-radius: 16px; }
+            .hjy_header h1 { font-size: 1.4rem; }
+            .hjy_hk { flex: 1 1 45%; }
+            .hjy_hitem { flex-direction: column; gap: 2px; }
+            .hjy_hitem .hjy_hname { flex: none; }
+            .hjy_urlbar .hjy_btn { flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_wrap">
+
+    <nav class="hjy_nav">
+        <div class="hjy_nav_logo">🧪 接口测试台 <small>原生 fetch 实战</small></div>
+        <div class="hjy_nav_links">
+            <a href="./index.html" class="hjy_nav_link">首页</a>
+            <a href="./17-2.html" class="hjy_nav_link">fetch 基础</a>
+            <a href="./17-3.html" class="hjy_nav_link">商品列表</a>
+            <a href="./17-4.html" class="hjy_nav_link hjy_on">接口测试</a>
+        </div>
+    </nav>
+
+    <header class="hjy_header">
+        <h1>远程接口测试工具</h1>
+        <p>支持 GET / POST / PUT / PATCH / DELETE / HEAD · 自定义请求头与请求体 · 显示返回数据与错误信息</p>
+        <div class="hjy_badge">👤 学生：胡家瑜 · 2026-11-02</div>
+    </header>
+
+    <!-- ===== 请求配置 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">① 请求配置 <span class="hjy_cnt">Ctrl + Enter 快速发送</span></h2>
+
+        <div class="hjy_urlbar">
+            <select class="hjy_method hjy_m_post" id="hjy_method">
+                <option value="GET">GET</option>
+                <option value="POST" selected>POST</option>
+                <option value="PUT">PUT</option>
+                <option value="PATCH">PATCH</option>
+                <option value="DELETE">DELETE</option>
+                <option value="HEAD">HEAD</option>
+            </select>
+            <input type="text" class="hjy_url_input" id="hjy_url"
+                   value="https://jsonplaceholder.typicode.com/posts"
+                   placeholder="输入接口地址，例如 https://jsonplaceholder.typicode.com/posts" spellcheck="false">
+            <button class="hjy_btn" id="hjy_send">发送请求</button>
+        </div>
+
+        <div class="hjy_presets">
+            <span class="hjy_presets_label">快速切换：</span>
+            <button class="hjy_preset" data-hjy-preset="get-list"><b>GET</b> 列表</button>
+            <button class="hjy_preset" data-hjy-preset="get-one"><b>GET</b> 单条</button>
+            <button class="hjy_preset" data-hjy-preset="post-new"><b>POST</b> 新增</button>
+            <button class="hjy_preset" data-hjy-preset="put-update"><b>PUT</b> 更新</button>
+            <button class="hjy_preset" data-hjy-preset="patch-update"><b>PATCH</b> 局部更新</button>
+            <button class="hjy_preset" data-hjy-preset="delete"><b>DELETE</b> 删除</button>
+            <button class="hjy_preset hjy_warn" data-hjy-preset="err-404"><b>404</b> 错误</button>
+            <button class="hjy_preset hjy_warn" data-hjy-preset="err-net"><b>网络</b> 失败</button>
+            <button class="hjy_preset hjy_warn" data-hjy-preset="err-timeout"><b>超时</b> 演示</button>
+        </div>
+
+        <div class="hjy_tabs" id="hjy_req_tabs">
+            <button class="hjy_tab hjy_on" data-hjy-tab="headers">请求头 Headers<span class="hjy_num" id="hjy_hcount">1</span></button>
+            <button class="hjy_tab" data-hjy-tab="body">请求体 Body</button>
+        </div>
+        <div class="hjy_panels">
+            <div class="hjy_panel hjy_on" data-hjy-panel="headers">
+                <div id="hjy_headers"></div>
+                <button class="hjy_btn_ghost hjy_btn_mini" id="hjy_add_header">+ 添加请求头</button>
+                <p class="hjy_hint">
+                    跨域请求只允许"简单请求头"（<code>Accept</code>、<code>Content-Type</code> 等）。
+                    带上 <code>Content-Type: application/json</code> 时浏览器会先发一次 <code>OPTIONS</code> 预检，
+                    服务器允许（返回 Access-Control-Allow-Headers）才会真正发出请求。
+                </p>
+            </div>
+            <div class="hjy_panel" data-hjy-panel="body">
+                <div class="hjy_body_wrap">
+                    <textarea class="hjy_body" id="hjy_body" spellcheck="false"></textarea>
+                </div>
+                <div class="hjy_body_tools">
+                    <button class="hjy_btn_ghost hjy_btn_mini" id="hjy_fmt">格式化 JSON</button>
+                    <button class="hjy_btn_ghost hjy_btn_mini" id="hjy_sample">填入示例</button>
+                    <button class="hjy_btn_ghost hjy_btn_mini" id="hjy_clear_body">清空</button>
+                    <span class="hjy_json_state" id="hjy_json_state"></span>
+                </div>
+                <p class="hjy_hint">
+                    GET / HEAD 请求不能携带请求体（会被浏览器忽略或报错），切换方法时输入框会自动禁用。
+                    请求体必须是字符串，对象要先用 <code>JSON.stringify()</code> 转成文本。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 响应 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">② 响应结果</h2>
+
+        <div class="hjy_respbar hjy_r_load" id="hjy_respbar">
+            <span class="hjy_status" id="hjy_status">— — —</span>
+            <span>耗时 <b id="hjy_time">—</b></span>
+            <span>大小 <b id="hjy_size">—</b></span>
+            <span class="hjy_sp">
+                <button class="hjy_btn_ghost hjy_btn_mini" id="hjy_copy">复制响应</button>
+            </span>
+        </div>
+
+        <div id="hjy_alert_box"></div>
+
+        <div class="hjy_tabs" id="hjy_resp_tabs">
+            <button class="hjy_tab hjy_on" data-hjy-tab="resp-body">响应体<span class="hjy_num" id="hjy_body_type">-</span></button>
+            <button class="hjy_tab" data-hjy-tab="resp-headers">响应头<span class="hjy_num" id="hjy_resp_hcount">0</span></button>
+            <button class="hjy_tab" data-hjy-tab="resp-req">实际发出的请求</button>
+        </div>
+        <div class="hjy_panels">
+            <div class="hjy_panel hjy_on" data-hjy-panel="resp-body">
+                <pre class="hjy_json_view" id="hjy_resp_body"><span class="hjy_placeholder">// 点击「发送请求」后，这里显示接口返回的数据</span></pre>
+            </div>
+            <div class="hjy_panel" data-hjy-panel="resp-headers">
+                <div class="hjy_hlist" id="hjy_resp_headers">
+                    <p class="hjy_empty_small">还没有响应头。跨域时浏览器只暴露部分响应头（如 content-type），这是正常的。</p>
+                </div>
+            </div>
+            <div class="hjy_panel" data-hjy-panel="resp-req">
+                <div class="hjy_reqinfo" id="hjy_reqinfo">// 发送后显示这次请求实际用的 method / url / headers / body</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 历史 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">③ 请求历史 <span class="hjy_cnt" id="hjy_his_cnt">0 条</span></h2>
+        <div class="hjy_history" id="hjy_history">
+            <p class="hjy_empty_small">还没有记录，发送一次请求试试（点击记录可以恢复该请求）。</p>
+        </div>
+    </section>
+
+    <!-- ===== 说明 ===== -->
+    <section class="hjy_card">
+        <h2 class="hjy_section_title">📚 这一页用到的 fetch 核心知识点</h2>
+        <p class="hjy_tips">
+            所有方法都靠 <code>fetch(url, options)</code> 的第二个参数：<b>method 决定请求方式</b>，
+            <b>headers 决定请求头</b>，<b>body 决定请求体（只能是字符串）</b>。
+            注意 <code>body</code> 不能用在 GET / HEAD 上；POST 提交 JSON 时必须声明 <code>Content-Type: application/json</code>。
+        </p>
+        <pre class="hjy_code">// POST 提交 JSON 数据
+var res = await fetch('https://jsonplaceholder.typicode.com/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: '标题', body: '内容', userId: 1 })
+});
+
+// 判断 HTTP 状态：404 / 500 不会让 fetch 报错，必须自己判断
+if (!res.ok) {
+    console.log('接口返回错误状态：', res.status, res.statusText);
+}
+
+var data = await res.json();   // 服务器返回的内容
+console.log(data);             // POST 成功时返回 201 + 带 id 的新对象</pre>
+        <p class="hjy_tips" style="margin-top:12px">
+            <b>错误分三层：</b>① URL 写错 / 断网 / CORS 被拦 → <code>fetch</code> 直接 reject，进 catch；
+            ② 接口返回 4xx / 5xx → 请求成功但 <code>res.ok === false</code>；
+            ③ 返回的不是 JSON → <code>res.json()</code> 抛解析错误。三者都要分别处理。
+        </p>
+    </section>
+
+    <footer class="hjy_footer">Made with ❤ by 胡家瑜 · 高级网页设计课程</footer>
+</div>
+
+<div class="hjy_toast" id="hjy_toast"></div>
+
+<script>
+    /* 姓名：胡家瑜 日期：2026-11-02 功能：接口测试（fetch 全方法）+ 响应渲染 + 错误分类提示 */
+    (function () {
+        function hjy_id(hjy_n) { return document.getElementById(hjy_n); }
+        function hjy_esc(hjy_t) {
+            return String(hjy_t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function hjy_hl(hjy_text) {
+            return hjy_esc(hjy_text).replace(/("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+                function (hjy_m, hjy_s, hjy_c, hjy_l, hjy_num) {
+                    if (hjy_s) {
+                        return hjy_c ? '<span class="hjy_j_key">' + hjy_s + '</span>' + hjy_c
+                                     : '<span class="hjy_j_str">' + hjy_s + '</span>';
+                    }
+                    if (hjy_l) { return '<span class="hjy_j_lit">' + hjy_l + '</span>'; }
+                    return '<span class="hjy_j_num">' + hjy_num + '</span>';
+                });
+        }
+        function hjy_toast(hjy_msg) {
+            var hjy_t = hjy_id('hjy_toast');
+            hjy_t.textContent = hjy_msg;
+            hjy_t.classList.add('hjy_show');
+            clearTimeout(hjy_t.hjy_timer);
+            hjy_t.hjy_timer = setTimeout(function () { hjy_t.classList.remove('hjy_show'); }, 2000);
+        }
+        function hjy_size(hjy_bytes) {
+            if (hjy_bytes < 1024) { return hjy_bytes + ' B'; }
+            return (hjy_bytes / 1024).toFixed(1) + ' KB';
+        }
+        function hjy_now() {
+            var hjy_d = new Date();
+            return ('0' + hjy_d.getHours()).slice(-2) + ':' + ('0' + hjy_d.getMinutes()).slice(-2) + ':' + ('0' + hjy_d.getSeconds()).slice(-2);
+        }
+
+        /* ===== Tabs 切换 ===== */
+        function hjy_bind_tabs(hjy_tabs_id) {
+            var hjy_tabs = hjy_id(hjy_tabs_id);
+            hjy_tabs.addEventListener('click', function (hjy_e) {
+                var hjy_btn = hjy_e.target.closest('[data-hjy-tab]');
+                if (!hjy_btn) { return; }
+                var hjy_key = hjy_btn.getAttribute('data-hjy-tab');
+                var hjy_all = hjy_tabs.querySelectorAll('[data-hjy-tab]');
+                for (var hjy_i = 0; hjy_i < hjy_all.length; hjy_i++) {
+                    hjy_all[hjy_i].classList.toggle('hjy_on', hjy_all[hjy_i] === hjy_btn);
+                }
+                var hjy_panels = hjy_tabs.parentNode.querySelectorAll('[data-hjy-panel]');
+                for (var hjy_j = 0; hjy_j < hjy_panels.length; hjy_j++) {
+                    hjy_panels[hjy_j].classList.toggle('hjy_on', hjy_panels[hjy_j].getAttribute('data-hjy-panel') === hjy_key);
+                }
+            });
+        }
+        hjy_bind_tabs('hjy_req_tabs');
+        hjy_bind_tabs('hjy_resp_tabs');
+
+        /* ===== 请求头行 ===== */
+        function hjy_update_hcount() {
+            var hjy_rows = document.querySelectorAll('#hjy_headers .hjy_hrow');
+            var hjy_n = 0;
+            for (var hjy_i = 0; hjy_i < hjy_rows.length; hjy_i++) {
+                if (hjy_rows[hjy_i].querySelector('.hjy_hk').value.trim()) { hjy_n++; }
+            }
+            hjy_id('hjy_hcount').textContent = hjy_n;
+        }
+        function hjy_add_row(hjy_k, hjy_v) {
+            var hjy_row = document.createElement('div');
+            hjy_row.className = 'hjy_hrow';
+            hjy_row.innerHTML = '<input type="text" class="hjy_hk" placeholder="Header 名，如 Content-Type" value="' + hjy_esc(hjy_k || '') + '" spellcheck="false">' +
+                '<input type="text" class="hjy_hv" placeholder="值，如 application/json" value="' + hjy_esc(hjy_v || '') + '" spellcheck="false">' +
+                '<button class="hjy_hdel" title="删除这一行">×</button>';
+            hjy_row.querySelector('.hjy_hdel').addEventListener('click', function () {
+                hjy_row.remove();
+                hjy_update_hcount();
+            });
+            hjy_row.querySelector('.hjy_hk').addEventListener('input', hjy_update_hcount);
+            hjy_id('hjy_headers').appendChild(hjy_row);
+            hjy_update_hcount();
+            return hjy_row;
+        }
+        function hjy_get_headers() {
+            var hjy_out = {};
+            var hjy_rows = document.querySelectorAll('#hjy_headers .hjy_hrow');
+            for (var hjy_i = 0; hjy_i < hjy_rows.length; hjy_i++) {
+                var hjy_k = hjy_rows[hjy_i].querySelector('.hjy_hk').value.trim();
+                var hjy_v = hjy_rows[hjy_i].querySelector('.hjy_hv').value.trim();
+                if (hjy_k) { hjy_out[hjy_k] = hjy_v; }
+            }
+            return hjy_out;
+        }
+        function hjy_has_ct(hjy_headers) {
+            for (var hjy_k in hjy_headers) {
+                if (hjy_k.toLowerCase() === 'content-type') { return true; }
+            }
+            return false;
+        }
+        hjy_id('hjy_add_header').addEventListener('click', function () { hjy_add_row('', ''); });
+
+        /* ===== 方法切换 ===== */
+        var HJY_SAMPLE = {
+            title: '胡家瑜的测试文章',
+            body: '用原生 fetch 发送 POST 请求',
+            userId: 1
+        };
+        function hjy_sync_method() {
+            var hjy_m = hjy_id('hjy_method').value;
+            var hjy_sel = hjy_id('hjy_method');
+            hjy_sel.className = 'hjy_method hjy_m_' + hjy_m.toLowerCase();
+            var hjy_no_body = (hjy_m === 'GET' || hjy_m === 'HEAD');
+            var hjy_body = hjy_id('hjy_body');
+            hjy_body.disabled = hjy_no_body;
+            if (hjy_no_body) {
+                hjy_body.placeholder = hjy_m + ' 请求不能携带请求体，这里的内容不会被发送';
+            } else {
+                hjy_body.placeholder = '{\n  "title": "标题",\n  "body": "内容"\n}';
+                if (!hjy_body.value.trim()) {
+                    hjy_body.value = JSON.stringify(HJY_SAMPLE, null, 2);
+                }
+                if (!hjy_has_ct(hjy_get_headers())) {
+                    hjy_add_row('Content-Type', 'application/json');
+                }
+            }
+            hjy_check_json();
+        }
+        hjy_id('hjy_method').addEventListener('change', hjy_sync_method);
+
+        /* ===== JSON 校验 ===== */
+        function hjy_check_json() {
+            var hjy_box = hjy_id('hjy_json_state');
+            var hjy_body = hjy_id('hjy_body');
+            if (hjy_body.disabled) { hjy_box.className = 'hjy_json_state'; hjy_box.textContent = '（当前方法不需要请求体）'; return; }
+            var hjy_txt = hjy_body.value.trim();
+            if (!hjy_txt) { hjy_box.className = 'hjy_json_state'; hjy_box.textContent = '请求体为空'; return; }
+            try {
+                JSON.parse(hjy_txt);
+                hjy_box.className = 'hjy_json_state hjy_json_ok';
+                hjy_box.textContent = '✅ 合法 JSON';
+            } catch (hjy_e) {
+                hjy_box.className = 'hjy_json_state hjy_json_no';
+                hjy_box.textContent = '⚠️ 不是合法 JSON（仍会按原文本发送）';
+            }
+        }
+        hjy_id('hjy_body').addEventListener('input', hjy_check_json);
+        hjy_id('hjy_fmt').addEventListener('click', function () {
+            try {
+                hjy_id('hjy_body').value = JSON.stringify(JSON.parse(hjy_id('hjy_body').value), null, 2);
+                hjy_check_json();
+                hjy_toast('已格式化 JSON');
+            } catch (hjy_e) {
+                hjy_toast('JSON 格式有误，无法格式化');
+            }
+        });
+        hjy_id('hjy_sample').addEventListener('click', function () {
+            hjy_id('hjy_body').value = JSON.stringify(HJY_SAMPLE, null, 2);
+            hjy_check_json();
+        });
+        hjy_id('hjy_clear_body').addEventListener('click', function () {
+            hjy_id('hjy_body').value = '';
+            hjy_check_json();
+        });
+
+        /* ===== 响应渲染 ===== */
+        var hjy_raw_text = '';
+        function hjy_reset_resp() {
+            hjy_id('hjy_alert_box').innerHTML = '';
+            hjy_id('hjy_resp_headers').innerHTML = '<p class="hjy_empty_small">还没有响应头。</p>';
+            hjy_id('hjy_resp_hcount').textContent = '0';
+            hjy_id('hjy_body_type').textContent = '-';
+            hjy_id('hjy_reqinfo').textContent = '// 发送后显示这次请求实际用的 method / url / headers / body';
+            hjy_id('hjy_resp_body').innerHTML = '<span class="hjy_placeholder">// 请求中…</span>';
+        }
+        function hjy_status_class(hjy_code) {
+            if (hjy_code >= 200 && hjy_code < 300) { return 'hjy_r_ok'; }
+            if (hjy_code >= 300 && hjy_code < 400) { return 'hjy_r_warn'; }
+            return 'hjy_r_err';
+        }
+        function hjy_show_alert(hjy_type, hjy_title, hjy_html) {
+            var hjy_box = hjy_id('hjy_alert_box');
+            hjy_box.innerHTML = '<div class="hjy_alert' + (hjy_type === 'warn' ? ' hjy_alert_warn' : '') + '">' +
+                '<div class="hjy_alert_title">' + (hjy_type === 'warn' ? '⚠️ ' : '❌ ') + hjy_esc(hjy_title) + '</div>' +
+                hjy_html + '</div>';
+        }
+
+        /* ===== 发送请求 ===== */
+        var hjy_busy = false;
+        async function hjy_send() {
+            if (hjy_busy) { return; }
+
+            var hjy_method = hjy_id('hjy_method').value;
+            var hjy_url = hjy_id('hjy_url').value.trim();
+            var hjy_btn = hjy_id('hjy_send');
+            var hjy_bar = hjy_id('hjy_respbar');
+
+            /* 1. 先校验地址格式 */
+            if (!hjy_url) {
+                hjy_toast('请先填写接口地址');
+                hjy_id('hjy_url').focus();
+                return;
+            }
+            try {
+                new URL(hjy_url);
+            } catch (hjy_e) {
+                hjy_bar.className = 'hjy_respbar hjy_r_err';
+                hjy_id('hjy_status').textContent = 'URL 无效';
+                hjy_id('hjy_time').textContent = '—';
+                hjy_id('hjy_size').textContent = '—';
+                hjy_reset_resp();
+                hjy_show_alert('err', '地址格式不正确，请求没有发出',
+                    '当前地址：<code>' + hjy_esc(hjy_url) + '</code><br>' +
+                    '请检查是否漏写 <code>https://</code>，或者含有空格、中文标点。');
+                return;
+            }
+
+            var hjy_headers = hjy_get_headers();
+            var hjy_body_text = hjy_id('hjy_body').value;
+            var hjy_no_body = (hjy_method === 'GET' || hjy_method === 'HEAD');
+
+            if (!hjy_no_body && hjy_body_text.trim() && !hjy_has_ct(hjy_headers)) {
+                hjy_headers['Content-Type'] = 'application/json';
+            }
+
+            var hjy_options = { method: hjy_method, headers: hjy_headers, cache: 'no-store' };
+            if (!hjy_no_body && hjy_body_text.trim()) { hjy_options.body = hjy_body_text; }
+
+            var hjy_ctrl = new AbortController();
+            var hjy_timeout = 12000;
+            hjy_options.signal = hjy_ctrl.signal;
+            var hjy_timer = setTimeout(function () { hjy_ctrl.abort(); }, hjy_timeout);
+
+            hjy_busy = true;
+            hjy_btn.disabled = true;
+            hjy_btn.textContent = '请求中…';
+            hjy_reset_resp();
+            hjy_bar.className = 'hjy_respbar hjy_r_load';
+            hjy_id('hjy_status').textContent = '等待响应';
+            hjy_id('hjy_time').textContent = '—';
+            hjy_id('hjy_size').textContent = '—';
+
+            var hjy_t0 = performance.now();
+
+            try {
+                var hjy_res = await fetch(hjy_url, hjy_options);
+                var hjy_text = await hjy_res.text();
+                var hjy_ms = Math.round(performance.now() - hjy_t0);
+                var hjy_bytes = new Blob([hjy_text]).size;
+                hjy_raw_text = hjy_text;
+
+                /* 状态栏 */
+                hjy_bar.className = 'hjy_respbar ' + hjy_status_class(hjy_res.status);
+                hjy_id('hjy_status').textContent = hjy_res.status + ' ' + (hjy_res.statusText || '');
+                hjy_id('hjy_time').textContent = hjy_ms + ' ms';
+                hjy_id('hjy_size').textContent = hjy_size(hjy_bytes);
+
+                /* 响应头 */
+                var hjy_h_html = '';
+                var hjy_h_n = 0;
+                hjy_res.headers.forEach(function (hjy_v, hjy_k) {
+                    hjy_h_n++;
+                    hjy_h_html += '<div class="hjy_hitem"><span class="hjy_hname">' + hjy_esc(hjy_k) +
+                        '</span><span class="hjy_hval">' + hjy_esc(hjy_v) + '</span></div>';
+                });
+                if (!hjy_h_n) {
+                    hjy_h_html = '<p class="hjy_empty_small">没有可读取的响应头（跨域时浏览器只暴露部分头）。</p>';
+                } else {
+                    hjy_h_html += '<p class="hjy_hint">💡 跨域请求只能读到"简单响应头"（如 content-type），' +
+                        '想看全部响应头需要服务器设置 <code>Access-Control-Expose-Headers</code>。</p>';
+                }
+                hjy_id('hjy_resp_headers').innerHTML = hjy_h_html;
+                hjy_id('hjy_resp_hcount').textContent = hjy_h_n;
+
+                /* 响应体 */
+                var hjy_is_json = false;
+                var hjy_data = null;
+                if (hjy_text.trim()) {
+                    try { hjy_data = JSON.parse(hjy_text); hjy_is_json = true; } catch (hjy_pe) { hjy_is_json = false; }
+                }
+                var hjy_type_name = !hjy_text.trim() ? '空' : (hjy_is_json ? (Array.isArray(hjy_data) ? 'JSON 数组' : 'JSON 对象') : '纯文本');
+                hjy_id('hjy_body_type').textContent = hjy_type_name;
+
+                if (!hjy_text.trim()) {
+                    hjy_id('hjy_resp_body').innerHTML = '<span class="hjy_placeholder">// 响应体为空（例如 204 No Content，删除成功时常见）</span>';
+                } else if (hjy_is_json) {
+                    hjy_id('hjy_resp_body').innerHTML = hjy_hl(JSON.stringify(hjy_data, null, 2));
+                } else {
+                    hjy_id('hjy_resp_body').innerHTML = hjy_hl(hjy_text);
+                }
+
+                /* HTTP 状态错误提示 */
+                if (!hjy_res.ok) {
+                    var hjy_reason = '';
+                    if (hjy_res.status === 400) { hjy_reason = '请求参数或请求体格式不对'; }
+                    else if (hjy_res.status === 401) { hjy_reason = '未登录 / 缺少身份凭证'; }
+                    else if (hjy_res.status === 403) { hjy_reason = '没有权限访问该资源'; }
+                    else if (hjy_res.status === 404) { hjy_reason = '接口或资源不存在，检查地址和 id'; }
+                    else if (hjy_res.status === 405) { hjy_reason = '该接口不支持这个请求方法（比如只允许 GET）'; }
+                    else if (hjy_res.status === 429) { hjy_reason = '请求太频繁，被接口限流了'; }
+                    else if (hjy_res.status >= 500) { hjy_reason = '服务器内部出错，和前端代码无关'; }
+                    else { hjy_reason = '接口返回了非 2xx 状态'; }
+                    hjy_show_alert('warn', 'HTTP 错误：' + hjy_res.status + ' ' + (hjy_res.statusText || ''),
+                        '含义：' + hjy_reason + '<br>' +
+                        '<b>注意：</b>这种情况 <code>fetch</code> 并不会 reject，请求本身是成功的，' +
+                        '只是业务失败。所以必须用 <code>if (!res.ok)</code> 自己判断。');
+                }
+
+                /* 请求信息 */
+                hjy_id('hjy_reqinfo').innerHTML =
+                    '<span class="hjy_k">method</span>  : ' + hjy_esc(hjy_method) + '\n' +
+                    '<span class="hjy_k">url</span>     : ' + hjy_esc(hjy_url) + '\n' +
+                    '<span class="hjy_k">headers</span> : ' + hjy_esc(JSON.stringify(hjy_headers, null, 2)) + '\n' +
+                    '<span class="hjy_k">body</span>    : ' + (hjy_options.body ? hjy_esc(hjy_options.body) : '（无）');
+
+                hjy_add_history(hjy_method, hjy_url, hjy_res.status, hjy_ms, hjy_res.ok);
+            } catch (hjy_err) {
+                var hjy_ms2 = Math.round(performance.now() - hjy_t0);
+                hjy_raw_text = '';
+                hjy_bar.className = 'hjy_respbar hjy_r_err';
+                hjy_id('hjy_status').textContent = '请求失败';
+                hjy_id('hjy_time').textContent = hjy_ms2 + ' ms';
+                hjy_id('hjy_size').textContent = '0 B';
+                hjy_id('hjy_body_type').textContent = '无';
+                hjy_id('hjy_resp_body').innerHTML = '<span class="hjy_placeholder">// 请求没有成功，没有响应体</span>';
+
+                if (hjy_err.name === 'AbortError') {
+                    hjy_show_alert('err', '请求超时（' + (hjy_timeout / 1000) + ' 秒）',
+                        '已经用 <code>AbortController</code> 主动中止请求。<br>' +
+                        '原因可能是网络太慢或接口没有响应。<br>' +
+                        '提示：<code>fetch</code> 没有 timeout 参数，超时必须自己用定时器 + <code>ctrl.abort()</code> 实现。');
+                } else if (hjy_err instanceof TypeError) {
+                    hjy_show_alert('err', '网络层失败：' + (hjy_err.message || 'Failed to fetch'),
+                        '这种错误才会让 <code>fetch()</code> 直接 reject。常见原因：<ul>' +
+                        '<li>断网 / 域名不存在 / DNS 解析失败</li>' +
+                        '<li>服务器没有开启跨域（缺少 <code>Access-Control-Allow-Origin</code>），被浏览器 CORS 拦截</li>' +
+                        '<li>https 页面请求 http 接口（混合内容被阻止）</li></ul>' +
+                        '可以打开浏览器控制台（F12）看具体的红色报错。');
+                } else {
+                    hjy_show_alert('err', '请求出现异常：' + hjy_err.name,
+                        hjy_esc(hjy_err.message || String(hjy_err)));
+                }
+                hjy_add_history(hjy_method, hjy_url, 'ERR', hjy_ms2, false);
+            } finally {
+                clearTimeout(hjy_timer);
+                hjy_busy = false;
+                hjy_btn.disabled = false;
+                hjy_btn.textContent = '发送请求';
+            }
+        }
+
+        /* ===== 历史记录 ===== */
+        var hjy_history = [];
+        function hjy_add_history(hjy_m, hjy_url, hjy_st, hjy_ms, hjy_ok) {
+            hjy_history.unshift({ m: hjy_m, url: hjy_url, st: hjy_st, ms: hjy_ms, ok: hjy_ok, t: hjy_now() });
+            if (hjy_history.length > 10) { hjy_history.pop(); }
+            hjy_render_history();
+        }
+        function hjy_render_history() {
+            var hjy_box = hjy_id('hjy_history');
+            hjy_id('hjy_his_cnt').textContent = hjy_history.length + ' 条';
+            if (!hjy_history.length) {
+                hjy_box.innerHTML = '<p class="hjy_empty_small">还没有记录，发送一次请求试试。</p>';
+                return;
+            }
+            var hjy_html = '';
+            for (var hjy_i = 0; hjy_i < hjy_history.length; hjy_i++) {
+                var hjy_h = hjy_history[hjy_i];
+                hjy_html += '<div class="hjy_his_item" data-hjy-his="' + hjy_i + '" title="点击恢复这次请求">' +
+                    '<span class="hjy_his_m">' + hjy_esc(hjy_h.m) + '</span>' +
+                    '<span class="hjy_his_url">' + hjy_esc(hjy_h.url) + '</span>' +
+                    '<span class="hjy_his_st ' + (hjy_h.ok ? 'hjy_ok_t' : 'hjy_no_t') + '">' + hjy_esc(hjy_h.st) + '</span>' +
+                    '<span class="hjy_his_time">' + hjy_h.ms + ' ms · ' + hjy_h.t + '</span>' +
+                    '</div>';
+            }
+            hjy_box.innerHTML = hjy_html;
+        }
+        hjy_id('hjy_history').addEventListener('click', function (hjy_e) {
+            var hjy_item = hjy_e.target.closest('[data-hjy-his]');
+            if (!hjy_item) { return; }
+            var hjy_h = hjy_history[parseInt(hjy_item.getAttribute('data-hjy-his'), 10)];
+            if (!hjy_h) { return; }
+            hjy_id('hjy_method').value = hjy_h.m;
+            hjy_id('hjy_url').value = hjy_h.url;
+            hjy_sync_method();
+            hjy_toast('已恢复：' + hjy_h.m + ' ' + hjy_h.url);
+        });
+
+        /* ===== 预设请求 ===== */
+        var HJY_PRESETS = {
+            'get-list': { m: 'GET', url: 'https://jsonplaceholder.typicode.com/posts?_limit=5' },
+            'get-one': { m: 'GET', url: 'https://jsonplaceholder.typicode.com/posts/1' },
+            'post-new': { m: 'POST', url: 'https://jsonplaceholder.typicode.com/posts', body: { title: '胡家瑜的测试文章', body: '用原生 fetch 发送 POST 请求', userId: 1 } },
+            'put-update': { m: 'PUT', url: 'https://jsonplaceholder.typicode.com/posts/1', body: { id: 1, title: '整条更新后的标题', body: 'PUT 会替换整个资源', userId: 1 } },
+            'patch-update': { m: 'PATCH', url: 'https://jsonplaceholder.typicode.com/posts/1', body: { title: '只改标题（PATCH）' } },
+            'delete': { m: 'DELETE', url: 'https://jsonplaceholder.typicode.com/posts/1' },
+            'err-404': { m: 'GET', url: 'https://jsonplaceholder.typicode.com/posts/99999' },
+            'err-net': { m: 'GET', url: 'https://hjy-not-exist-host.invalid/api/posts' },
+            'err-timeout': { m: 'GET', url: 'https://jsonplaceholder.typicode.com/posts', timeout: 1 }
+        };
+        document.querySelectorAll('[data-hjy-preset]').forEach(function (hjy_btn) {
+            hjy_btn.addEventListener('click', function () {
+                var hjy_key = hjy_btn.getAttribute('data-hjy-preset');
+                var hjy_p = HJY_PRESETS[hjy_key];
+                if (!hjy_p) { return; }
+
+                hjy_id('hjy_method').value = hjy_p.m;
+                hjy_sync_method();
+                hjy_id('hjy_url').value = hjy_p.url;
+
+                var hjy_body = hjy_id('hjy_body');
+                if (hjy_p.body) {
+                    hjy_body.value = JSON.stringify(hjy_p.body, null, 2);
+                } else if (hjy_p.m !== 'GET' && hjy_p.m !== 'HEAD') {
+                    hjy_body.value = '';
+                }
+                hjy_check_json();
+
+                if (hjy_p.timeout) {
+                    /* 超时演示：用一个临时短超时直接发送 */
+                    hjy_toast('已设置 1 毫秒超时，正在发送…');
+                    hjy_send_with_timeout(1);
+                    return;
+                }
+                hjy_send();
+            });
+        });
+
+        /* 超时演示专用（复用一个短超时的请求流程） */
+        async function hjy_send_with_timeout(hjy_ms) {
+            var hjy_url = hjy_id('hjy_url').value.trim();
+            var hjy_bar = hjy_id('hjy_respbar');
+            var hjy_t0 = performance.now();
+            var hjy_ctrl = new AbortController();
+            var hjy_timer = setTimeout(function () { hjy_ctrl.abort(); }, hjy_ms);
+
+            hjy_reset_resp();
+            hjy_bar.className = 'hjy_respbar hjy_r_load';
+            hjy_id('hjy_status').textContent = '等待响应';
+            hjy_id('hjy_time').textContent = '—';
+            hjy_id('hjy_size').textContent = '—';
+
+            try {
+                await fetch(hjy_url, { method: hjy_id('hjy_method').value, cache: 'no-store', signal: hjy_ctrl.signal });
+                hjy_timer && clearTimeout(hjy_timer);
+            } catch (hjy_err) {
+                var hjy_elapsed = Math.round(performance.now() - hjy_t0);
+                hjy_bar.className = 'hjy_respbar hjy_r_err';
+                hjy_id('hjy_status').textContent = '请求失败';
+                hjy_id('hjy_time').textContent = hjy_elapsed + ' ms';
+                hjy_id('hjy_size').textContent = '0 B';
+                hjy_id('hjy_resp_body').innerHTML = '<span class="hjy_placeholder">// 请求被中止，没有响应体</span>';
+                hjy_show_alert('err', '请求超时：AbortError',
+                    '把超时设成 <code>' + hjy_ms + ' 毫秒</code>，请求还没来得及响应就被 <code>ctrl.abort()</code> 取消了。<br>' +
+                    '真实项目里一般设 5000 ~ 15000 毫秒，并给用户一个"重试"按钮。');
+                hjy_add_history('GET', hjy_url, 'ERR', hjy_elapsed, false);
+            } finally {
+                clearTimeout(hjy_timer);
+            }
+        }
+
+        /* ===== 复制 / 快捷键 ===== */
+        hjy_id('hjy_copy').addEventListener('click', function () {
+            if (!hjy_raw_text) { hjy_toast('还没有可复制的响应内容'); return; }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(hjy_raw_text).then(function () {
+                    hjy_toast('已复制响应内容');
+                }).catch(function () { hjy_toast('复制失败，请手动选择文本'); });
+            } else {
+                hjy_toast('当前浏览器不支持自动复制');
+            }
+        });
+
+        document.addEventListener('keydown', function (hjy_e) {
+            if ((hjy_e.ctrlKey || hjy_e.metaKey) && hjy_e.key === 'Enter') {
+                hjy_e.preventDefault();
+                hjy_send();
+            }
+        });
+
+        /* ===== 初始化 ===== */
+        hjy_add_row('Content-Type', 'application/json');
+        hjy_sync_method();
+        hjy_id('hjy_body').value = JSON.stringify(HJY_SAMPLE, null, 2);
+        hjy_check_json();
+        hjy_send();
+    })();
+</script>
+</body>
+</html>
