@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-05 功能：网页元素设计实验（siji 电影推荐页面）：导航、左图右文焦点推荐、上图下文卡片网格、tab 切换条、一左一右榜单与图表，纯 HTML+CSS（flex/grid），无交互无动画 -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光影集 · 电影推荐</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* ============================================================
+           姓名：胡家瑜 日期：2026-11-05
+           功能：电影推荐页面公共样式（全局 reset、字体、通用组件）
+           说明：公共 CSS 统一放最前面，尽量使用 class 选择器，
+                 相同样式复用同一个选择器，不使用表格
+           ============================================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            background: #14121e;
+            color: #e8e6f0;
+            line-height: 1.7;
+        }
+        ul, ol { list-style: none; }
+        a { color: inherit; text-decoration: none; }
+        img { display: block; max-width: 100%; }
+
+        .hjy_container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+        /* 通用：区块标题 */
+        .hjy_section_head {
+            display: flex; align-items: baseline; gap: 12px;
+            margin: 34px 0 18px;
+        }
+        .hjy_section_head h2 {
+            font-size: 1.3rem; letter-spacing: 1px;
+            padding-left: 12px; border-left: 4px solid #ffb43a;
+        }
+        .hjy_section_head .hjy_sub { font-size: 0.78rem; color: #8f8aa5; }
+
+        /* 通用：标签胶囊（焦点区与卡片列表共用） */
+        .hjy_tag {
+            display: inline-block; font-size: 0.72rem;
+            color: #ffd28a; background: rgba(255, 180, 58, 0.14);
+            border: 1px solid rgba(255, 180, 58, 0.35);
+            padding: 1px 10px; border-radius: 20px;
+        }
+        .hjy_tag_blue { color: #9fc0ff; background: rgba(90, 130, 255, 0.14); border-color: rgba(90, 130, 255, 0.4); }
+        .hjy_tag_pink { color: #ffa6c9; background: rgba(255, 90, 140, 0.12); border-color: rgba(255, 90, 140, 0.35); }
+
+        /* 通用：星级评分（卡片与榜单共用） */
+        .hjy_stars { color: #ffb43a; font-size: 0.78rem; letter-spacing: 2px; }
+        .hjy_score {
+            font-family: Consolas, monospace; font-weight: 800;
+            color: #ffb43a; font-size: 0.95rem;
+        }
+        .hjy_score_small { font-size: 0.82rem; }
+
+        /* 通用：按钮（焦点区两个按钮复用） */
+        .hjy_btn {
+            display: inline-block; font-size: 0.85rem; font-weight: 700;
+            color: #1c1626; background: linear-gradient(135deg, #ffcf5e, #ff9d3c);
+            padding: 9px 26px; border-radius: 24px;
+        }
+        .hjy_btn_ghost {
+            color: #e8e6f0; background: transparent;
+            border: 1.5px solid rgba(232, 230, 240, 0.45);
+        }
+
+        /* ============================================================
+           一、导航（典型部分①）
+           ============================================================ */
+        .hjy_topbar {
+            position: sticky; top: 0; z-index: 10;
+            background: rgba(20, 18, 30, 0.92);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .hjy_topbar_in {
+            display: flex; align-items: center; gap: 26px;
+            height: 62px;
+        }
+        .hjy_logo {
+            display: flex; align-items: center; gap: 9px;
+            font-size: 1.15rem; font-weight: 800; letter-spacing: 2px;
+        }
+        .hjy_logo i { font-size: 1.3rem; color: #ffb43a; }
+        .hjy_logo em { font-style: normal; font-size: 0.68rem; color: #8f8aa5; letter-spacing: 3px; margin-left: 2px; }
+
+        .hjy_menu { display: flex; gap: 6px; }
+        .hjy_menu a {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 0.88rem; color: #c9c5d8;
+            padding: 7px 14px; border-radius: 18px;
+        }
+        .hjy_menu a i { font-size: 0.9rem; }
+        .hjy_menu a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+        .hjy_menu .hjy_here { color: #1c1626; font-weight: 700; background: linear-gradient(135deg, #ffcf5e, #ff9d3c); }
+        .hjy_menu .hjy_here:hover { color: #1c1626; background: linear-gradient(135deg, #ffcf5e, #ff9d3c); }
+
+        .hjy_search {
+            margin-left: auto;
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 20px; padding: 7px 14px; width: 230px;
+        }
+        .hjy_search i { color: #8f8aa5; font-size: 0.9rem; }
+        .hjy_search span { font-size: 0.78rem; color: #8f8aa5; }
+
+        /* ============================================================
+           二、焦点推荐：左图右文（典型部分②，含图片）
+           ============================================================ */
+        .hjy_hero {
+            margin-top: 26px;
+            background: linear-gradient(135deg, #221e33, #1a1728);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 22px;
+            display: flex; gap: 26px;
+        }
+        .hjy_hero_pic { flex: 0 0 300px; }
+        .hjy_hero_pic img {
+            width: 100%; border-radius: 14px;
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+        }
+        .hjy_hero_info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .hjy_hero_info .hjy_flag {
+            align-self: flex-start; font-size: 0.72rem; letter-spacing: 2px;
+            color: #ff7d5c; border: 1px solid rgba(255, 125, 92, 0.5);
+            padding: 2px 12px; border-radius: 20px; margin-bottom: 12px;
+        }
+        .hjy_hero_info h1 { font-size: 1.9rem; letter-spacing: 2px; }
+        .hjy_hero_info .hjy_en {
+            font-family: Consolas, monospace; font-size: 0.8rem;
+            color: #8f8aa5; letter-spacing: 1px; margin: 4px 0 14px;
+        }
+        .hjy_hero_tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .hjy_hero_meta {
+            display: flex; gap: 18px; flex-wrap: wrap;
+            font-size: 0.82rem; color: #b7b3c9; margin-bottom: 14px;
+        }
+        .hjy_hero_meta b { color: #e8e6f0; font-weight: 400; }
+        .hjy_hero_desc {
+            font-size: 0.88rem; color: #b7b3c9;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+            margin-bottom: 18px;
+        }
+        .hjy_hero_acts {
+            margin-top: auto; display: flex; gap: 12px; align-items: center;
+        }
+        .hjy_hero_acts .hjy_stars { font-size: 0.95rem; }
+        .hjy_hero_acts .hjy_score { font-size: 1.3rem; }
+        .hjy_hero_acts .hjy_cnt { font-size: 0.75rem; color: #8f8aa5; margin-right: auto; }
+
+        /* ============================================================
+           三、tab 切换条（典型部分③，静态外观）
+           ============================================================ */
+        .hjy_tabs {
+            display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+            margin-top: 34px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hjy_tabs .hjy_tab {
+            font-size: 0.92rem; color: #b7b3c9;
+            padding: 10px 22px; cursor: default;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+        }
+        .hjy_tabs .hjy_tab:hover { color: #fff; }
+        .hjy_tabs .hjy_on {
+            color: #ffb43a; font-weight: 700;
+            border-bottom-color: #ffb43a;
+        }
+        .hjy_tabs .hjy_more { margin-left: auto; font-size: 0.78rem; color: #8f8aa5; }
+
+        /* ============================================================
+           四、正在热映：上图下文卡片网格（典型部分④，含图片）
+           ============================================================ */
+        .hjy_movies {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+            gap: 18px; margin-top: 20px;
+        }
+        .hjy_movie {
+            background: #1e1b2c;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 14px; overflow: hidden;
+        }
+        .hjy_movie_pic { position: relative; }
+        .hjy_movie_pic img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
+        .hjy_movie_pic .hjy_grade {
+            position: absolute; right: 8px; bottom: 8px;
+            font-family: Consolas, monospace; font-weight: 800; font-size: 0.85rem;
+            color: #ffb43a; background: rgba(16, 14, 24, 0.82);
+            padding: 2px 8px; border-radius: 8px;
+        }
+        .hjy_movie_pic .hjy_type {
+            position: absolute; left: 8px; top: 8px;
+            font-size: 0.68rem; color: #fff;
+            background: rgba(255, 125, 92, 0.85);
+            padding: 1px 9px; border-radius: 12px;
+        }
+        .hjy_movie_body { padding: 10px 12px 12px; }
+        .hjy_movie_body h3 {
+            font-size: 0.92rem; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .hjy_movie_body .hjy_year { font-size: 0.72rem; color: #8f8aa5; margin: 3px 0 7px; }
+        .hjy_movie_foot {
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .hjy_movie_foot .hjy_wish { font-size: 0.72rem; color: #8f8aa5; }
+        .hjy_movie_foot .hjy_wish i { font-size: 0.75rem; color: #ff7d5c; margin-right: 3px; }
+
+        /* ============================================================
+           五、一左一右：口碑榜列表（含图表柱状条） + 评分分布图表（典型部分⑤）
+           ============================================================ */
+        .hjy_two {
+            display: grid; grid-template-columns: 1.15fr 1fr;
+            gap: 20px; margin-top: 20px;
+        }
+        .hjy_panel {
+            background: #1e1b2c;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px; padding: 18px 20px; min-width: 0;
+        }
+        .hjy_panel h3 { font-size: 1rem; margin-bottom: 4px; }
+        .hjy_panel .hjy_panel_sub { font-size: 0.75rem; color: #8f8aa5; margin-bottom: 14px; }
+
+        .hjy_rank li {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 4px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.09);
+        }
+        .hjy_rank li:last-child { border-bottom: none; }
+        .hjy_no {
+            flex: 0 0 26px; height: 26px; border-radius: 8px;
+            text-align: center; line-height: 26px;
+            font-family: Consolas, monospace; font-weight: 800; font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.08); color: #b7b3c9;
+        }
+        .hjy_no_1 { background: linear-gradient(135deg, #ffcf5e, #ff9d3c); color: #1c1626; }
+        .hjy_no_2 { background: rgba(255, 180, 58, 0.4); color: #ffd8a0; }
+        .hjy_no_3 { background: rgba(255, 180, 58, 0.2); color: #ffc98a; }
+        .hjy_rank .hjy_name { flex: 1; min-width: 0; }
+        .hjy_rank .hjy_name b {
+            display: block; font-size: 0.9rem; font-weight: 400;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .hjy_rank .hjy_name span { font-size: 0.7rem; color: #8f8aa5; }
+        .hjy_heat { flex: 0 0 74px; height: 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.09); overflow: hidden; }
+        .hjy_heat i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #ff9d3c, #ffcf5e); }
+        .hjy_rank .hjy_score { flex: 0 0 40px; text-align: right; }
+
+        /* 纯 CSS 柱状图 */
+        .hjy_chart {
+            display: flex; align-items: flex-end; gap: 14px;
+            height: 190px; padding: 6px 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        .hjy_col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+        .hjy_col .hjy_val { font-family: Consolas, monospace; font-size: 0.7rem; color: #ffd28a; margin-bottom: 5px; }
+        .hjy_col .hjy_bar {
+            width: 100%; max-width: 42px; border-radius: 6px 6px 0 0;
+            background: linear-gradient(180deg, #ffcf5e, #c96b2e);
+        }
+        .hjy_col.hjy_dim .hjy_bar { background: rgba(255, 255, 255, 0.22); }
+        .hjy_col.hjy_dim .hjy_val { color: #8f8aa5; }
+        .hjy_chart_x { display: flex; gap: 14px; padding: 8px 4px 0; }
+        .hjy_chart_x span { flex: 1; text-align: center; font-size: 0.72rem; color: #b7b3c9; }
+        .hjy_chart_note { font-size: 0.72rem; color: #8f8aa5; margin-top: 12px; }
+
+        /* ============================================================
+           六、页脚
+           ============================================================ */
+        .hjy_footer {
+            margin-top: 40px; padding: 26px 0 34px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center; font-size: 0.78rem; color: #8f8aa5;
+        }
+        .hjy_footer .hjy_foot_menu { display: flex; justify-content: center; gap: 20px; margin-bottom: 10px; }
+        .hjy_footer .hjy_foot_menu a:hover { color: #ffd28a; }
+
+        /* ============================================================
+           七、响应式（多视口适配）
+           ============================================================ */
+        @media (max-width: 900px) {
+            .hjy_two { grid-template-columns: 1fr; }
+            .hjy_search { width: 160px; }
+        }
+        @media (max-width: 768px) {
+            .hjy_topbar_in { height: auto; flex-wrap: wrap; padding: 10px 0; gap: 12px; }
+            .hjy_menu { order: 3; width: 100%; justify-content: space-between; }
+            .hjy_menu a { padding: 6px 8px; }
+            .hjy_search { display: none; }
+            .hjy_hero { flex-direction: column; padding: 16px; }
+            .hjy_hero_pic { flex: none; }
+            .hjy_hero_pic img { aspect-ratio: 16 / 10; object-fit: cover; }
+            .hjy_rank .hjy_name b { white-space: normal; }
+            .hjy_tab { padding: 8px 12px; font-size: 0.86rem; }
+            .hjy_tabs .hjy_more { display: none; }
+            .hjy_hero_acts { flex-wrap: wrap; }
+            .hjy_movies { grid-template-columns: repeat(2, 1fr); }
+            .hjy_hero_info h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 导航 ===== -->
+    <header class="hjy_topbar">
+        <div class="hjy_container hjy_topbar_in">
+            <div class="hjy_logo">
+                <i class="iconfont icon-tuijian"></i>光影集<em>FILMLIGHT</em>
+            </div>
+            <nav class="hjy_menu">
+                <a href="#hjy_hero"><i class="iconfont icon-shouye"></i>首页</a>
+                <a href="#hjy_now" class="hjy_here"><i class="iconfont icon-faxian"></i>正在热映</a>
+                <a href="#hjy_two"><i class="iconfont icon-dianzan"></i>口碑榜</a>
+                <a href="#hjy_footer"><i class="iconfont icon-shoucang"></i>我的收藏</a>
+            </nav>
+            <div class="hjy_search">
+                <i class="iconfont icon-sousuo"></i><span>搜索电影 / 演员</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="hjy_container">
+
+        <!-- ===== 焦点推荐：左图右文 ===== -->
+        <section class="hjy_hero" id="hjy_hero">
+            <figure class="hjy_hero_pic">
+                <img src="./img/siji/hjy_poster_scifi.png" alt="电影《星环之外》海报">
+            </figure>
+            <div class="hjy_hero_info">
+                <span class="hjy_flag">本周焦点 · 会员半价</span>
+                <h1>星环之外</h1>
+                <p class="hjy_en">BEYOND THE RING (2026)</p>
+                <div class="hjy_hero_tags">
+                    <span class="hjy_tag">科幻</span>
+                    <span class="hjy_tag hjy_tag_blue">冒险</span>
+                    <span class="hjy_tag hjy_tag_pink">剧情</span>
+                    <span class="hjy_tag">IMAX</span>
+                </div>
+                <div class="hjy_hero_meta">
+                    <span>片长 <b>162 分钟</b></span>
+                    <span>导演 <b>林一舟</b></span>
+                    <span>主演 <b>沈星河 / 白昼 / 顾北辰</b></span>
+                    <span>上映 <b>2026-10-24</b></span>
+                </div>
+                <p class="hjy_hero_desc">
+                    人类第一艘恒星际飞船“逐光号”抵达巨型星环，船员们却在环带背面发现了一座不属于任何已知文明的空城。
+                    随着探索深入，领航员沈星河逐渐意识到：他们寻找的不是新的家园，而是一个跨越十万年的警告……
+                </p>
+                <div class="hjy_hero_acts">
+                    <span class="hjy_stars">★★★★★</span>
+                    <span class="hjy_score">9.1</span>
+                    <span class="hjy_cnt">12.6 万人评过</span>
+                    <a class="hjy_btn" href="#hjy_now">立即购票</a>
+                    <a class="hjy_btn hjy_btn_ghost" href="#hjy_now">加入收藏</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== tab 切换条 ===== -->
+        <div class="hjy_tabs" id="hjy_now">
+            <span class="hjy_tab hjy_on">正在热映</span>
+            <span class="hjy_tab">即将上映</span>
+            <span class="hjy_tab">高分经典</span>
+            <span class="hjy_more">完整片单 ›</span>
+        </div>
+
+        <!-- ===== 正在热映：上图下文卡片 ===== -->
+        <ul class="hjy_movies">
+            <li class="hjy_movie">
+                <div class="hjy_movie_pic">
+                    <img src="./img/siji/hjy_poster_scifi.png" alt="电影《星环之外》海报">
+                    <span class="hjy_type">科幻</span>
+                    <span class="hjy_grade">9.1</span>
+                </div>
+                <div class="hjy_movie_body">
+                    <h3>星环之外</h3>
+                    <p class="hjy_year">2026 · 美国 · 冒险</p>
+                    <div class="hjy_movie_foot">
+                        <span class="hjy_stars">★★★★★</span>
+                        <span class="hjy_wish"><i class="iconfont icon-dianzan"></i>2.3万想看</span>
+                    </div>
+                </div>
+            </li>
+            <li class="hjy_movie">
+                <div class="hjy_movie_pic">
+                    <img src="./img/siji/hjy_poster_anime.png" alt="电影《灯笼小镇》海报">
+                    <span class="hjy_type">动画</span>
+                    <span class="hjy_grade">8.7</span>
+                </div>
+                <div class="hjy_movie_body">
+                    <h3>灯笼小镇</h3>
+                    <p class="hjy_year">2026 · 中国 · 奇幻</p>
+                    <div class="hjy_movie_foot">
+                        <span class="hjy_stars">★★★★☆</span>
+                        <span class="hjy_wish"><i class="iconfont icon-dianzan"></i>1.8万想看</span>
+                    </div>
+                </div>
+            </li>
+            <li class="hjy_movie">
+                <div class="hjy_movie_pic">
+                    <img src="./img/siji/hjy_poster_mystery.png" alt="电影《雨夜追踪》海报">
+                    <span class="hjy_type">悬疑</span>
+                    <span class="hjy_grade">8.4</span>
+                </div>
+                <div class="hjy_movie_body">
+                    <h3>雨夜追踪</h3>
+                    <p class="hjy_year">2025 · 韩国 · 犯罪</p>
+                    <div class="hjy_movie_foot">
+                        <span class="hjy_stars">★★★★☆</span>
+                        <span class="hjy_wish"><i class="iconfont icon-dianzan"></i>9,632想看</span>
+                    </div>
+                </div>
+            </li>
+            <li class="hjy_movie">
+                <div class="hjy_movie_pic">
+                    <img src="./img/siji/hjy_poster_love.png" alt="电影《天台上的夏天》海报">
+                    <span class="hjy_type">爱情</span>
+                    <span class="hjy_grade">8.0</span>
+                </div>
+                <div class="hjy_movie_body">
+                    <h3>天台上的夏天</h3>
+                    <p class="hjy_year">2026 · 中国 · 爱情</p>
+                    <div class="hjy_movie_foot">
+                        <span class="hjy_stars">★★★★☆</span>
+                        <span class="hjy_wish"><i class="iconfont icon-dianzan"></i>1.2万想看</span>
+                    </div>
+                </div>
+            </li>
+            <li class="hjy_movie">
+                <div class="hjy_movie_pic">
+                    <img src="./img/siji/hjy_poster_wuxia.png" alt="电影《竹影剑心》海报">
+                    <span class="hjy_type">武侠</span>
+                    <span class="hjy_grade">8.9</span>
+                </div>
+                <div class="hjy_movie_body">
+                    <h3>竹影剑心</h3>
+                    <p class="hjy_year">2025 · 中国 · 动作</p>
+                    <div class="hjy_movie_foot">
+                        <span class="hjy_stars">★★★★★</span>
+                        <span class="hjy_wish"><i class="iconfont icon-dianzan"></i>1.5万想看</span>
+                    </div>
+                </div>
+            </li>
+            <li class="hjy_movie">
+                <div class="hjy_movie_pic">
+                    <img src="./img/siji/hjy_poster_disaster.png" alt="电影《沙暴之下》海报">
+                    <span class="hjy_type">灾难</span>
+                    <span class="hjy_grade">7.8</span>
+                </div>
+                <div class="hjy_movie_body">
+                    <h3>沙暴之下</h3>
+                    <p class="hjy_year">2026 · 美国 · 灾难</p>
+                    <div class="hjy_movie_foot">
+                        <span class="hjy_stars">★★★★☆</span>
+                        <span class="hjy_wish"><i class="iconfont icon-dianzan"></i>8,417想看</span>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <!-- ===== 一左一右：口碑榜 + 图表 ===== -->
+        <div class="hjy_section_head" id="hjy_two">
+            <h2>本周口碑</h2>
+            <span class="hjy_sub">数据更新于 2026-11-05</span>
+        </div>
+        <div class="hjy_two">
+            <!-- 左：口碑榜列表 -->
+            <section class="hjy_panel">
+                <h3>热度口碑榜 TOP 5</h3>
+                <p class="hjy_panel_sub">按本周购票热度与评分综合排序</p>
+                <ol class="hjy_rank">
+                    <li>
+                        <span class="hjy_no hjy_no_1">1</span>
+                        <div class="hjy_name"><b>星环之外</b><span>科幻 / 冒险 · 12.6 万人评</span></div>
+                        <span class="hjy_heat"><i style="width: 96%"></i></span>
+                        <span class="hjy_score">9.1</span>
+                    </li>
+                    <li>
+                        <span class="hjy_no hjy_no_2">2</span>
+                        <div class="hjy_name"><b>竹影剑心</b><span>武侠 / 动作 · 9.8 万人评</span></div>
+                        <span class="hjy_heat"><i style="width: 82%"></i></span>
+                        <span class="hjy_score">8.9</span>
+                    </li>
+                    <li>
+                        <span class="hjy_no hjy_no_3">3</span>
+                        <div class="hjy_name"><b>灯笼小镇</b><span>动画 / 奇幻 · 8.4 万人评</span></div>
+                        <span class="hjy_heat"><i style="width: 74%"></i></span>
+                        <span class="hjy_score">8.7</span>
+                    </li>
+                    <li>
+                        <span class="hjy_no">4</span>
+                        <div class="hjy_name"><b>雨夜追踪</b><span>悬疑 / 犯罪 · 6.1 万人评</span></div>
+                        <span class="hjy_heat"><i style="width: 63%"></i></span>
+                        <span class="hjy_score">8.4</span>
+                    </li>
+                    <li>
+                        <span class="hjy_no">5</span>
+                        <div class="hjy_name"><b>天台上的夏天</b><span>爱情 / 青春 · 5.7 万人评</span></div>
+                        <span class="hjy_heat"><i style="width: 55%"></i></span>
+                        <span class="hjy_score">8.0</span>
+                    </li>
+                </ol>
+            </section>
+
+            <!-- 右：评分分布图表（纯 CSS 柱状图） -->
+            <aside class="hjy_panel">
+                <h3>各类型本周平均分</h3>
+                <p class="hjy_panel_sub">取本周上映影片按类型统计（满分 10 分）</p>
+                <div class="hjy_chart">
+                    <div class="hjy_col"><span class="hjy_val">9.1</span><span class="hjy_bar" style="height: 91%"></span></div>
+                    <div class="hjy_col"><span class="hjy_val">8.9</span><span class="hjy_bar" style="height: 89%"></span></div>
+                    <div class="hjy_col"><span class="hjy_val">8.7</span><span class="hjy_bar" style="height: 87%"></span></div>
+                    <div class="hjy_col hjy_dim"><span class="hjy_val">8.4</span><span class="hjy_bar" style="height: 84%"></span></div>
+                    <div class="hjy_col hjy_dim"><span class="hjy_val">8.0</span><span class="hjy_bar" style="height: 80%"></span></div>
+                    <div class="hjy_col hjy_dim"><span class="hjy_val">7.8</span><span class="hjy_bar" style="height: 78%"></span></div>
+                </div>
+                <div class="hjy_chart_x">
+                    <span>科幻</span><span>武侠</span><span>动画</span><span>悬疑</span><span>爱情</span><span>灾难</span>
+                </div>
+                <p class="hjy_chart_note">金色为评分 8.5 分以上类型，灰色为 8.5 分以下类型。</p>
+            </aside>
+        </div>
+    </main>
+
+    <!-- ===== 页脚 ===== -->
+    <footer class="hjy_footer" id="hjy_footer">
+        <div class="hjy_container">
+            <div class="hjy_foot_menu">
+                <a href="#hjy_hero">关于我们</a>
+                <a href="#hjy_hero">联系合作</a>
+                <a href="#hjy_hero">意见反馈</a>
+            </div>
+            <p>光影集 FILMLIGHT · 网页元素设计实验 · 姓名：胡家瑜 · 2026-11-05</p>
+        </div>
+    </footer>
+
+</body>
+</html>

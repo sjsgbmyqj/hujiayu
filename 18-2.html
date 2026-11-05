@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-05 功能：基于 Canvas 2D 绘制的电商系统全站架构图——分层架构、节点悬停高亮、点击查看详情、数据流动态演示 -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电商系统全站架构图 · Canvas</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-05 功能：页面样式（全部类名以 hjy_ 开头） */
+        :root {
+            --hjy_bg: #06080f;
+            --hjy_panel: rgba(255, 255, 255, 0.045);
+            --hjy_line: rgba(255, 255, 255, 0.10);
+            --hjy_text: #e6ecff;
+            --hjy_sub: #8894b8;
+            --hjy_cyan: #26e6ff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(1000px 560px at 15% -5%, rgba(38, 100, 220, 0.25), transparent 70%),
+                radial-gradient(900px 520px at 90% 15%, rgba(0, 200, 255, 0.14), transparent 70%),
+                radial-gradient(900px 600px at 50% 115%, rgba(120, 70, 220, 0.18), transparent 70%),
+                var(--hjy_bg);
+            background-attachment: fixed;
+            color: var(--hjy_text);
+            min-height: 100vh;
+            padding: 34px 20px 44px;
+            line-height: 1.65;
+        }
+        .hjy_container { max-width: 1160px; margin: 0 auto; }
+
+        /* ===== 页头 ===== */
+        .hjy_header { text-align: center; margin-bottom: 24px; }
+        .hjy_header h1 {
+            font-size: 2.05rem; letter-spacing: 2px; font-weight: 800;
+            background: linear-gradient(100deg, #4facfe, #26e6ff 40%, #b18cff);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hjy_header p { color: var(--hjy_sub); font-size: 0.94rem; margin-top: 8px; }
+        .hjy_author {
+            display: inline-block; margin-top: 12px; padding: 6px 20px;
+            border-radius: 30px; font-size: 0.88rem; color: #cdd6ff;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+        }
+
+        /* ===== 画布卡片 ===== */
+        .hjy_card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(10px);
+            margin-bottom: 22px;
+        }
+        .hjy_canvas_wrap { overflow-x: auto; border-radius: 14px; }
+        #hjy_canvas {
+            display: block;
+            width: 100%;
+            min-width: 820px;
+            aspect-ratio: 1120 / 790;
+            border-radius: 14px;
+            cursor: default;
+        }
+
+        /* ===== 工具栏 ===== */
+        .hjy_toolbar {
+            display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+            margin-top: 16px;
+        }
+        .hjy_btn {
+            border: none; cursor: pointer;
+            padding: 9px 22px; border-radius: 11px;
+            font-size: 0.88rem; font-family: inherit; font-weight: 600;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .hjy_btn:hover { transform: translateY(-2px); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_btn_primary {
+            color: #06121f;
+            background: linear-gradient(135deg, #4facfe, #26e6ff);
+            box-shadow: 0 8px 22px rgba(38, 230, 255, 0.30);
+        }
+        .hjy_btn_plain {
+            color: #cfd8ff;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .hjy_btn .iconfont { margin-right: 6px; }
+        .hjy_legend { display: flex; flex-wrap: wrap; gap: 14px; margin-left: auto; }
+        .hjy_legend_item { display: inline-flex; align-items: center; gap: 7px; font-size: 0.78rem; color: var(--hjy_sub); }
+        .hjy_dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+        /* ===== 详情面板 ===== */
+        .hjy_detail {
+            margin-top: 16px;
+            min-height: 96px;
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: rgba(10, 16, 32, 0.72);
+            border: 1px solid rgba(140, 170, 255, 0.16);
+            border-left: 4px solid var(--hjy_cyan);
+        }
+        .hjy_detail_empty { color: #5d688a; font-size: 0.86rem; line-height: 96px; text-align: center; }
+        .hjy_detail_tag {
+            display: inline-block; font-size: 0.72rem; padding: 2px 10px;
+            border-radius: 20px; margin-bottom: 8px; color: #06121f; font-weight: 700;
+        }
+        .hjy_detail_title { font-size: 1.05rem; font-weight: 700; color: #fff; }
+        .hjy_detail_text { font-size: 0.85rem; color: #a8b4d8; margin-top: 4px; }
+
+        /* ===== 说明卡片 ===== */
+        .hjy_note_grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .hjy_note {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 14px; padding: 16px 16px;
+        }
+        .hjy_note_name { font-size: 0.94rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        .hjy_note_text { font-size: 0.79rem; color: var(--hjy_sub); line-height: 1.75; }
+        .hjy_note_name .iconfont { color: var(--hjy_cyan); margin-right: 6px; }
+        .hjy_footer { text-align: center; color: rgba(150, 165, 205, 0.55); font-size: 0.83rem; margin-top: 8px; }
+
+        @media (max-width: 900px) {
+            body { padding: 24px 12px 34px; }
+            .hjy_header h1 { font-size: 1.45rem; }
+            .hjy_card { padding: 12px; }
+            .hjy_note_grid { grid-template-columns: 1fr; }
+            .hjy_legend { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_container">
+
+    <header class="hjy_header">
+        <h1>电商系统全站架构图</h1>
+        <p>基于 Canvas 2D 原生绘制 · 五层分层架构 · 数据流动态演示 · 节点可交互</p>
+        <div class="hjy_author">👤 学生：胡家瑜</div>
+    </header>
+
+    <section class="hjy_card">
+        <div class="hjy_canvas_wrap">
+            <canvas id="hjy_canvas"></canvas>
+        </div>
+        <div class="hjy_toolbar">
+            <button class="hjy_btn hjy_btn_primary" id="hjy_flow_btn"><i class="iconfont icon-shuaxin"></i>暂停数据流</button>
+            <button class="hjy_btn hjy_btn_plain" id="hjy_reset_btn">清除选中</button>
+            <div class="hjy_legend" id="hjy_legend"></div>
+        </div>
+        <div class="hjy_detail" id="hjy_detail">
+            <div class="hjy_detail_empty">点击架构图中的任意节点，查看该组件的职责说明</div>
+        </div>
+    </section>
+
+    <section class="hjy_card">
+        <div class="hjy_note_grid">
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-list-icon-fuzhi"></i>分层设计思想</div>
+                <div class="hjy_note_text">自上而下分为接入层、网关层、业务层、中间件层与数据层，每层只依赖下一层，便于横向扩展与故障隔离。</div>
+            </div>
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-pinglun"></i>服务拆分原则</div>
+                <div class="hjy_note_text">按业务域拆分为用户、商品、订单、支付、库存等微服务，服务间通过消息队列异步解耦，避免强依赖拖垮整条链路。</div>
+            </div>
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-tuijian"></i>关于绘制方式</div>
+                <div class="hjy_note_text">ECharts 是常用的可视化图表库（echarts.apache.org），本页按课程要求不引入第三方库与 CDN，全部图形由 Canvas 2D API 手工绘制。</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="hjy_footer">Made with ❤ by 胡家瑜 · 高级网页设计课程</footer>
+
+</div>
+
+<script>
+    /* 姓名：胡家瑜 日期：2026-11-05 功能：Canvas 绘制电商系统全站架构图（全部变量以 hjy_ 开头） */
+    (function () {
+        var hjy_canvas = document.getElementById('hjy_canvas');
+        var hjy_ctx = hjy_canvas.getContext('2d');
+        var hjy_detail = document.getElementById('hjy_detail');
+        var hjy_legend = document.getElementById('hjy_legend');
+        var hjy_flow_btn = document.getElementById('hjy_flow_btn');
+        var hjy_reset_btn = document.getElementById('hjy_reset_btn');
+
+        var hjy_dw = 1120;   /* 设计稿宽度 */
+        var hjy_dh = 790;    /* 设计稿高度 */
+        var hjy_scale = 1;
+
+        /* ===== 分层与节点数据 ===== */
+        var hjy_layers = [
+            {
+                name: '① 用户接入层',
+                tip: '多端统一入口',
+                colors: ['#4facfe', '#00f2fe'],
+                nodes: [
+                    { t: 'Web 商城', s: 'PC 浏览器', d: '面向 PC 端消费者的浏览、下单、支付入口，静态资源通过 CDN 就近分发。' },
+                    { t: '移动 App', s: 'iOS / Android', d: '原生与混合客户端，承载消息推送、扫码购、订单跟踪等能力。' },
+                    { t: '微信小程序', s: '微信生态', d: '微信生态内的轻量购物入口，支持微信授权登录与微信支付。' },
+                    { t: '运营后台', s: '管理员 / 商家', d: '面向运营与商家的管理端，负责商品上架、订单处理、售后与数据看板。' }
+                ]
+            },
+            {
+                name: '② 网关与安全层',
+                tip: '统一入口 · 安全防护',
+                colors: ['#f093fb', '#f5576c'],
+                nodes: [
+                    { t: 'API 网关', s: '统一路由', d: '统一路由与协议转换，聚合各微服务接口，对外只暴露一个入口域名。' },
+                    { t: '鉴权中心', s: '登录 / 权限', d: '负责登录认证、Token 签发与校验、基于角色的权限控制（RBAC）。' },
+                    { t: '限流熔断', s: '稳定性保障', d: '对接口做 QPS 限流、熔断降级与黑白名单，保护后端服务不被拖垮。' },
+                    { t: 'CDN 加速', s: '静态分发', d: '图片、视频与静态资源就近分发，降低源站压力与用户访问延迟。' }
+                ]
+            },
+            {
+                name: '③ 业务服务层',
+                tip: '按业务域拆分的微服务集群',
+                colors: ['#667eea', '#764ba2'],
+                nodes: [
+                    { t: '用户服务', s: '账号 / 会员', d: '账号体系、会员等级、收货地址、积分与实名认证信息管理。' },
+                    { t: '商品服务', s: '商品 / SKU', d: '商品、SKU、类目、价格与上下架状态维护，是交易链路的数据基础。' },
+                    { t: '购物车服务', s: '高并发读写', d: '购物车增删改查与会话级缓存，支撑大促期间的高并发读写。' },
+                    { t: '订单服务', s: '状态机流转', d: '订单创建、状态机流转、超时关单、拆单与合单等核心交易逻辑。' },
+                    { t: '支付服务', s: '支付 / 退款', d: '对接微信支付、支付宝，处理支付回调、对账与退款流程。' },
+                    { t: '库存服务', s: '防超卖', d: '库存扣减与预占，防止超卖，支持多仓库存分配与回补。' },
+                    { t: '营销服务', s: '促销 / 秒杀', d: '优惠券、满减、限时秒杀与会员折扣的规则计算与发放。' },
+                    { t: '物流服务', s: '运费 / 轨迹', d: '运费计算、运单号生成、物流轨迹同步与签收状态回传。' }
+                ]
+            },
+            {
+                name: '④ 中间件层',
+                tip: '异步解耦 · 缓存加速',
+                colors: ['#43e97b', '#38f9d7'],
+                nodes: [
+                    { t: '消息队列 Kafka', s: '削峰填谷', d: '异步解耦订单、库存、营销事件，大促期间削峰填谷，提升系统吞吐。' },
+                    { t: '缓存 Redis', s: '热点数据', d: '热点商品、购物车与会话缓存，同时提供分布式锁能力。' },
+                    { t: '搜索引擎 ES', s: '全文检索', d: '商品全文检索、多条件聚合筛选与搜索联想，也用于日志检索。' },
+                    { t: '定时任务调度', s: '周期执行', d: '订单超时关闭、库存回补、报表统计与数据同步等定时任务。' }
+                ]
+            },
+            {
+                name: '⑤ 数据层',
+                tip: '存储 · 数仓 · 可观测',
+                colors: ['#f6d365', '#fda085'],
+                nodes: [
+                    { t: 'MySQL 分库分表', s: '交易数据', d: '核心交易数据存储，按用户与订单维度水平拆分，配合读写分离。' },
+                    { t: '对象存储 OSS', s: '图片 / 文件', d: '商品图片、详情页素材与用户头像等非结构化文件的对象存储。' },
+                    { t: '数据仓库', s: '离线分析', d: '沉淀交易与用户行为数据，支撑经营报表、用户画像与 BI 分析。' },
+                    { t: '日志与监控', s: '可观测性', d: '链路追踪、指标采集、日志聚合与告警，保障系统可观测性。' }
+                ]
+            }
+        ];
+
+        var hjy_external = [
+            { t: '微信 / 支付宝', s: '第三方支付', d: '第三方支付渠道，提供支付下单、回调通知与退款能力。' },
+            { t: '短信 / 邮件', s: '消息触达', d: '验证码、订单通知、营销触达等消息通道。' },
+            { t: '物流快递 API', s: '轨迹查询', d: '对接快递公司接口，生成运单并查询物流轨迹。' },
+            { t: '云服务 / CDN', s: '基础设施', d: '云主机、对象存储与内容分发网络等基础设施服务。' }
+        ];
+
+        var hjy_ext_colors = ['#94a3b8', '#64748b'];
+
+        /* ===== 几何布局常量 ===== */
+        var hjy_left = 50;
+        var hjy_node_w = 192;
+        var hjy_node_h = 54;
+        var hjy_gap_x = 24;
+        var hjy_gap_y = 14;
+        var hjy_band_x = 36;
+        var hjy_band_w = 868;
+        var hjy_center_x = hjy_left + (hjy_node_w * 4 + hjy_gap_x * 3) / 2;
+
+        var hjy_band_tops = [48, 178, 308, 506, 636];
+        var hjy_nodes_tops = [84, 214, 344, 542, 672];
+
+        var hjy_nodes = [];          /* 所有可交互节点 */
+        var hjy_bands = [];          /* 分层底板 */
+        var hjy_connectors = [];     /* 连接线 */
+        var hjy_hover = null;
+        var hjy_selected = null;
+        var hjy_mouse = { x: -999, y: -999, in: false };
+        var hjy_flowing = true;
+
+        /* ===== 生成布局数据 ===== */
+        function hjy_build() {
+            hjy_nodes = [];
+            hjy_bands = [];
+            hjy_connectors = [];
+
+            hjy_layers.forEach(function (hjy_layer, hjy_li) {
+                var hjy_top = hjy_band_tops[hjy_li];
+                var hjy_nt = hjy_nodes_tops[hjy_li];
+                var hjy_rows = Math.ceil(hjy_layer.nodes.length / 4);
+                var hjy_band_h = hjy_rows * hjy_node_h + (hjy_rows - 1) * hjy_gap_y + 46;
+
+                hjy_bands.push({ x: hjy_band_x, y: hjy_top, w: hjy_band_w, h: hjy_band_h, index: hjy_li });
+
+                hjy_layer.nodes.forEach(function (hjy_node, hjy_ni) {
+                    var hjy_row = Math.floor(hjy_ni / 4);
+                    var hjy_col = hjy_ni % 4;
+                    var hjy_x = hjy_left + hjy_col * (hjy_node_w + hjy_gap_x);
+                    var hjy_y = hjy_nt + hjy_row * (hjy_node_h + hjy_gap_y);
+                    hjy_nodes.push({
+                        x: hjy_x, y: hjy_y, w: hjy_node_w, h: hjy_node_h,
+                        title: hjy_node.t, sub: hjy_node.s, desc: hjy_node.d,
+                        layerIndex: hjy_li, layerName: hjy_layer.name,
+                        colors: hjy_layer.colors, external: false
+                    });
+                });
+            });
+
+            /* 外部第三方服务（右侧竖列） */
+            var hjy_ext_top = 330;
+            hjy_external.forEach(function (hjy_ext, hjy_ei) {
+                var hjy_y = hjy_ext_top + hjy_ei * 70;
+                hjy_nodes.push({
+                    x: 944, y: hjy_y, w: 140, h: 56,
+                    title: hjy_ext.t, sub: hjy_ext.s, desc: hjy_ext.d,
+                    layerIndex: -1, layerName: '⑥ 外部第三方服务',
+                    colors: hjy_ext_colors, external: true
+                });
+                hjy_connectors.push({
+                    x1: 944, y1: hjy_y + 28, x2: 908, y2: hjy_y + 28, vertical: false,
+                    dots: hjy_make_dots()
+                });
+            });
+
+            /* 层间竖向连接线 */
+            for (var hjy_i = 0; hjy_i < hjy_bands.length - 1; hjy_i++) {
+                var hjy_cur = hjy_bands[hjy_i];
+                var hjy_next = hjy_bands[hjy_i + 1];
+                hjy_connectors.push({
+                    x1: hjy_center_x, y1: hjy_cur.y + hjy_cur.h, x2: hjy_center_x, y2: hjy_next.y,
+                    vertical: true, dots: hjy_make_dots()
+                });
+            }
+        }
+
+        function hjy_make_dots() {
+            var hjy_list = [];
+            for (var hjy_i = 0; hjy_i < 3; hjy_i++) {
+                hjy_list.push({ p: hjy_i / 3, speed: 0.010 + Math.random() * 0.008 });
+            }
+            return hjy_list;
+        }
+
+        /* ===== 绘图工具 ===== */
+        function hjy_rr(hjy_x, hjy_y, hjy_w, hjy_h, hjy_r) {
+            hjy_ctx.beginPath();
+            hjy_ctx.moveTo(hjy_x + hjy_r, hjy_y);
+            hjy_ctx.arcTo(hjy_x + hjy_w, hjy_y, hjy_x + hjy_w, hjy_y + hjy_h, hjy_r);
+            hjy_ctx.arcTo(hjy_x + hjy_w, hjy_y + hjy_h, hjy_x, hjy_y + hjy_h, hjy_r);
+            hjy_ctx.arcTo(hjy_x, hjy_y + hjy_h, hjy_x, hjy_y, hjy_r);
+            hjy_ctx.arcTo(hjy_x, hjy_y, hjy_x + hjy_w, hjy_y, hjy_r);
+            hjy_ctx.closePath();
+        }
+
+        function hjy_round_fill(hjy_x, hjy_y, hjy_w, hjy_h, hjy_r, hjy_colors, hjy_alpha) {
+            var hjy_grad = hjy_ctx.createLinearGradient(hjy_x, hjy_y, hjy_x + hjy_w, hjy_y + hjy_h);
+            hjy_grad.addColorStop(0, hjy_hex_alpha(hjy_colors[0], hjy_alpha));
+            hjy_grad.addColorStop(1, hjy_hex_alpha(hjy_colors[1], hjy_alpha));
+            hjy_ctx.fillStyle = hjy_grad;
+            hjy_rr(hjy_x, hjy_y, hjy_w, hjy_h, hjy_r);
+            hjy_ctx.fill();
+        }
+
+        function hjy_hex_alpha(hjy_hex, hjy_alpha) {
+            var hjy_v = hjy_hex.replace('#', '');
+            if (hjy_v.length === 3) {
+                hjy_v = hjy_v[0] + hjy_v[0] + hjy_v[1] + hjy_v[1] + hjy_v[2] + hjy_v[2];
+            }
+            var hjy_r = parseInt(hjy_v.substring(0, 2), 16);
+            var hjy_g = parseInt(hjy_v.substring(2, 4), 16);
+            var hjy_b = parseInt(hjy_v.substring(4, 6), 16);
+            return 'rgba(' + hjy_r + ', ' + hjy_g + ', ' + hjy_b + ', ' + hjy_alpha + ')';
+        }
+
+        /* ===== 绘制分层底板 ===== */
+        function hjy_draw_bands() {
+            hjy_bands.forEach(function (hjy_band, hjy_idx) {
+                var hjy_layer = hjy_layers[hjy_idx];
+                hjy_round_fill(hjy_band.x, hjy_band.y, hjy_band.w, hjy_band.h, 16, hjy_layer.colors, 0.055);
+                hjy_ctx.strokeStyle = hjy_hex_alpha(hjy_layer.colors[0], 0.22);
+                hjy_ctx.lineWidth = 1;
+                hjy_rr(hjy_band.x, hjy_band.y, hjy_band.w, hjy_band.h, 16);
+                hjy_ctx.stroke();
+
+                /* 左侧竖条标识 */
+                hjy_ctx.fillStyle = hjy_layer.colors[0];
+                hjy_rr(hjy_band.x, hjy_band.y + 12, 3, hjy_band.h - 24, 2);
+                hjy_ctx.fill();
+
+                /* 层名 */
+                hjy_ctx.fillStyle = '#ffffff';
+                hjy_ctx.font = 'bold 14px "Microsoft YaHei", "PingFang SC", sans-serif';
+                hjy_ctx.textAlign = 'left';
+                hjy_ctx.textBaseline = 'middle';
+                hjy_ctx.fillText(hjy_layer.name, hjy_band.x + 16, hjy_band.y + 22);
+
+                hjy_ctx.fillStyle = 'rgba(200, 214, 245, 0.55)';
+                hjy_ctx.font = '11px "Microsoft YaHei", "PingFang SC", sans-serif';
+                hjy_ctx.fillText(hjy_layer.tip, hjy_band.x + 130, hjy_band.y + 23);
+            });
+        }
+
+        /* ===== 绘制节点 ===== */
+        function hjy_draw_nodes() {
+            hjy_nodes.forEach(function (hjy_n) {
+                var hjy_active = hjy_hover === hjy_n || hjy_selected === hjy_n;
+                var hjy_is_ext = hjy_n.external;
+
+                if (hjy_active) {
+                    hjy_ctx.save();
+                    hjy_ctx.shadowColor = hjy_hex_alpha(hjy_n.colors[0], 0.75);
+                    hjy_ctx.shadowBlur = 22;
+                    hjy_round_fill(hjy_n.x, hjy_n.y, hjy_n.w, hjy_n.h, 12, hjy_n.colors, 0.30);
+                    hjy_ctx.restore();
+                }
+
+                hjy_round_fill(hjy_n.x, hjy_n.y, hjy_n.w, hjy_n.h, 12, hjy_n.colors, hjy_is_ext ? 0.20 : 0.26);
+
+                hjy_ctx.strokeStyle = hjy_active ? '#ffffff' : hjy_hex_alpha(hjy_n.colors[1], 0.42);
+                hjy_ctx.lineWidth = hjy_active ? 2 : 1;
+                hjy_rr(hjy_n.x, hjy_n.y, hjy_n.w, hjy_n.h, 12);
+                hjy_ctx.stroke();
+
+                var hjy_cx = hjy_n.x + hjy_n.w / 2;
+                var hjy_cy = hjy_n.y + hjy_n.h / 2;
+
+                hjy_ctx.textAlign = 'center';
+                hjy_ctx.textBaseline = 'middle';
+                hjy_ctx.fillStyle = '#ffffff';
+                hjy_ctx.font = 'bold ' + (hjy_is_ext ? '13px' : '14.5px') + ' "Microsoft YaHei", "PingFang SC", sans-serif';
+                hjy_ctx.fillText(hjy_n.title, hjy_cx, hjy_cy - 8);
+
+                hjy_ctx.fillStyle = 'rgba(228, 238, 255, 0.72)';
+                hjy_ctx.font = '10.5px "Microsoft YaHei", "PingFang SC", sans-serif';
+                hjy_ctx.fillText(hjy_n.sub, hjy_cx, hjy_cy + 12);
+            });
+        }
+
+        /* ===== 绘制连接线与流动光点 ===== */
+        function hjy_draw_connectors() {
+            hjy_connectors.forEach(function (hjy_c) {
+                hjy_ctx.strokeStyle = 'rgba(120, 200, 255, 0.28)';
+                hjy_ctx.lineWidth = 1.4;
+                hjy_ctx.setLineDash([5, 5]);
+                hjy_ctx.beginPath();
+                hjy_ctx.moveTo(hjy_c.x1, hjy_c.y1);
+                hjy_ctx.lineTo(hjy_c.x2, hjy_c.y2);
+                hjy_ctx.stroke();
+                hjy_ctx.setLineDash([]);
+
+                /* 箭头 */
+                var hjy_ax = hjy_c.x2, hjy_ay = hjy_c.y2;
+                hjy_ctx.fillStyle = 'rgba(140, 215, 255, 0.55)';
+                hjy_ctx.beginPath();
+                if (hjy_c.vertical) {
+                    hjy_ctx.moveTo(hjy_ax, hjy_ay);
+                    hjy_ctx.lineTo(hjy_ax - 5, hjy_ay - 8);
+                    hjy_ctx.lineTo(hjy_ax + 5, hjy_ay - 8);
+                } else {
+                    hjy_ctx.moveTo(hjy_ax, hjy_ay);
+                    hjy_ctx.lineTo(hjy_ax + 8, hjy_ay - 5);
+                    hjy_ctx.lineTo(hjy_ax + 8, hjy_ay + 5);
+                }
+                hjy_ctx.closePath();
+                hjy_ctx.fill();
+
+                /* 流动光点 */
+                hjy_c.dots.forEach(function (hjy_d) {
+                    var hjy_px = hjy_c.x1 + (hjy_c.x2 - hjy_c.x1) * hjy_d.p;
+                    var hjy_py = hjy_c.y1 + (hjy_c.y2 - hjy_c.y1) * hjy_d.p;
+                    var hjy_glow = hjy_ctx.createRadialGradient(hjy_px, hjy_py, 0, hjy_px, hjy_py, 9);
+                    hjy_glow.addColorStop(0, 'rgba(140, 235, 255, 0.95)');
+                    hjy_glow.addColorStop(1, 'rgba(140, 235, 255, 0)');
+                    hjy_ctx.fillStyle = hjy_glow;
+                    hjy_ctx.beginPath();
+                    hjy_ctx.arc(hjy_px, hjy_py, 9, 0, Math.PI * 2);
+                    hjy_ctx.fill();
+
+                    hjy_ctx.fillStyle = '#eafcff';
+                    hjy_ctx.beginPath();
+                    hjy_ctx.arc(hjy_px, hjy_py, 2.2, 0, Math.PI * 2);
+                    hjy_ctx.fill();
+                });
+            });
+        }
+
+        /* ===== 悬停提示框 ===== */
+        function hjy_draw_tooltip() {
+            if (!hjy_hover || !hjy_mouse.in) { return; }
+            var hjy_text = hjy_hover.title + ' · ' + hjy_hover.sub;
+            hjy_ctx.font = '12px "Microsoft YaHei", "PingFang SC", sans-serif';
+            var hjy_tw = hjy_ctx.measureText(hjy_text).width + 24;
+            var hjy_tx = Math.min(Math.max(hjy_mouse.x + 14, 8), hjy_dw - hjy_tw - 8);
+            var hjy_ty = Math.max(hjy_mouse.y - 40, 8);
+
+            hjy_ctx.save();
+            hjy_ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            hjy_ctx.shadowBlur = 12;
+            hjy_ctx.fillStyle = 'rgba(12, 20, 40, 0.94)';
+            hjy_rr(hjy_tx, hjy_ty, hjy_tw, 30, 8);
+            hjy_ctx.fill();
+            hjy_ctx.restore();
+
+            hjy_ctx.strokeStyle = 'rgba(120, 215, 255, 0.5)';
+            hjy_ctx.lineWidth = 1;
+            hjy_rr(hjy_tx, hjy_ty, hjy_tw, 30, 8);
+            hjy_ctx.stroke();
+
+            hjy_ctx.fillStyle = '#e8f6ff';
+            hjy_ctx.textAlign = 'left';
+            hjy_ctx.textBaseline = 'middle';
+            hjy_ctx.fillText(hjy_text, hjy_tx + 12, hjy_ty + 16);
+        }
+
+        /* ===== 页面文字 ===== */
+        function hjy_draw_labels() {
+            hjy_ctx.textAlign = 'left';
+            hjy_ctx.textBaseline = 'middle';
+            hjy_ctx.fillStyle = 'rgba(180, 200, 240, 0.50)';
+            hjy_ctx.font = '12px "Microsoft YaHei", "PingFang SC", sans-serif';
+            hjy_ctx.fillText('CANVAS 2D · 电商系统全站架构', hjy_left, 26);
+
+            hjy_ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+            hjy_ctx.font = 'bold 13px "Microsoft YaHei", "PingFang SC", sans-serif';
+            hjy_ctx.fillText('⑥ 外部第三方服务', 944, 306);
+
+            hjy_ctx.fillStyle = 'rgba(140, 160, 200, 0.55)';
+            hjy_ctx.font = '11px "Microsoft YaHei", "PingFang SC", sans-serif';
+            hjy_ctx.textAlign = 'center';
+            hjy_ctx.fillText('鼠标悬停查看节点说明 · 点击节点在下方查看职责详情 · 虚线为服务调用与数据流向', hjy_dw / 2, 766);
+        }
+
+        /* ===== 主循环 ===== */
+        function hjy_frame() {
+            var hjy_rect = hjy_canvas.getBoundingClientRect();
+            var hjy_ratio = window.devicePixelRatio || 1;
+            var hjy_css_w = hjy_rect.width;
+            var hjy_css_h = hjy_css_w * hjy_dh / hjy_dw;
+            hjy_scale = hjy_css_w / hjy_dw;
+
+            if (hjy_canvas.width !== Math.round(hjy_css_w * hjy_ratio) ||
+                hjy_canvas.height !== Math.round(hjy_css_h * hjy_ratio)) {
+                hjy_canvas.width = Math.round(hjy_css_w * hjy_ratio);
+                hjy_canvas.height = Math.round(hjy_css_h * hjy_ratio);
+            }
+            hjy_ctx.setTransform(hjy_ratio, 0, 0, hjy_ratio, 0, 0);
+            hjy_ctx.clearRect(0, 0, hjy_css_w, hjy_css_h);
+
+            /* 深色底与网格 */
+            hjy_ctx.fillStyle = '#080b16';
+            hjy_ctx.fillRect(0, 0, hjy_css_w, hjy_css_h);
+
+            hjy_ctx.save();
+            hjy_ctx.scale(hjy_scale, hjy_scale);
+
+            hjy_ctx.strokeStyle = 'rgba(120, 160, 255, 0.06)';
+            hjy_ctx.lineWidth = 1;
+            for (var hjy_gx = 0; hjy_gx <= hjy_dw; hjy_gx += 40) {
+                hjy_ctx.beginPath();
+                hjy_ctx.moveTo(hjy_gx, 0);
+                hjy_ctx.lineTo(hjy_gx, hjy_dh);
+                hjy_ctx.stroke();
+            }
+            for (var hjy_gy = 0; hjy_gy <= hjy_dh; hjy_gy += 40) {
+                hjy_ctx.beginPath();
+                hjy_ctx.moveTo(0, hjy_gy);
+                hjy_ctx.lineTo(hjy_dw, hjy_gy);
+                hjy_ctx.stroke();
+            }
+
+            hjy_draw_bands();
+            hjy_draw_connectors();
+            hjy_draw_nodes();
+            hjy_draw_labels();
+            hjy_draw_tooltip();
+
+            hjy_ctx.restore();
+
+            /* 数据流推进 */
+            if (hjy_flowing) {
+                hjy_connectors.forEach(function (hjy_c) {
+                    hjy_c.dots.forEach(function (hjy_d) {
+                        hjy_d.p += hjy_d.speed;
+                        if (hjy_d.p > 1) { hjy_d.p = 0; }
+                    });
+                });
+            }
+            requestAnimationFrame(hjy_frame);
+        }
+
+        /* ===== 交互 ===== */
+        function hjy_to_design(hjy_e) {
+            var hjy_rect = hjy_canvas.getBoundingClientRect();
+            return {
+                x: (hjy_e.clientX - hjy_rect.left) / hjy_scale,
+                y: (hjy_e.clientY - hjy_rect.top) / hjy_scale
+            };
+        }
+
+        function hjy_hit_test(hjy_x, hjy_y) {
+            for (var hjy_i = 0; hjy_i < hjy_nodes.length; hjy_i++) {
+                var hjy_n = hjy_nodes[hjy_i];
+                if (hjy_x >= hjy_n.x && hjy_x <= hjy_n.x + hjy_n.w &&
+                    hjy_y >= hjy_n.y && hjy_y <= hjy_n.y + hjy_n.h) {
+                    return hjy_n;
+                }
+            }
+            return null;
+        }
+
+        hjy_canvas.addEventListener('pointermove', function (hjy_e) {
+            var hjy_pos = hjy_to_design(hjy_e);
+            hjy_mouse.x = hjy_pos.x;
+            hjy_mouse.y = hjy_pos.y;
+            hjy_mouse.in = true;
+            hjy_hover = hjy_hit_test(hjy_pos.x, hjy_pos.y);
+            hjy_canvas.style.cursor = hjy_hover ? 'pointer' : 'default';
+        });
+
+        hjy_canvas.addEventListener('pointerleave', function () {
+            hjy_mouse.in = false;
+            hjy_hover = null;
+            hjy_canvas.style.cursor = 'default';
+        });
+
+        hjy_canvas.addEventListener('click', function (hjy_e) {
+            var hjy_pos = hjy_to_design(hjy_e);
+            var hjy_target = hjy_hit_test(hjy_pos.x, hjy_pos.y);
+            hjy_selected = hjy_target;
+            if (!hjy_target) {
+                hjy_render_detail(null);
+                return;
+            }
+            hjy_render_detail(hjy_target);
+        });
+
+        function hjy_render_detail(hjy_n) {
+            if (!hjy_n) {
+                hjy_detail.innerHTML = '<div class="hjy_detail_empty">点击架构图中的任意节点，查看该组件的职责说明</div>';
+                return;
+            }
+            var hjy_tag_bg = 'linear-gradient(135deg, ' + hjy_n.colors[0] + ', ' + hjy_n.colors[1] + ')';
+            hjy_detail.innerHTML =
+                '<span class="hjy_detail_tag" style="background:' + hjy_tag_bg + '">' + hjy_n.layerName + '</span>' +
+                '<div class="hjy_detail_title">' + hjy_n.title + '<span style="font-size:0.78rem;font-weight:400;color:#8f9bc4;margin-left:10px;">' + hjy_n.sub + '</span></div>' +
+                '<div class="hjy_detail_text">' + hjy_n.desc + '</div>';
+        }
+
+        hjy_flow_btn.addEventListener('click', function () {
+            hjy_flowing = !hjy_flowing;
+            hjy_flow_btn.innerHTML = hjy_flowing
+                ? '<i class="iconfont icon-shuaxin"></i>暂停数据流'
+                : '<i class="iconfont icon-shuaxin"></i>继续数据流';
+        });
+
+        hjy_reset_btn.addEventListener('click', function () {
+            hjy_selected = null;
+            hjy_render_detail(null);
+        });
+
+        /* 图例 */
+        hjy_layers.forEach(function (hjy_layer) {
+            var hjy_item = document.createElement('span');
+            hjy_item.className = 'hjy_legend_item';
+            hjy_item.innerHTML = '<span class="hjy_dot" style="background:linear-gradient(135deg,' +
+                hjy_layer.colors[0] + ',' + hjy_layer.colors[1] + ')"></span>' + hjy_layer.name;
+            hjy_legend.appendChild(hjy_item);
+        });
+        var hjy_ext_item = document.createElement('span');
+        hjy_ext_item.className = 'hjy_legend_item';
+        hjy_ext_item.innerHTML = '<span class="hjy_dot" style="background:linear-gradient(135deg,#94a3b8,#64748b)"></span>⑥ 外部服务';
+        hjy_legend.appendChild(hjy_ext_item);
+
+        hjy_build();
+        requestAnimationFrame(hjy_frame);
+    })();
+</script>
+</body>
+</html>

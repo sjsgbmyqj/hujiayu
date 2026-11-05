@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-05 功能：Canvas 粒子动画——文字「胡家瑜」粒子聚合、鼠标斥力、点击爆发与心形形态切换 -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas 粒子动画 · 胡家瑜</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-05 功能：页面样式（全部类名以 hjy_ 开头） */
+        :root {
+            --hjy_bg: #070912;
+            --hjy_panel: rgba(255, 255, 255, 0.06);
+            --hjy_line: rgba(255, 255, 255, 0.12);
+            --hjy_text: #e8ecff;
+            --hjy_sub: #8f9bc4;
+            --hjy_pink: #ff4d8d;
+            --hjy_purple: #8a5cff;
+            --hjy_cyan: #26e6ff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(900px 500px at 20% 0%, rgba(138, 92, 255, 0.28), transparent 70%),
+                radial-gradient(800px 500px at 85% 30%, rgba(38, 230, 255, 0.18), transparent 70%),
+                radial-gradient(900px 600px at 50% 110%, rgba(255, 77, 141, 0.22), transparent 70%),
+                var(--hjy_bg);
+            color: var(--hjy_text);
+            min-height: 100vh;
+            padding: 34px 20px 44px;
+            line-height: 1.65;
+        }
+        .hjy_container { max-width: 1120px; margin: 0 auto; }
+
+        /* ===== 页头 ===== */
+        .hjy_header { text-align: center; margin-bottom: 26px; }
+        .hjy_header h1 {
+            font-size: 2.2rem; letter-spacing: 3px; font-weight: 800;
+            background: linear-gradient(100deg, #ff4d8d, #b18cff 45%, #26e6ff);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hjy_header p { color: var(--hjy_sub); font-size: 0.95rem; margin-top: 8px; }
+        .hjy_author {
+            display: inline-block; margin-top: 14px; padding: 6px 20px;
+            border-radius: 30px; font-size: 0.9rem; color: #cdd6ff;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(8px);
+        }
+
+        /* ===== 画布舞台 ===== */
+        .hjy_stage_card {
+            position: relative;
+            padding: 14px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            margin-bottom: 26px;
+        }
+        .hjy_stage {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 18px;
+            overflow: hidden;
+            background:
+                radial-gradient(700px 380px at 50% 45%, rgba(58, 30, 110, 0.75), rgba(8, 10, 26, 0.95) 70%),
+                #080a14;
+            cursor: crosshair;
+        }
+        #hjy_canvas { display: block; width: 100%; height: 100%; }
+        .hjy_stage_tip {
+            position: absolute; left: 0; right: 0; bottom: 14px;
+            text-align: center; font-size: 0.78rem; letter-spacing: 1px;
+            color: rgba(200, 210, 255, 0.55);
+            pointer-events: none;
+        }
+        .hjy_hud {
+            position: absolute; top: 16px; left: 18px;
+            display: flex; gap: 10px; flex-wrap: wrap;
+            pointer-events: none;
+        }
+        .hjy_hud span {
+            font-size: 0.74rem; letter-spacing: 0.5px;
+            color: #a9b4e0;
+            background: rgba(10, 14, 34, 0.65);
+            border: 1px solid rgba(140, 160, 255, 0.22);
+            border-radius: 20px; padding: 4px 12px;
+            backdrop-filter: blur(6px);
+        }
+        .hjy_hud b { color: #fff; font-weight: 700; margin-left: 2px; }
+
+        /* ===== 控制按钮 ===== */
+        .hjy_controls {
+            display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+            margin-top: 16px; padding-bottom: 4px;
+        }
+        .hjy_btn {
+            border: none; cursor: pointer;
+            padding: 11px 26px; border-radius: 12px;
+            font-size: 0.92rem; font-family: inherit; font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .hjy_btn:hover { transform: translateY(-2px); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_btn_primary {
+            color: #fff;
+            background: linear-gradient(135deg, #ff4d8d, #8a5cff);
+            box-shadow: 0 10px 26px rgba(255, 77, 141, 0.35);
+        }
+        .hjy_btn_plain {
+            color: #cfd8ff;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        .hjy_btn_plain:hover { background: rgba(255, 255, 255, 0.12); }
+        .hjy_btn .iconfont { margin-right: 6px; }
+
+        /* ===== 要点卡片 ===== */
+        .hjy_card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 20px;
+            padding: 28px;
+            backdrop-filter: blur(10px);
+        }
+        .hjy_card_title {
+            font-size: 1.2rem; color: #fff;
+            margin-bottom: 18px; padding-left: 14px;
+            border-left: 4px solid var(--hjy_pink);
+        }
+        .hjy_point_grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .hjy_point {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 14px; padding: 16px 14px;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        .hjy_point:hover { transform: translateY(-3px); border-color: rgba(255, 77, 141, 0.45); }
+        .hjy_point_icon { font-size: 1.35rem; }
+        .hjy_point_name { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 6px 0 4px; }
+        .hjy_point_text { font-size: 0.79rem; color: var(--hjy_sub); line-height: 1.75; }
+        .hjy_code {
+            margin-top: 18px;
+            background: rgba(8, 10, 24, 0.85);
+            border: 1px solid rgba(140, 160, 255, 0.18);
+            border-left: 4px solid var(--hjy_cyan);
+            border-radius: 12px;
+            padding: 16px 18px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.8rem; line-height: 1.8;
+            color: #cfd6f5;
+            overflow-x: auto; white-space: pre;
+        }
+        .hjy_code .hjy_kw { color: #ff7ab8; }
+
+        /* ===== 页脚 ===== */
+        .hjy_footer { text-align: center; color: rgba(180, 190, 230, 0.6); font-size: 0.85rem; margin-top: 26px; }
+
+        @media (max-width: 820px) {
+            body { padding: 22px 12px 32px; }
+            .hjy_header h1 { font-size: 1.55rem; }
+            .hjy_stage { aspect-ratio: 4 / 3; }
+            .hjy_point_grid { grid-template-columns: repeat(2, 1fr); }
+            .hjy_card { padding: 20px 16px; }
+            .hjy_stage_card { padding: 8px; border-radius: 18px; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_container">
+
+    <header class="hjy_header">
+        <h1>Canvas 粒子动画</h1>
+        <p>文字「胡家瑜」由数千粒子聚合而成 · 鼠标斥力 · 点击爆发 · 形态切换</p>
+        <div class="hjy_author">👤 学生：胡家瑜</div>
+    </header>
+
+    <section class="hjy_stage_card">
+        <div class="hjy_stage" id="hjy_stage">
+            <canvas id="hjy_canvas"></canvas>
+            <div class="hjy_hud">
+                <span>粒子 <b id="hjy_stat_particles">0</b></span>
+                <span>FPS <b id="hjy_stat_fps">--</b></span>
+                <span>形态 <b id="hjy_stat_shape">文字</b></span>
+            </div>
+            <div class="hjy_stage_tip">移动鼠标扰动粒子 · 点击画布触发爆发</div>
+        </div>
+        <div class="hjy_controls">
+            <button class="hjy_btn hjy_btn_primary" id="hjy_shape_btn">切换为心形</button>
+            <button class="hjy_btn hjy_btn_plain" id="hjy_burst_btn">粒子爆发</button>
+            <button class="hjy_btn hjy_btn_plain" id="hjy_reset_btn"><i class="iconfont icon-shuaxin"></i>重置</button>
+        </div>
+    </section>
+
+    <section class="hjy_card">
+        <h2 class="hjy_card_title">实现要点</h2>
+        <div class="hjy_point_grid">
+            <div class="hjy_point">
+                <div class="hjy_point_icon">🔤</div>
+                <div class="hjy_point_name">文字取样</div>
+                <div class="hjy_point_text">离屏 canvas 绘制文字，逐像素读取 alpha 通道，得到粒子的目标坐标</div>
+            </div>
+            <div class="hjy_point">
+                <div class="hjy_point_icon">🧲</div>
+                <div class="hjy_point_name">弹簧吸附</div>
+                <div class="hjy_point_text">每个粒子用 vx += (目标 - 当前位置) × 系数 并叠加阻尼，平滑聚合成字</div>
+            </div>
+            <div class="hjy_point">
+                <div class="hjy_point_icon">🖱️</div>
+                <div class="hjy_point_name">鼠标斥力</div>
+                <div class="hjy_point_text">监听 pointermove，半径内的粒子沿远离鼠标方向获得推力，移开后自动归位</div>
+            </div>
+            <div class="hjy_point">
+                <div class="hjy_point_icon">🌌</div>
+                <div class="hjy_point_name">拖尾与辉光</div>
+                <div class="hjy_point_text">每帧半透明填充形成拖尾，配合 lighter 混合模式叠加出霓虹发光效果</div>
+            </div>
+        </div>
+        <pre class="hjy_code"><span class="hjy_kw">function</span> hjy_loop() {
+    ctx.fillStyle = 'rgba(8, 10, 26, 0.20)';   <span class="hjy_kw">// 半透明填充 → 拖尾</span>
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.globalCompositeOperation = 'lighter';  <span class="hjy_kw">// 叠加发光</span>
+    hjy_particles.forEach(<span class="hjy_kw">function</span> (p) {
+        p.vx += (p.tx - p.x) * 0.022;          <span class="hjy_kw">// 弹簧吸附</span>
+        p.vy += (p.ty - p.y) * 0.022;
+        p.vx *= 0.90; p.vy *= 0.90;            <span class="hjy_kw">// 阻尼</span>
+        p.x += p.vx; p.y += p.vy;
+    });
+    requestAnimationFrame(hjy_loop);
+}</pre>
+    </section>
+
+    <footer class="hjy_footer">Made with ❤ by 胡家瑜 · 高级网页设计课程</footer>
+
+</div>
+
+<script>
+    /* 姓名：胡家瑜 日期：2026-11-05 功能：Canvas 粒子动画（全部变量以 hjy_ 开头） */
+    (function () {
+        var hjy_canvas = document.getElementById('hjy_canvas');
+        var hjy_ctx = hjy_canvas.getContext('2d');
+        var hjy_stage = document.getElementById('hjy_stage');
+        var hjy_stat_particles = document.getElementById('hjy_stat_particles');
+        var hjy_stat_fps = document.getElementById('hjy_stat_fps');
+        var hjy_stat_shape = document.getElementById('hjy_stat_shape');
+        var hjy_shape_btn = document.getElementById('hjy_shape_btn');
+        var hjy_burst_btn = document.getElementById('hjy_burst_btn');
+        var hjy_reset_btn = document.getElementById('hjy_reset_btn');
+
+        var hjy_w = 0, hjy_h = 0;
+        var hjy_particles = [];
+        var hjy_points = [];
+        var hjy_shape = 'text';
+        var hjy_mouse = { x: -9999, y: -9999, active: false };
+        var hjy_palette = ['#ff4d8d', '#c56bff', '#8a5cff', '#26e6ff', '#7ad7ff'];
+        var hjy_frame_count = 0;
+        var hjy_last_time = performance.now();
+
+        /* ===== 文字取样：离屏 canvas 绘制文字后逐像素提取粒子目标点 ===== */
+        function hjy_sample_text() {
+            var hjy_off = document.createElement('canvas');
+            var hjy_ow = 820, hjy_oh = 270;
+            hjy_off.width = hjy_ow;
+            hjy_off.height = hjy_oh;
+            var hjy_off_ctx = hjy_off.getContext('2d');
+            hjy_off_ctx.fillStyle = '#fff';
+            hjy_off_ctx.textAlign = 'center';
+            hjy_off_ctx.textBaseline = 'middle';
+            hjy_off_ctx.font = 'bold 175px "Microsoft YaHei", "PingFang SC", sans-serif';
+            hjy_off_ctx.fillText('胡家瑜', hjy_ow / 2, hjy_oh / 2);
+
+            var hjy_image = hjy_off_ctx.getImageData(0, 0, hjy_ow, hjy_oh).data;
+            var hjy_arr = [];
+            for (var hjy_y = 0; hjy_y < hjy_oh; hjy_y += 4) {
+                for (var hjy_x = 0; hjy_x < hjy_ow; hjy_x += 4) {
+                    if (hjy_image[(hjy_y * hjy_ow + hjy_x) * 4 + 3] > 128) {
+                        hjy_arr.push({ nx: hjy_x / hjy_ow, ny: hjy_y / hjy_oh });
+                    }
+                }
+            }
+            return hjy_arr;
+        }
+
+        /* ===== 心形取样：用隐式方程 (x²+y²-1)³ - x²y³ <= 0 判断点是否在心形内 ===== */
+        function hjy_sample_heart() {
+            var hjy_arr = [];
+            var hjy_step = 0.022;
+            for (var hjy_ny = 0; hjy_ny <= 1; hjy_ny += hjy_step) {
+                for (var hjy_nx = 0; hjy_nx <= 1; hjy_nx += hjy_step) {
+                    var hjy_x = (hjy_nx - 0.5) * 2.5;
+                    var hjy_y = (0.5 - hjy_ny) * 2.5;
+                    var hjy_t = hjy_x * hjy_x + hjy_y * hjy_y - 1;
+                    if (hjy_t * hjy_t * hjy_t - hjy_x * hjy_x * hjy_y * hjy_y * hjy_y <= 0) {
+                        hjy_arr.push({ nx: hjy_nx, ny: hjy_ny });
+                    }
+                }
+            }
+            return hjy_arr;
+        }
+
+        /* ===== 计算当前形态下每个粒子的目标坐标 ===== */
+        function hjy_update_targets() {
+            hjy_points = hjy_shape === 'text' ? hjy_sample_text() : hjy_sample_heart();
+            var hjy_cx = hjy_w / 2;
+            var hjy_cy = hjy_h / 2;
+
+            var hjy_box_w, hjy_box_h;
+            if (hjy_shape === 'text') {
+                hjy_box_w = Math.min(hjy_w * 0.88, 720);
+                hjy_box_h = hjy_box_w * 0.33;
+            } else {
+                var hjy_size = Math.min(hjy_w * 0.52, hjy_h * 0.86);
+                hjy_box_w = hjy_size;
+                hjy_box_h = hjy_size;
+            }
+
+            var hjy_count = hjy_points.length;
+            if (hjy_count === 0) { return; }
+
+            for (var hjy_i = 0; hjy_i < hjy_particles.length; hjy_i++) {
+                var hjy_p = hjy_particles[hjy_i];
+                var hjy_pt = hjy_points[hjy_i % hjy_count];
+                hjy_p.tx = hjy_cx + (hjy_pt.nx - 0.5) * hjy_box_w;
+                hjy_p.ty = hjy_cy + (hjy_pt.ny - 0.5) * hjy_box_h;
+            }
+        }
+
+        /* ===== 建立粒子数组（只在首次和窗口尺寸变化时重建） ===== */
+        function hjy_build() {
+            var hjy_rect = hjy_canvas.getBoundingClientRect();
+            hjy_w = hjy_rect.width;
+            hjy_h = hjy_rect.height;
+            var hjy_ratio = window.devicePixelRatio || 1;
+            hjy_canvas.width = Math.round(hjy_w * hjy_ratio);
+            hjy_canvas.height = Math.round(hjy_h * hjy_ratio);
+            hjy_ctx.setTransform(hjy_ratio, 0, 0, hjy_ratio, 0, 0);
+
+            var hjy_text_points = hjy_sample_text();
+            var hjy_target_count = Math.max(600, Math.min(hjy_text_points.length, 3200));
+
+            if (hjy_particles.length !== hjy_target_count) {
+                hjy_particles = [];
+                for (var hjy_i = 0; hjy_i < hjy_target_count; hjy_i++) {
+                    hjy_particles.push({
+                        x: Math.random() * hjy_w,
+                        y: Math.random() * hjy_h,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 6,
+                        tx: hjy_w / 2,
+                        ty: hjy_h / 2,
+                        r: Math.random() * 1.1 + 0.9,
+                        color: hjy_palette[hjy_i % hjy_palette.length],
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+            hjy_stat_particles.textContent = hjy_particles.length;
+            hjy_update_targets();
+        }
+
+        /* ===== 触发爆发：给所有粒子一个向外扩散的初速度 ===== */
+        function hjy_burst() {
+            var hjy_cx = hjy_w / 2;
+            var hjy_cy = hjy_h / 2;
+            hjy_particles.forEach(function (hjy_p) {
+                var hjy_dx = hjy_p.x - hjy_cx;
+                var hjy_dy = hjy_p.y - hjy_cy;
+                var hjy_dist = Math.sqrt(hjy_dx * hjy_dx + hjy_dy * hjy_dy) || 1;
+                var hjy_force = 14 + Math.random() * 16;
+                hjy_p.vx += (hjy_dx / hjy_dist) * hjy_force + (Math.random() - 0.5) * 6;
+                hjy_p.vy += (hjy_dy / hjy_dist) * hjy_force + (Math.random() - 0.5) * 6;
+            });
+        }
+
+        /* ===== 主循环 ===== */
+        function hjy_loop() {
+            /* 半透明填充形成拖尾 */
+            hjy_ctx.globalCompositeOperation = 'source-over';
+            hjy_ctx.fillStyle = 'rgba(8, 10, 24, 0.22)';
+            hjy_ctx.fillRect(0, 0, hjy_w, hjy_h);
+
+            /* 背景流动光晕 */
+            var hjy_t = performance.now() * 0.0006;
+            hjy_draw_glow(hjy_w * (0.35 + 0.18 * Math.sin(hjy_t)), hjy_h * (0.35 + 0.15 * Math.cos(hjy_t * 1.3)), 'rgba(138, 92, 255, 0.20)', 260);
+            hjy_draw_glow(hjy_w * (0.72 + 0.14 * Math.cos(hjy_t * 1.7)), hjy_h * (0.62 + 0.16 * Math.sin(hjy_t)), 'rgba(255, 77, 141, 0.16)', 230);
+
+            /* 粒子物理更新 */
+            for (var hjy_i = 0; hjy_i < hjy_particles.length; hjy_i++) {
+                var hjy_p = hjy_particles[hjy_i];
+                hjy_p.vx += (hjy_p.tx - hjy_p.x) * 0.022;
+                hjy_p.vy += (hjy_p.ty - hjy_p.y) * 0.022;
+                hjy_p.vx *= 0.90;
+                hjy_p.vy *= 0.90;
+
+                if (hjy_mouse.active) {
+                    var hjy_dx = hjy_p.x - hjy_mouse.x;
+                    var hjy_dy = hjy_p.y - hjy_mouse.y;
+                    var hjy_dist2 = hjy_dx * hjy_dx + hjy_dy * hjy_dy;
+                    if (hjy_dist2 < 16900 && hjy_dist2 > 0.01) {
+                        var hjy_dist = Math.sqrt(hjy_dist2);
+                        var hjy_push = (130 - hjy_dist) / 130;
+                        hjy_p.vx += (hjy_dx / hjy_dist) * hjy_push * 2.2;
+                        hjy_p.vy += (hjy_dy / hjy_dist) * hjy_push * 2.2;
+                    }
+                }
+
+                hjy_p.x += hjy_p.vx;
+                hjy_p.y += hjy_p.vy;
+            }
+
+            /* 叠加发光绘制粒子 */
+            hjy_ctx.globalCompositeOperation = 'lighter';
+            for (var hjy_j = 0; hjy_j < hjy_particles.length; hjy_j++) {
+                var hjy_q = hjy_particles[hjy_j];
+                hjy_ctx.beginPath();
+                hjy_ctx.fillStyle = hjy_q.color;
+                hjy_ctx.globalAlpha = 0.75;
+                hjy_ctx.arc(hjy_q.x, hjy_q.y, hjy_q.r, 0, Math.PI * 2);
+                hjy_ctx.fill();
+            }
+            hjy_ctx.globalAlpha = 1;
+            hjy_ctx.globalCompositeOperation = 'source-over';
+
+            /* FPS 统计 */
+            hjy_frame_count++;
+            var hjy_now = performance.now();
+            if (hjy_now - hjy_last_time >= 1000) {
+                hjy_stat_fps.textContent = Math.round(hjy_frame_count * 1000 / (hjy_now - hjy_last_time));
+                hjy_frame_count = 0;
+                hjy_last_time = hjy_now;
+            }
+
+            requestAnimationFrame(hjy_loop);
+        }
+
+        function hjy_draw_glow(hjy_x, hjy_y, hjy_color, hjy_radius) {
+            var hjy_grad = hjy_ctx.createRadialGradient(hjy_x, hjy_y, 0, hjy_x, hjy_y, hjy_radius);
+            hjy_grad.addColorStop(0, hjy_color);
+            hjy_grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            hjy_ctx.fillStyle = hjy_grad;
+            hjy_ctx.beginPath();
+            hjy_ctx.arc(hjy_x, hjy_y, hjy_radius, 0, Math.PI * 2);
+            hjy_ctx.fill();
+        }
+
+        /* ===== 交互事件 ===== */
+        hjy_stage.addEventListener('pointermove', function (hjy_e) {
+            var hjy_rect = hjy_canvas.getBoundingClientRect();
+            hjy_mouse.x = hjy_e.clientX - hjy_rect.left;
+            hjy_mouse.y = hjy_e.clientY - hjy_rect.top;
+            hjy_mouse.active = true;
+        });
+        hjy_stage.addEventListener('pointerleave', function () {
+            hjy_mouse.active = false;
+            hjy_mouse.x = -9999;
+            hjy_mouse.y = -9999;
+        });
+        hjy_stage.addEventListener('click', function () {
+            hjy_burst();
+        });
+
+        hjy_shape_btn.addEventListener('click', function () {
+            hjy_shape = hjy_shape === 'text' ? 'heart' : 'text';
+            hjy_stat_shape.textContent = hjy_shape === 'text' ? '文字' : '心形';
+            hjy_shape_btn.textContent = hjy_shape === 'text' ? '切换为心形' : '切换为文字';
+            hjy_update_targets();
+        });
+
+        hjy_burst_btn.addEventListener('click', hjy_burst);
+
+        hjy_reset_btn.addEventListener('click', function () {
+            hjy_particles.forEach(function (hjy_p) {
+                hjy_p.x = Math.random() * hjy_w;
+                hjy_p.y = Math.random() * hjy_h;
+                hjy_p.vx = (Math.random() - 0.5) * 6;
+                hjy_p.vy = (Math.random() - 0.5) * 6;
+            });
+        });
+
+        /* ===== 尺寸变化时重建画布与目标点 ===== */
+        window.addEventListener('resize', hjy_build);
+
+        hjy_build();
+        requestAnimationFrame(hjy_loop);
+    })();
+</script>
+</body>
+</html>

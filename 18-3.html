@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-05 功能：基于知识库的智能客服系统架构图（SVG 矢量绘制，含科研方向映射） -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于知识库的智能客服系统架构图 · SVG</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-05 功能：页面样式（全部类名以 hjy_ 开头） */
+        :root {
+            --hjy_ink: #0f172a;
+            --hjy_sub: #64748b;
+            --hjy_line: #e2e8f0;
+            --hjy_purple: #7c3aed;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(900px 500px at 10% 0%, rgba(59, 130, 246, 0.13), transparent 65%),
+                radial-gradient(800px 480px at 90% 8%, rgba(124, 58, 237, 0.12), transparent 65%),
+                linear-gradient(160deg, #f7f9fd 0%, #eef2f9 100%);
+            color: var(--hjy_ink);
+            min-height: 100vh;
+            padding: 36px 20px 44px;
+            line-height: 1.65;
+        }
+        .hjy_container { max-width: 1240px; margin: 0 auto; }
+
+        /* ===== 页头 ===== */
+        .hjy_header { text-align: center; margin-bottom: 24px; }
+        .hjy_header h1 {
+            font-size: 2rem; font-weight: 800; letter-spacing: 1px; color: #0b1220;
+        }
+        .hjy_header h1 span {
+            background: linear-gradient(100deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hjy_header p { color: var(--hjy_sub); font-size: 0.93rem; margin-top: 8px; }
+        .hjy_meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .hjy_meta_item {
+            font-size: 0.78rem; color: #475569;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px; padding: 4px 14px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+        .hjy_meta_item b { color: #1d4ed8; }
+
+        /* ===== 图卡片 ===== */
+        .hjy_card {
+            background: #ffffff;
+            border: 1px solid #e6ebf3;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+            margin-bottom: 22px;
+        }
+        .hjy_canvas_wrap { overflow-x: auto; }
+        .hjy_svg {
+            display: block;
+            width: 100%;
+            min-width: 880px;
+            height: auto;
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+        }
+
+        /* ===== SVG 交互 ===== */
+        .hjy_band { filter: drop-shadow(0 5px 12px rgba(15, 23, 42, 0.055)); }
+        .hjy_node { cursor: pointer; }
+        .hjy_node .hjy_node_bg {
+            transition: stroke 0.18s ease, stroke-width 0.18s ease;
+        }
+        .hjy_node:hover .hjy_node_bg {
+            stroke: #1d4ed8;
+            stroke-width: 2.2;
+        }
+        .hjy_node_active .hjy_node_bg {
+            stroke: #1d4ed8 !important;
+            stroke-width: 2.4 !important;
+        }
+
+        /* ===== 详情面板 ===== */
+        .hjy_detail {
+            margin-top: 16px;
+            min-height: 92px;
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--hjy_purple);
+        }
+        .hjy_detail_empty { color: #94a3b8; font-size: 0.86rem; line-height: 60px; text-align: center; }
+        .hjy_detail_tag {
+            display: inline-block; font-size: 0.72rem; padding: 2px 10px;
+            border-radius: 20px; margin-bottom: 6px;
+            color: #ffffff; font-weight: 700; background: var(--hjy_purple);
+        }
+        .hjy_detail_title { font-size: 1.02rem; font-weight: 700; color: #0b1220; }
+        .hjy_detail_text { font-size: 0.85rem; color: #475569; margin-top: 3px; }
+
+        /* ===== 研究要点 ===== */
+        .hjy_note_grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .hjy_note {
+            border-radius: 14px; padding: 18px 18px;
+            background: linear-gradient(160deg, #fbfcff, #f4f7fd);
+            border: 1px solid #e6ebf3;
+        }
+        .hjy_note_name { font-size: 0.95rem; font-weight: 700; color: #1d4ed8; margin-bottom: 6px; }
+        .hjy_note_name .iconfont { margin-right: 6px; }
+        .hjy_note_text { font-size: 0.81rem; color: #475569; line-height: 1.8; }
+        .hjy_footer { text-align: center; color: #94a3b8; font-size: 0.82rem; margin-top: 6px; }
+
+        @media (max-width: 860px) {
+            body { padding: 24px 12px 32px; }
+            .hjy_header h1 { font-size: 1.4rem; }
+            .hjy_card { padding: 12px; }
+            .hjy_note_grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_container">
+
+    <header class="hjy_header">
+        <h1>基于知识库的<span>智能客服系统</span>架构图</h1>
+        <p>Knowledge-Base Driven Intelligent Customer Service · 全站分层架构与科研方向映射</p>
+        <div class="hjy_meta">
+            <span class="hjy_meta_item">作者：<b>胡家瑜</b></span>
+            <span class="hjy_meta_item">图形格式：<b>SVG 矢量</b></span>
+            <span class="hjy_meta_item">研究方向：<b>知识库问答 / RAG</b></span>
+            <span class="hjy_meta_item">日期：<b>2026-11-05</b></span>
+        </div>
+    </header>
+
+    <section class="hjy_card">
+        <div class="hjy_canvas_wrap">
+            <!-- 架构主图：SVG 矢量绘制，可无损缩放 -->
+            <svg class="hjy_svg" viewBox="0 0 1240 780" xmlns="http://www.w3.org/2000/svg" role="img"
+                 aria-label="基于知识库的智能客服系统架构图">
+                <defs>
+                    <linearGradient id="hjy_l1" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#3b82f6"/>
+                    </linearGradient>
+                    <linearGradient id="hjy_l2" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#0891b2"/><stop offset="1" stop-color="#22d3ee"/>
+                    </linearGradient>
+                    <linearGradient id="hjy_l3" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#a78bfa"/>
+                    </linearGradient>
+                    <linearGradient id="hjy_l4" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#0d9488"/><stop offset="1" stop-color="#34d399"/>
+                    </linearGradient>
+                    <linearGradient id="hjy_l5" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#d97706"/><stop offset="1" stop-color="#fbbf24"/>
+                    </linearGradient>
+                    <linearGradient id="hjy_l6" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#db2777"/><stop offset="1" stop-color="#f472b6"/>
+                    </linearGradient>
+                    <marker id="hjy_arrow" viewBox="0 0 6 6" refX="5" refY="3"
+                            markerWidth="7" markerHeight="7" orient="auto">
+                        <path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/>
+                    </marker>
+                    <marker id="hjy_arrow_p" viewBox="0 0 6 6" refX="5" refY="3"
+                            markerWidth="7" markerHeight="7" orient="auto">
+                        <path d="M0,0 L6,3 L0,6 Z" fill="#a78bfa"/>
+                    </marker>
+                </defs>
+
+                <!-- 标题 -->
+                <text x="30" y="44" font-size="26" font-weight="800" fill="#0b1220" letter-spacing="1">
+                    基于知识库的智能客服系统架构
+                </text>
+                <text x="30" y="68" font-size="12.5" fill="#64748b">
+                    Knowledge-Base Driven Intelligent Customer Service Architecture · SVG 矢量绘制
+                </text>
+                <text x="930" y="86" font-size="13" font-weight="700" fill="#6d28d9">科研方向映射</text>
+
+                <!-- 中间竖向虚线分隔 -->
+                <line x1="906" y1="92" x2="906" y2="690" stroke="#e9d5ff" stroke-width="1.5"
+                      stroke-dasharray="6 6"/>
+
+                <!-- ========== 第 1 层：渠道接入层 ========== -->
+                <g class="hjy_band">
+                    <rect x="30" y="96" width="860" height="84" rx="16" fill="#ffffff" stroke="#e6ebf3" stroke-width="1.2"/>
+                    <rect x="30" y="106" width="5" height="64" rx="2.5" fill="url(#hjy_l1)"/>
+                    <rect x="44" y="106" width="22" height="20" rx="6" fill="url(#hjy_l1)"/>
+                    <text x="55" y="120.5" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+                    <text x="74" y="121" font-size="14" font-weight="700" fill="#0b1220">渠道接入层</text>
+                    <text x="160" y="121" font-size="10.5" fill="#94a3b8">全渠道统一受理 · 多端会话接入</text>
+                </g>
+
+                <g class="hjy_node" data-layer="渠道接入层" data-name="Web / App 客服"
+                   data-desc="承接网页与客户端的在线咨询，支持文字、图片与文件上传等多种消息类型。">
+                    <title>Web / App 客服：网页与客户端在线咨询入口</title>
+                    <rect class="hjy_node_bg" x="56" y="130" width="150" height="44" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.2"/>
+                    <rect x="56" y="138" width="3.5" height="28" rx="1.75" fill="url(#hjy_l1)"/>
+                    <text x="72" y="149" font-size="13.5" font-weight="600" fill="#0f172a">Web / App 客服</text>
+                    <text x="72" y="165" font-size="10.5" fill="#64748b">网页与客户端入口</text>
+                </g>
+
+                <g class="hjy_node" data-layer="渠道接入层" data-name="微信小程序"
+                   data-desc="微信生态内的客服入口，支持小程序客服会话与模板消息通知。">
+                    <title>微信小程序：微信生态客服入口</title>
+                    <rect class="hjy_node_bg" x="220" y="130" width="150" height="44" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.2"/>
+                    <rect x="220" y="138" width="3.5" height="28" rx="1.75" fill="url(#hjy_l1)"/>
+                    <text x="236" y="149" font-size="13.5" font-weight="600" fill="#0f172a">微信小程序</text>
+                    <text x="236" y="165" font-size="10.5" fill="#64748b">公众号 / 小程序</text>
+                </g>
+
+                <g class="hjy_node" data-layer="渠道接入层" data-name="电话语音热线"
+                   data-desc="电话呼入场景，配合 ASR 将语音实时转写为文本，进入统一的语义理解流程。">
+                    <title>电话语音热线：语音呼入并实时转写</title>
+                    <rect class="hjy_node_bg" x="384" y="130" width="150" height="44" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.2"/>
+                    <rect x="384" y="138" width="3.5" height="28" rx="1.75" fill="url(#hjy_l1)"/>
+                    <text x="400" y="149" font-size="13.5" font-weight="600" fill="#0f172a">电话语音热线</text>
+                    <text x="400" y="165" font-size="10.5" fill="#64748b">语音呼入</text>
+                </g>
+
+                <g class="hjy_node" data-layer="渠道接入层" data-name="人工工单"
+                   data-desc="复杂或需要线下处理的问题转为工单，记录处理过程、责任人与处理结果。">
+                    <title>人工工单：复杂问题流转</title>
+                    <rect class="hjy_node_bg" x="548" y="130" width="150" height="44" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.2"/>
+                    <rect x="548" y="138" width="3.5" height="28" rx="1.75" fill="url(#hjy_l1)"/>
+                    <text x="564" y="149" font-size="13.5" font-weight="600" fill="#0f172a">人工工单</text>
+                    <text x="564" y="165" font-size="10.5" fill="#64748b">复杂问题流转</text>
+                </g>
+
+                <g class="hjy_node" data-layer="渠道接入层" data-name="坐席辅助工作台"
+                   data-desc="为人工坐席提供知识推荐、话术提示与历史会话查看，提升人工服务效率。">
+                    <title>坐席辅助工作台：人工客服协作</title>
+                    <rect class="hjy_node_bg" x="712" y="130" width="150" height="44" rx="10" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.2"/>
+                    <rect x="712" y="138" width="3.5" height="28" rx="1.75" fill="url(#hjy_l1)"/>
+                    <text x="728" y="149" font-size="13.5" font-weight="600" fill="#0f172a">坐席辅助工作台</text>
+                    <text x="728" y="165" font-size="10.5" fill="#64748b">人工客服协作</text>
+                </g>
+
+                <line x1="460" y1="181" x2="460" y2="195" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#hjy_arrow)"/>
+
+                <!-- ========== 第 2 层：理解与预处理层 ========== -->
+                <g class="hjy_band">
+                    <rect x="30" y="198" width="860" height="84" rx="16" fill="#ffffff" stroke="#e6ebf3" stroke-width="1.2"/>
+                    <rect x="30" y="208" width="5" height="64" rx="2.5" fill="url(#hjy_l2)"/>
+                    <rect x="44" y="208" width="22" height="20" rx="6" fill="url(#hjy_l2)"/>
+                    <text x="55" y="222.5" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+                    <text x="74" y="223" font-size="14" font-weight="700" fill="#0b1220">理解与预处理层</text>
+                    <text x="174" y="223" font-size="10.5" fill="#94a3b8">语音转写 · 意图理解 · 槽位抽取 · 情绪感知</text>
+                </g>
+
+                <g class="hjy_node" data-layer="理解与预处理层" data-name="语音识别 ASR"
+                   data-desc="将电话语音与语音消息转写为文本，输出带时间戳的识别结果供后续理解使用。">
+                    <title>语音识别 ASR：语音转文本</title>
+                    <rect class="hjy_node_bg" x="56" y="232" width="150" height="44" rx="10" fill="#ffffff" stroke="#a5f3fc" stroke-width="1.2"/>
+                    <rect x="56" y="240" width="3.5" height="28" rx="1.75" fill="url(#hjy_l2)"/>
+                    <text x="72" y="251" font-size="13.5" font-weight="600" fill="#0f172a">语音识别 ASR</text>
+                    <text x="72" y="267" font-size="10.5" fill="#64748b">语音转文本</text>
+                </g>
+
+                <g class="hjy_node" data-layer="理解与预处理层" data-name="意图识别 NLU"
+                   data-desc="判断用户诉求属于业务咨询、订单查询、业务办理还是投诉建议等意图类别。">
+                    <title>意图识别 NLU：查询意图分类</title>
+                    <rect class="hjy_node_bg" x="220" y="232" width="150" height="44" rx="10" fill="#ffffff" stroke="#a5f3fc" stroke-width="1.2"/>
+                    <rect x="220" y="240" width="3.5" height="28" rx="1.75" fill="url(#hjy_l2)"/>
+                    <text x="236" y="251" font-size="13.5" font-weight="600" fill="#0f172a">意图识别 NLU</text>
+                    <text x="236" y="267" font-size="10.5" fill="#64748b">查询意图分类</text>
+                </g>
+
+                <g class="hjy_node" data-layer="理解与预处理层" data-name="实体槽位抽取"
+                   data-desc="抽取订单号、商品名称、时间等槽位信息，为后续查询与业务办理提供参数。">
+                    <title>实体槽位抽取：关键信息抽取</title>
+                    <rect class="hjy_node_bg" x="384" y="232" width="150" height="44" rx="10" fill="#ffffff" stroke="#a5f3fc" stroke-width="1.2"/>
+                    <rect x="384" y="240" width="3.5" height="28" rx="1.75" fill="url(#hjy_l2)"/>
+                    <text x="400" y="251" font-size="13.5" font-weight="600" fill="#0f172a">实体槽位抽取</text>
+                    <text x="400" y="267" font-size="10.5" fill="#64748b">关键信息抽取</text>
+                </g>
+
+                <g class="hjy_node" data-layer="理解与预处理层" data-name="情绪识别"
+                   data-desc="识别用户情绪与紧急程度，触发安抚话术或优先转接人工坐席处理。">
+                    <title>情绪识别：满意度与情绪感知</title>
+                    <rect class="hjy_node_bg" x="548" y="232" width="150" height="44" rx="10" fill="#ffffff" stroke="#a5f3fc" stroke-width="1.2"/>
+                    <rect x="548" y="240" width="3.5" height="28" rx="1.75" fill="url(#hjy_l2)"/>
+                    <text x="564" y="251" font-size="13.5" font-weight="600" fill="#0f172a">情绪识别</text>
+                    <text x="564" y="267" font-size="10.5" fill="#64748b">满意度与情绪</text>
+                </g>
+
+                <g class="hjy_node" data-layer="理解与预处理层" data-name="多轮状态跟踪"
+                   data-desc="维护多轮对话状态与槽位填充进度，解决指代消解与省略补全等上下文问题。">
+                    <title>多轮状态跟踪：对话上下文管理</title>
+                    <rect class="hjy_node_bg" x="712" y="232" width="150" height="44" rx="10" fill="#ffffff" stroke="#a5f3fc" stroke-width="1.2"/>
+                    <rect x="712" y="240" width="3.5" height="28" rx="1.75" fill="url(#hjy_l2)"/>
+                    <text x="728" y="251" font-size="13.5" font-weight="600" fill="#0f172a">多轮状态跟踪</text>
+                    <text x="728" y="267" font-size="10.5" fill="#64748b">对话上下文管理</text>
+                </g>
+
+                <line x1="460" y1="283" x2="460" y2="297" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#hjy_arrow)"/>
+
+                <!-- ========== 第 3 层：知识库层 ========== -->
+                <g class="hjy_band">
+                    <rect x="30" y="300" width="860" height="84" rx="16" fill="#ffffff" stroke="#e6ebf3" stroke-width="1.2"/>
+                    <rect x="30" y="310" width="5" height="64" rx="2.5" fill="url(#hjy_l3)"/>
+                    <rect x="44" y="310" width="22" height="20" rx="6" fill="url(#hjy_l3)"/>
+                    <text x="55" y="324.5" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+                    <text x="74" y="325" font-size="14" font-weight="700" fill="#0b1220">知识库层</text>
+                    <text x="144" y="325" font-size="10.5" fill="#94a3b8">结构化 · 非结构化 · 向量化三类知识统一治理</text>
+                </g>
+
+                <g class="hjy_node" data-layer="知识库层" data-name="FAQ 问答库"
+                   data-desc="沉淀高频标准问题与标准答案，作为精确匹配与兜底回答的高置信知识来源。">
+                    <title>FAQ 问答库：标准问答对</title>
+                    <rect class="hjy_node_bg" x="56" y="334" width="150" height="44" rx="10" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.2"/>
+                    <rect x="56" y="342" width="3.5" height="28" rx="1.75" fill="url(#hjy_l3)"/>
+                    <text x="72" y="353" font-size="13.5" font-weight="600" fill="#0f172a">FAQ 问答库</text>
+                    <text x="72" y="369" font-size="10.5" fill="#64748b">标准问答对</text>
+                </g>
+
+                <g class="hjy_node" data-layer="知识库层" data-name="业务文档知识"
+                   data-desc="产品手册、退换货政策等长文档，经切分与清洗后进入检索索引。">
+                    <title>业务文档知识：手册与政策文档</title>
+                    <rect class="hjy_node_bg" x="220" y="334" width="150" height="44" rx="10" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.2"/>
+                    <rect x="220" y="342" width="3.5" height="28" rx="1.75" fill="url(#hjy_l3)"/>
+                    <text x="236" y="353" font-size="13.5" font-weight="600" fill="#0f172a">业务文档知识</text>
+                    <text x="236" y="369" font-size="10.5" fill="#64748b">手册 / 政策</text>
+                </g>
+
+                <g class="hjy_node" data-layer="知识库层" data-name="领域知识图谱"
+                   data-desc="以实体—关系形式组织领域知识，支撑结构化查询与多跳关系推理。">
+                    <title>领域知识图谱：实体与关系网络</title>
+                    <rect class="hjy_node_bg" x="384" y="334" width="150" height="44" rx="10" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.2"/>
+                    <rect x="384" y="342" width="3.5" height="28" rx="1.75" fill="url(#hjy_l3)"/>
+                    <text x="400" y="353" font-size="13.5" font-weight="600" fill="#0f172a">领域知识图谱</text>
+                    <text x="400" y="369" font-size="10.5" fill="#64748b">实体与关系</text>
+                </g>
+
+                <g class="hjy_node" data-layer="知识库层" data-name="向量索引库"
+                   data-desc="文档切片经过向量化后写入近似最近邻索引，支撑大规模语义检索召回。">
+                    <title>向量索引库：语义向量存储</title>
+                    <rect class="hjy_node_bg" x="548" y="334" width="150" height="44" rx="10" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.2"/>
+                    <rect x="548" y="342" width="3.5" height="28" rx="1.75" fill="url(#hjy_l3)"/>
+                    <text x="564" y="353" font-size="13.5" font-weight="600" fill="#0f172a">向量索引库</text>
+                    <text x="564" y="369" font-size="10.5" fill="#64748b">语义向量存储</text>
+                </g>
+
+                <g class="hjy_node" data-layer="知识库层" data-name="知识审核与版本"
+                   data-desc="知识入库前的人工审核、版本管理与过期下线机制，保障知识的准确与时效。">
+                    <title>知识审核与版本：知识质量管理</title>
+                    <rect class="hjy_node_bg" x="712" y="334" width="150" height="44" rx="10" fill="#ffffff" stroke="#ddd6fe" stroke-width="1.2"/>
+                    <rect x="712" y="342" width="3.5" height="28" rx="1.75" fill="url(#hjy_l3)"/>
+                    <text x="728" y="353" font-size="13.5" font-weight="600" fill="#0f172a">知识审核与版本</text>
+                    <text x="728" y="369" font-size="10.5" fill="#64748b">知识质量管理</text>
+                </g>
+
+                <line x1="460" y1="385" x2="460" y2="399" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#hjy_arrow)"/>
+
+                <!-- ========== 第 4 层：检索与推理层 ========== -->
+                <g class="hjy_band">
+                    <rect x="30" y="402" width="860" height="84" rx="16" fill="#ffffff" stroke="#e6ebf3" stroke-width="1.2"/>
+                    <rect x="30" y="412" width="5" height="64" rx="2.5" fill="url(#hjy_l4)"/>
+                    <rect x="44" y="412" width="22" height="20" rx="6" fill="url(#hjy_l4)"/>
+                    <text x="55" y="426.5" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+                    <text x="74" y="427" font-size="14" font-weight="700" fill="#0b1220">检索与推理层</text>
+                    <text x="174" y="427" font-size="10.5" fill="#94a3b8">多路召回 · 重排精排 · 图谱推理 · 证据融合</text>
+                </g>
+
+                <g class="hjy_node" data-layer="检索与推理层" data-name="向量语义检索"
+                   data-desc="基于向量相似度召回语义相近的知识片段，覆盖同义表达与口语化提问。">
+                    <title>向量语义检索：相似语义召回</title>
+                    <rect class="hjy_node_bg" x="56" y="436" width="150" height="44" rx="10" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+                    <rect x="56" y="444" width="3.5" height="28" rx="1.75" fill="url(#hjy_l4)"/>
+                    <text x="72" y="455" font-size="13.5" font-weight="600" fill="#0f172a">向量语义检索</text>
+                    <text x="72" y="471" font-size="10.5" fill="#64748b">相似语义召回</text>
+                </g>
+
+                <g class="hjy_node" data-layer="检索与推理层" data-name="BM25 关键词检索"
+                   data-desc="基于词频统计的关键词检索，保证专有名词、型号与编号的精确命中。">
+                    <title>BM25 关键词检索：精确词匹配</title>
+                    <rect class="hjy_node_bg" x="220" y="436" width="150" height="44" rx="10" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+                    <rect x="220" y="444" width="3.5" height="28" rx="1.75" fill="url(#hjy_l4)"/>
+                    <text x="236" y="455" font-size="13.5" font-weight="600" fill="#0f172a">BM25 关键词检索</text>
+                    <text x="236" y="471" font-size="10.5" fill="#64748b">精确词匹配</text>
+                </g>
+
+                <g class="hjy_node" data-layer="检索与推理层" data-name="混合召回与重排"
+                   data-desc="融合多路召回结果，并用重排模型对候选片段精排，提升 Top-K 结果相关性。">
+                    <title>混合召回与重排：Rerank 融合排序</title>
+                    <rect class="hjy_node_bg" x="384" y="436" width="150" height="44" rx="10" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+                    <rect x="384" y="444" width="3.5" height="28" rx="1.75" fill="url(#hjy_l4)"/>
+                    <text x="400" y="455" font-size="13.5" font-weight="600" fill="#0f172a">混合召回与重排</text>
+                    <text x="400" y="471" font-size="10.5" fill="#64748b">Rerank 融合排序</text>
+                </g>
+
+                <g class="hjy_node" data-layer="检索与推理层" data-name="图谱多跳推理"
+                   data-desc="沿知识图谱的关系链进行多跳推理，回答需要跨实体关联的结构化问题。">
+                    <title>图谱多跳推理：关系链推理</title>
+                    <rect class="hjy_node_bg" x="548" y="436" width="150" height="44" rx="10" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+                    <rect x="548" y="444" width="3.5" height="28" rx="1.75" fill="url(#hjy_l4)"/>
+                    <text x="564" y="455" font-size="13.5" font-weight="600" fill="#0f172a">图谱多跳推理</text>
+                    <text x="564" y="471" font-size="10.5" fill="#64748b">关系链推理</text>
+                </g>
+
+                <g class="hjy_node" data-layer="检索与推理层" data-name="答案证据融合"
+                   data-desc="对多段证据进行去重、压缩与拼接，形成供大模型使用的上下文证据集合。">
+                    <title>答案证据融合：证据片段整合</title>
+                    <rect class="hjy_node_bg" x="712" y="436" width="150" height="44" rx="10" fill="#ffffff" stroke="#99f6e4" stroke-width="1.2"/>
+                    <rect x="712" y="444" width="3.5" height="28" rx="1.75" fill="url(#hjy_l4)"/>
+                    <text x="728" y="455" font-size="13.5" font-weight="600" fill="#0f172a">答案证据融合</text>
+                    <text x="728" y="471" font-size="10.5" fill="#64748b">证据片段整合</text>
+                </g>
+
+                <line x1="460" y1="487" x2="460" y2="501" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#hjy_arrow)"/>
+
+                <!-- ========== 第 5 层：生成与响应层 ========== -->
+                <g class="hjy_band">
+                    <rect x="30" y="504" width="860" height="84" rx="16" fill="#ffffff" stroke="#e6ebf3" stroke-width="1.2"/>
+                    <rect x="30" y="514" width="5" height="64" rx="2.5" fill="url(#hjy_l5)"/>
+                    <rect x="44" y="514" width="22" height="20" rx="6" fill="url(#hjy_l5)"/>
+                    <text x="55" y="528.5" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+                    <text x="74" y="529" font-size="14" font-weight="700" fill="#0b1220">生成与响应层</text>
+                    <text x="174" y="529" font-size="10.5" fill="#94a3b8">大模型生成 · 事实校验 · 引用溯源</text>
+                </g>
+
+                <g class="hjy_node" data-layer="生成与响应层" data-name="大模型生成"
+                   data-desc="以检索到的证据为上下文，由大模型生成自然流畅、贴合业务的答复内容。">
+                    <title>大模型生成：LLM 答复生成</title>
+                    <rect class="hjy_node_bg" x="56" y="538" width="150" height="44" rx="10" fill="#ffffff" stroke="#fde68a" stroke-width="1.2"/>
+                    <rect x="56" y="546" width="3.5" height="28" rx="1.75" fill="url(#hjy_l5)"/>
+                    <text x="72" y="557" font-size="13.5" font-weight="600" fill="#0f172a">大模型生成</text>
+                    <text x="72" y="573" font-size="10.5" fill="#64748b">LLM 答复生成</text>
+                </g>
+
+                <g class="hjy_node" data-layer="生成与响应层" data-name="Prompt 编排"
+                   data-desc="组织系统指令、对话历史与知识片段，控制输出格式、语气与长度。">
+                    <title>Prompt 编排：上下文与指令模板</title>
+                    <rect class="hjy_node_bg" x="220" y="538" width="150" height="44" rx="10" fill="#ffffff" stroke="#fde68a" stroke-width="1.2"/>
+                    <rect x="220" y="546" width="3.5" height="28" rx="1.75" fill="url(#hjy_l5)"/>
+                    <text x="236" y="557" font-size="13.5" font-weight="600" fill="#0f172a">Prompt 编排</text>
+                    <text x="236" y="573" font-size="10.5" fill="#64748b">上下文与指令模板</text>
+                </g>
+
+                <g class="hjy_node" data-layer="生成与响应层" data-name="幻觉与事实校验"
+                   data-desc="对生成内容与证据做一致性校验，拦截缺乏依据的事实性表述后再输出。">
+                    <title>幻觉与事实校验：一致性检查</title>
+                    <rect class="hjy_node_bg" x="384" y="538" width="150" height="44" rx="10" fill="#ffffff" stroke="#fde68a" stroke-width="1.2"/>
+                    <rect x="384" y="546" width="3.5" height="28" rx="1.75" fill="url(#hjy_l5)"/>
+                    <text x="400" y="557" font-size="13.5" font-weight="600" fill="#0f172a">幻觉与事实校验</text>
+                    <text x="400" y="573" font-size="10.5" fill="#64748b">一致性检查</text>
+                </g>
+
+                <g class="hjy_node" data-layer="生成与响应层" data-name="答案引用溯源"
+                   data-desc="为答复标注所引用的知识条目，便于人工核查、用户追溯与责任界定。">
+                    <title>答案引用溯源：知识来源标注</title>
+                    <rect class="hjy_node_bg" x="548" y="538" width="150" height="44" rx="10" fill="#ffffff" stroke="#fde68a" stroke-width="1.2"/>
+                    <rect x="548" y="546" width="3.5" height="28" rx="1.75" fill="url(#hjy_l5)"/>
+                    <text x="564" y="557" font-size="13.5" font-weight="600" fill="#0f172a">答案引用溯源</text>
+                    <text x="564" y="573" font-size="10.5" fill="#64748b">知识来源标注</text>
+                </g>
+
+                <g class="hjy_node" data-layer="生成与响应层" data-name="多轮答复生成"
+                   data-desc="结合对话状态生成连贯的多轮回复，信息不足时主动发起澄清追问。">
+                    <title>多轮答复生成：上下文连贯回复</title>
+                    <rect class="hjy_node_bg" x="712" y="538" width="150" height="44" rx="10" fill="#ffffff" stroke="#fde68a" stroke-width="1.2"/>
+                    <rect x="712" y="546" width="3.5" height="28" rx="1.75" fill="url(#hjy_l5)"/>
+                    <text x="728" y="557" font-size="13.5" font-weight="600" fill="#0f172a">多轮答复生成</text>
+                    <text x="728" y="573" font-size="10.5" fill="#64748b">上下文连贯回复</text>
+                </g>
+
+                <line x1="460" y1="589" x2="460" y2="603" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#hjy_arrow)"/>
+
+                <!-- ========== 第 6 层：运营与迭代层 ========== -->
+                <g class="hjy_band">
+                    <rect x="30" y="606" width="860" height="84" rx="16" fill="#ffffff" stroke="#e6ebf3" stroke-width="1.2"/>
+                    <rect x="30" y="616" width="5" height="64" rx="2.5" fill="url(#hjy_l6)"/>
+                    <rect x="44" y="616" width="22" height="20" rx="6" fill="url(#hjy_l6)"/>
+                    <text x="55" y="630.5" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">6</text>
+                    <text x="74" y="631" font-size="14" font-weight="700" fill="#0b1220">运营与迭代层</text>
+                    <text x="174" y="631" font-size="10.5" fill="#94a3b8">日志沉淀 · 质检标注 · 监控实验 · 持续迭代</text>
+                </g>
+
+                <g class="hjy_node" data-layer="运营与迭代层" data-name="会话日志沉淀"
+                   data-desc="全量保存会话记录与中间结果，为质检、训练与效果分析提供数据基础。">
+                    <title>会话日志沉淀：全量对话存储</title>
+                    <rect class="hjy_node_bg" x="56" y="640" width="150" height="44" rx="10" fill="#ffffff" stroke="#fbcfe8" stroke-width="1.2"/>
+                    <rect x="56" y="648" width="3.5" height="28" rx="1.75" fill="url(#hjy_l6)"/>
+                    <text x="72" y="659" font-size="13.5" font-weight="600" fill="#0f172a">会话日志沉淀</text>
+                    <text x="72" y="675" font-size="10.5" fill="#64748b">全量对话存储</text>
+                </g>
+
+                <g class="hjy_node" data-layer="运营与迭代层" data-name="人工质检标注"
+                   data-desc="人工抽检答复质量并标注问题类型，形成微调与评测所需的标注语料。">
+                    <title>人工质检标注：语料与标注</title>
+                    <rect class="hjy_node_bg" x="220" y="640" width="150" height="44" rx="10" fill="#ffffff" stroke="#fbcfe8" stroke-width="1.2"/>
+                    <rect x="220" y="648" width="3.5" height="28" rx="1.75" fill="url(#hjy_l6)"/>
+                    <text x="236" y="659" font-size="13.5" font-weight="600" fill="#0f172a">人工质检标注</text>
+                    <text x="236" y="675" font-size="10.5" fill="#64748b">语料与标注</text>
+                </g>
+
+                <g class="hjy_node" data-layer="运营与迭代层" data-name="指标监控告警"
+                   data-desc="监控解决率、转人工率、响应时延等核心指标，异常时自动触发告警。">
+                    <title>指标监控告警：服务指标看板</title>
+                    <rect class="hjy_node_bg" x="384" y="640" width="150" height="44" rx="10" fill="#ffffff" stroke="#fbcfe8" stroke-width="1.2"/>
+                    <rect x="384" y="648" width="3.5" height="28" rx="1.75" fill="url(#hjy_l6)"/>
+                    <text x="400" y="659" font-size="13.5" font-weight="600" fill="#0f172a">指标监控告警</text>
+                    <text x="400" y="675" font-size="10.5" fill="#64748b">服务指标看板</text>
+                </g>
+
+                <g class="hjy_node" data-layer="运营与迭代层" data-name="A/B 实验"
+                   data-desc="对检索策略、Prompt 模板与模型版本做线上分流对比实验，验证优化收益。">
+                    <title>A/B 实验：策略效果对比</title>
+                    <rect class="hjy_node_bg" x="548" y="640" width="150" height="44" rx="10" fill="#ffffff" stroke="#fbcfe8" stroke-width="1.2"/>
+                    <rect x="548" y="648" width="3.5" height="28" rx="1.75" fill="url(#hjy_l6)"/>
+                    <text x="564" y="659" font-size="13.5" font-weight="600" fill="#0f172a">A/B 实验</text>
+                    <text x="564" y="675" font-size="10.5" fill="#64748b">策略效果对比</text>
+                </g>
+
+                <g class="hjy_node" data-layer="运营与迭代层" data-name="模型与知识迭代"
+                   data-desc="依据评估结果更新知识库与模型参数，形成数据驱动的持续优化闭环。">
+                    <title>模型与知识迭代：持续优化闭环</title>
+                    <rect class="hjy_node_bg" x="712" y="640" width="150" height="44" rx="10" fill="#ffffff" stroke="#fbcfe8" stroke-width="1.2"/>
+                    <rect x="712" y="648" width="3.5" height="28" rx="1.75" fill="url(#hjy_l6)"/>
+                    <text x="728" y="659" font-size="13.5" font-weight="600" fill="#0f172a">模型与知识迭代</text>
+                    <text x="728" y="675" font-size="10.5" fill="#64748b">持续优化闭环</text>
+                </g>
+
+                <!-- ========== 科研方向映射（右侧） ========== -->
+                <line x1="890" y1="138" x2="924" y2="138" stroke="#c4b5fd" stroke-width="1.3"
+                      stroke-dasharray="4 4" marker-end="url(#hjy_arrow_p)"/>
+                <rect x="930" y="112" width="280" height="52" rx="10" fill="#faf8ff" stroke="#ddd6fe" stroke-width="1.2"/>
+                <rect x="930" y="120" width="3.5" height="36" rx="1.75" fill="url(#hjy_l1)"/>
+                <text x="946" y="134" font-size="12.5" font-weight="700" fill="#4c1d95">多模态智能交互</text>
+                <text x="946" y="151" font-size="10" fill="#7c6ba8">语音、文本、图像统一建模</text>
+
+                <line x1="890" y1="240" x2="924" y2="240" stroke="#c4b5fd" stroke-width="1.3"
+                      stroke-dasharray="4 4" marker-end="url(#hjy_arrow_p)"/>
+                <rect x="930" y="214" width="280" height="52" rx="10" fill="#faf8ff" stroke="#ddd6fe" stroke-width="1.2"/>
+                <rect x="930" y="222" width="3.5" height="36" rx="1.75" fill="url(#hjy_l2)"/>
+                <text x="946" y="236" font-size="12.5" font-weight="700" fill="#4c1d95">低资源意图理解与情感计算</text>
+                <text x="946" y="253" font-size="10" fill="#7c6ba8">小样本意图识别与情绪建模</text>
+
+                <line x1="890" y1="342" x2="924" y2="342" stroke="#c4b5fd" stroke-width="1.3"
+                      stroke-dasharray="4 4" marker-end="url(#hjy_arrow_p)"/>
+                <rect x="930" y="316" width="280" height="52" rx="10" fill="#faf8ff" stroke="#ddd6fe" stroke-width="1.2"/>
+                <rect x="930" y="324" width="3.5" height="36" rx="1.75" fill="url(#hjy_l3)"/>
+                <text x="946" y="338" font-size="12.5" font-weight="700" fill="#4c1d95">领域知识图谱自动构建</text>
+                <text x="946" y="355" font-size="10" fill="#7c6ba8">文档级实体关系抽取</text>
+
+                <line x1="890" y1="444" x2="924" y2="444" stroke="#c4b5fd" stroke-width="1.3"
+                      stroke-dasharray="4 4" marker-end="url(#hjy_arrow_p)"/>
+                <rect x="930" y="418" width="280" height="52" rx="10" fill="#faf8ff" stroke="#ddd6fe" stroke-width="1.2"/>
+                <rect x="930" y="426" width="3.5" height="36" rx="1.75" fill="url(#hjy_l4)"/>
+                <text x="946" y="440" font-size="12.5" font-weight="700" fill="#4c1d95">检索增强生成（RAG）</text>
+                <text x="946" y="457" font-size="10" fill="#7c6ba8">混合检索与知识注入</text>
+
+                <line x1="890" y1="546" x2="924" y2="546" stroke="#c4b5fd" stroke-width="1.3"
+                      stroke-dasharray="4 4" marker-end="url(#hjy_arrow_p)"/>
+                <rect x="930" y="520" width="280" height="52" rx="10" fill="#faf8ff" stroke="#ddd6fe" stroke-width="1.2"/>
+                <rect x="930" y="528" width="3.5" height="36" rx="1.75" fill="url(#hjy_l5)"/>
+                <text x="946" y="542" font-size="12.5" font-weight="700" fill="#4c1d95">幻觉抑制与事实一致性</text>
+                <text x="946" y="559" font-size="10" fill="#7c6ba8">答案可验证与引用溯源</text>
+
+                <line x1="890" y1="648" x2="924" y2="648" stroke="#c4b5fd" stroke-width="1.3"
+                      stroke-dasharray="4 4" marker-end="url(#hjy_arrow_p)"/>
+                <rect x="930" y="622" width="280" height="52" rx="10" fill="#faf8ff" stroke="#ddd6fe" stroke-width="1.2"/>
+                <rect x="930" y="630" width="3.5" height="36" rx="1.75" fill="url(#hjy_l6)"/>
+                <text x="946" y="644" font-size="12.5" font-weight="700" fill="#4c1d95">可解释性与人机协同</text>
+                <text x="946" y="661" font-size="10" fill="#7c6ba8">置信度估计与转人工策略</text>
+
+                <!-- ========== 图例 ========== -->
+                <line x1="30" y1="726" x2="66" y2="726" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#hjy_arrow)"/>
+                <text x="74" y="730" font-size="11" fill="#64748b">层级之间的调用与数据流</text>
+                <line x1="230" y1="726" x2="266" y2="726" stroke="#c4b5fd" stroke-width="1.4"
+                      stroke-dasharray="4 4" marker-end="url(#hjy_arrow_p)"/>
+                <text x="274" y="730" font-size="11" fill="#64748b">对应科研方向映射</text>
+                <text x="1210" y="730" font-size="11" fill="#94a3b8" text-anchor="end">SVG 矢量图 · 无损缩放</text>
+                <text x="30" y="758" font-size="11.5" fill="#94a3b8">
+                    核心链路：多渠道接入 → 语义理解与多轮管理 → 知识检索与推理 → 大模型生成与校验 → 运营反馈迭代
+                </text>
+            </svg>
+        </div>
+
+        <div class="hjy_detail" id="hjy_detail">
+            <div class="hjy_detail_empty">点击架构图中的任意模块，查看该组件的功能说明</div>
+        </div>
+    </section>
+
+    <section class="hjy_card">
+        <div class="hjy_note_grid">
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-sousuo"></i>研究问题</div>
+                <div class="hjy_note_text">如何在垂直业务领域构建可信、可解释、可持续更新的知识库问答系统，在开放域大模型能力与领域事实准确性之间取得平衡。</div>
+            </div>
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-list-icon-fuzhi"></i>技术路线</div>
+                <div class="hjy_note_text">领域知识图谱 + 稠密向量索引的双知识底座，结合混合召回与重排的 RAG 流程，并以事实校验与引用溯源约束生成结果。</div>
+            </div>
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-dianzan"></i>评估方式</div>
+                <div class="hjy_note_text">从答案准确率、事实一致性、引用可追溯性、自动解决率与用户满意度等维度构建多维评测体系，并结合人工质检进行校准。</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="hjy_footer">Made with ❤ by 胡家瑜 · 高级网页设计课程</footer>
+
+</div>
+
+<script>
+    /* 姓名：胡家瑜 日期：2026-11-05 功能：点击 SVG 架构节点在下方展示组件说明（全部变量以 hjy_ 开头） */
+    (function () {
+        var hjy_nodes = document.querySelectorAll('.hjy_node');
+        var hjy_detail = document.getElementById('hjy_detail');
+
+        hjy_nodes.forEach(function (hjy_node) {
+            hjy_node.addEventListener('click', function () {
+                hjy_nodes.forEach(function (hjy_other) {
+                    hjy_other.classList.remove('hjy_node_active');
+                });
+                hjy_node.classList.add('hjy_node_active');
+
+                var hjy_layer = hjy_node.getAttribute('data-layer');
+                var hjy_name = hjy_node.getAttribute('data-name');
+                var hjy_desc = hjy_node.getAttribute('data-desc');
+
+                hjy_detail.innerHTML =
+                    '<span class="hjy_detail_tag">' + hjy_layer + '</span>' +
+                    '<div class="hjy_detail_title">' + hjy_name + '</div>' +
+                    '<div class="hjy_detail_text">' + hjy_desc + '</div>';
+            });
+        });
+    })();
+</script>
+</body>
+</html>
