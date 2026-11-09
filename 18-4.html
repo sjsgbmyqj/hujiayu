@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-05 功能：ECharts 数据可视化（折线图 + 3D 地球），库文件本地化到 cdn/echarts 目录 -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECharts 数据可视化 · 折线图与 3D 地球</title>
+    <script src="./cdn/echarts/echarts.min.js"></script>
+    <script src="./cdn/echarts/echarts-gl.min.js"></script>
+    <script src="./cdn/echarts/earth-texture.js"></script>
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-05 功能：页面样式（全部类名以 hjy_ 开头，全局 reset 置顶） */
+        :root {
+            --hjy_ink: #0f172a;
+            --hjy_sub: #64748b;
+            --hjy_line: #e2e8f0;
+            --hjy_blue: #2563eb;
+            --hjy_purple: #7c3aed;
+            --hjy_gold: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(900px 500px at 10% 0%, rgba(37, 99, 235, 0.13), transparent 65%),
+                radial-gradient(800px 480px at 90% 8%, rgba(124, 58, 237, 0.12), transparent 65%),
+                linear-gradient(160deg, #f7f9fd 0%, #eef2f9 100%);
+            color: var(--hjy_ink);
+            min-height: 100vh;
+            padding: 36px 20px 44px;
+            line-height: 1.65;
+        }
+        .hjy_container { max-width: 1240px; margin: 0 auto; }
+
+        .hjy_header { text-align: center; margin-bottom: 24px; }
+        .hjy_header h1 { font-size: 2rem; font-weight: 800; letter-spacing: 1px; color: #0b1220; }
+        .hjy_header h1 span {
+            background: linear-gradient(100deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hjy_header p { color: var(--hjy_sub); font-size: 0.93rem; margin-top: 8px; }
+        .hjy_header p b { color: #1d4ed8; }
+        .hjy_meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .hjy_meta_item {
+            font-size: 0.78rem; color: #475569; background: #ffffff;
+            border: 1px solid var(--hjy_line); border-radius: 20px; padding: 4px 14px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+        .hjy_meta_item b { color: #1d4ed8; }
+
+        .hjy_card {
+            background: #ffffff; border: 1px solid #e6ebf3; border-radius: 20px;
+            padding: 20px; box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08); margin-bottom: 22px;
+        }
+        .hjy_card_dark {
+            background: #0a1220;
+            border: 1px solid #1c2c47;
+            box-shadow: 0 22px 60px rgba(8, 15, 30, 0.45);
+        }
+        .hjy_card_title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 1.06rem; font-weight: 700; color: #0b1220; margin-bottom: 4px;
+        }
+        .hjy_card_title i {
+            font-style: normal; width: 30px; height: 30px; border-radius: 9px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 15px; color: #ffffff;
+            background: linear-gradient(135deg, var(--hjy_blue), var(--hjy_purple));
+        }
+        .hjy_card_sub { font-size: 0.84rem; color: var(--hjy_sub); margin-bottom: 14px; }
+        .hjy_card_dark .hjy_card_title { color: #f1f5f9; }
+        .hjy_card_dark .hjy_card_sub { color: #93a4bd; }
+        .hjy_card_dark .hjy_card_title i { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+
+        .hjy_chart { width: 100%; height: 460px; }
+        .hjy_chart_globe { width: 100%; height: 560px; }
+
+        .hjy_stats { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+        .hjy_stat {
+            flex: 1 1 150px; min-width: 0; background: #f6f8fc;
+            border: 1px solid var(--hjy_line); border-radius: 14px; padding: 12px 16px;
+        }
+        .hjy_stat_num { font-size: 1.3rem; font-weight: 800; color: #1d4ed8; }
+        .hjy_stat_num em { font-style: normal; font-size: 0.7rem; color: var(--hjy_sub); margin-left: 4px; }
+        .hjy_stat_label { font-size: 0.76rem; color: var(--hjy_sub); margin-top: 2px; }
+        .hjy_stat_purple .hjy_stat_num { color: var(--hjy_purple); }
+        .hjy_stat_gold .hjy_stat_num { color: var(--hjy_gold); }
+
+        .hjy_notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+        .hjy_note {
+            background: #f6f8fc; border: 1px solid var(--hjy_line);
+            border-radius: 14px; padding: 12px 16px; font-size: 0.85rem;
+        }
+        .hjy_note b { color: #1d4ed8; }
+        .hjy_note code {
+            font-family: Consolas, "Courier New", monospace; font-size: 0.8em;
+            background: #eef2fb; color: #1e3a8a; padding: 1px 6px; border-radius: 6px;
+            white-space: nowrap;
+        }
+        .hjy_card_dark .hjy_note {
+            background: rgba(255, 255, 255, 0.045);
+            border-color: rgba(255, 255, 255, 0.09);
+            color: #c7d3e6;
+        }
+        .hjy_card_dark .hjy_note b { color: #7dd3fc; }
+        .hjy_card_dark .hjy_note code {
+            background: rgba(125, 211, 252, 0.12); color: #bae6fd;
+        }
+
+        .hjy_footer { text-align: center; color: var(--hjy_sub); font-size: 0.82rem; margin-top: 26px; }
+        .hjy_footer .hjy_heart { color: #ef4444; }
+
+        @media (max-width: 640px) {
+            body { padding: 22px 12px 30px; }
+            .hjy_header h1 { font-size: 1.5rem; }
+            .hjy_chart { height: 340px; }
+            .hjy_chart_globe { height: 420px; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_container">
+
+    <header class="hjy_header">
+        <h1>18-4 · <span>ECharts 数据可视化</span></h1>
+        <p>折线图（访问与播放趋势）＋ 3D 地球（全球访问分布）· 库文件已下载到本地 <b>cdn/echarts</b> 目录，离线可用</p>
+        <div class="hjy_meta">
+            <span class="hjy_meta_item">姓名：<b>胡家瑜</b></span>
+            <span class="hjy_meta_item">学号：<b>24001010621</b></span>
+            <span class="hjy_meta_item">日期：<b>2026-11-05</b></span>
+            <span class="hjy_meta_item">ECharts <b>5.1.2</b></span>
+            <span class="hjy_meta_item">ECharts GL <b>2.0.9</b></span>
+        </div>
+    </header>
+
+    <section class="hjy_card">
+        <h2 class="hjy_card_title"><i>📈</i>折线图 · 光影集 FILMLIGHT 近 12 个月运营趋势</h2>
+        <p class="hjy_card_sub">页面访问量与电影播放量双系列折线（单位：万次），支持悬停查看数值、图例开关系列、底部缩放条。</p>
+        <div class="hjy_stats">
+            <div class="hjy_stat"><div class="hjy_stat_num">86.4<em>万</em></div><div class="hjy_stat_label">12 月访问总量</div></div>
+            <div class="hjy_stat hjy_stat_purple"><div class="hjy_stat_num">52.7<em>万</em></div><div class="hjy_stat_label">12 月播放总量</div></div>
+            <div class="hjy_stat hjy_stat_gold"><div class="hjy_stat_num">+18.6<em>%</em></div><div class="hjy_stat_label">环比增长</div></div>
+        </div>
+        <div class="hjy_chart" id="hjy_line"></div>
+    </section>
+
+    <section class="hjy_card hjy_card_dark">
+        <h2 class="hjy_card_title"><i>🌍</i>3D 地球 · 全球访问分布</h2>
+        <p class="hjy_card_sub">ECharts GL 的 globe 组件渲染 3D 地球（可拖拽旋转 / 滚轮缩放 / 自动旋转），十个城市为访问热点，金色弧线为跨境访问链路。</p>
+        <div class="hjy_chart_globe" id="hjy_globe"></div>
+        <div class="hjy_notes">
+            <div class="hjy_note"><b>本地 CDN：</b><code>echarts.min.js</code>、<code>echarts-gl.min.js</code>、<code>earth-texture.js</code> 三个文件都在 <code>cdn/echarts</code> 目录，页面不依赖外网。</div>
+            <div class="hjy_note"><b>贴图内联：</b>地球贴图为 2048×1024 JPEG，转成 base64 内联为 <code>earth-texture.js</code>，避开 file:// 协议下 WebGL 纹理的跨域限制。</div>
+            <div class="hjy_note"><b>写法要点：</b>ECharts GL 2.x 中 globe 是<b>组件</b>（<code>option.globe</code>），不是 series；城市点与飞线用 <code>scatter3D</code> / <code>lines3D</code> 并设置 <code>coordinateSystem:'globe'</code>。</div>
+            <div class="hjy_note"><b>折线图要点：</b><code>smooth</code> 平滑曲线、<code>areaStyle</code> 渐变面积、<code>markPoint</code> 峰值标注、<code>dataZoom</code> 缩放。</div>
+        </div>
+    </section>
+
+    <footer class="hjy_footer">Made with <span class="hjy_heart">❤</span> by 胡家瑜 · 高级网页设计课程 · 18-4</footer>
+</div>
+
+<script>
+    // 姓名：胡家瑜 日期：2026-11-05 功能：折线图与 3D 地球配置
+    (function () {
+        /* ===== 一、折线图 ===== */
+        var hjy_line = echarts.init(document.getElementById('hjy_line'));
+        hjy_line.setOption({
+            color: ['#2563eb', '#7c3aed'],
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'cross', label: { backgroundColor: '#1d4ed8' } }
+            },
+            legend: { data: ['页面访问量', '电影播放量'], top: 0, textStyle: { color: '#475569' } },
+            grid: { left: 46, right: 30, top: 40, bottom: 56 },
+            xAxis: {
+                type: 'category', boundaryGap: false,
+                data: ['12月', '1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月'],
+                axisLine: { lineStyle: { color: '#94a3b8' } },
+                axisLabel: { color: '#475569' }
+            },
+            yAxis: {
+                type: 'value', name: '万次', nameTextStyle: { color: '#64748b' },
+                splitLine: { lineStyle: { color: '#e2e8f0' } },
+                axisLabel: { color: '#475569' }
+            },
+            dataZoom: [
+                { type: 'inside', start: 0, end: 100 },
+                { type: 'slider', height: 18, bottom: 14, borderColor: '#e2e8f0' }
+            ],
+            series: [
+                {
+                    name: '页面访问量', type: 'line', smooth: true, symbol: 'circle', symbolSize: 7,
+                    data: [3.1, 3.4, 3.9, 4.6, 5.2, 5.9, 6.8, 7.5, 8.3, 9.6, 12.4, 15.7],
+                    markPoint: {
+                        data: [{ type: 'max', name: '峰值' }],
+                        itemStyle: { color: '#f59e0b' }, label: { color: '#fff' }
+                    },
+                    lineStyle: { width: 3 },
+                    areaStyle: {
+                        color: {
+                            type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(37,99,235,0.28)' },
+                                { offset: 1, color: 'rgba(37,99,235,0.02)' }
+                            ]
+                        }
+                    }
+                },
+                {
+                    name: '电影播放量', type: 'line', smooth: true, symbol: 'circle', symbolSize: 7,
+                    data: [1.6, 1.9, 2.2, 2.8, 3.1, 3.7, 4.2, 4.9, 5.6, 6.4, 7.8, 9.5],
+                    markPoint: {
+                        data: [{ type: 'max', name: '峰值' }],
+                        itemStyle: { color: '#7c3aed' }, label: { color: '#fff' }
+                    },
+                    lineStyle: { width: 3 },
+                    areaStyle: {
+                        color: {
+                            type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(124,58,237,0.24)' },
+                                { offset: 1, color: 'rgba(124,58,237,0.02)' }
+                            ]
+                        }
+                    }
+                }
+            ]
+        });
+
+        /* ===== 二、3D 地球 ===== */
+        var hjy_cities = [
+            { n: '北京', v: [116.4, 39.9, 0], s: 15, w: 12.6 },
+            { n: '上海', v: [121.5, 31.2, 0], s: 13, w: 10.2 },
+            { n: '广州', v: [113.3, 23.1, 0], s: 11, w: 7.4 },
+            { n: '成都', v: [104.1, 30.7, 0], s: 10, w: 5.8 },
+            { n: '东京', v: [139.7, 35.7, 0], s: 9, w: 4.3 },
+            { n: '新加坡', v: [103.8, 1.4, 0], s: 8, w: 3.6 },
+            { n: '伦敦', v: [-0.1, 51.5, 0], s: 9, w: 3.2 },
+            { n: '纽约', v: [-74.0, 40.7, 0], s: 11, w: 5.1 },
+            { n: '旧金山', v: [-122.4, 37.8, 0], s: 8, w: 2.8 },
+            { n: '悉尼', v: [151.2, -33.9, 0], s: 8, w: 2.4 }
+        ].map(function (hjy_c) {
+            return { name: hjy_c.n, value: hjy_c.v, symbolSize: hjy_c.s, hjy_w: hjy_c.w };
+        });
+
+        var hjy_globe = echarts.init(document.getElementById('hjy_globe'));
+        hjy_globe.setOption({
+            backgroundColor: 'transparent',
+            tooltip: {
+                show: true,
+                backgroundColor: 'rgba(10,18,32,0.92)',
+                borderColor: 'rgba(125,211,252,0.35)',
+                textStyle: { color: '#e2e8f0' },
+                formatter: function (p) {
+                    return p.name + '<br/>月访问量：' + p.data.hjy_w + ' 万次';
+                }
+            },
+            globe: {
+                baseTexture: window.HJY_EARTH_TEXTURE,
+                shading: 'color',
+                environment: '#0a1220',
+                light: {
+                    main: { intensity: 1.15, shadow: false },
+                    ambient: { intensity: 0.5 }
+                },
+                viewControl: {
+                    autoRotate: true,
+                    autoRotateSpeed: 6,
+                    autoRotateAfterStill: 3,
+                    distance: 178,
+                    alpha: 14,
+                    beta: -82,
+                    targetCoord: [105, 30]
+                }
+            },
+            series: [
+                {
+                    type: 'scatter3D',
+                    coordinateSystem: 'globe',
+                    itemStyle: {
+                        color: '#ffe066', opacity: 0.98,
+                        borderWidth: 0.6, borderColor: '#ffffff'
+                    },
+                    data: hjy_cities
+                },
+                {
+                    type: 'lines3D',
+                    coordinateSystem: 'globe',
+                    effect: {
+                        show: true, period: 5, trailWidth: 3,
+                        trailLength: 0.3, trailOpacity: 1, trailColor: '#ffd166'
+                    },
+                    lineStyle: { width: 1.1, color: '#ffb43a', opacity: 0.32 },
+                    data: [
+                        { coords: [[116.4, 39.9], [-0.1, 51.5]] },
+                        { coords: [[116.4, 39.9], [-74.0, 40.7]] },
+                        { coords: [[121.5, 31.2], [-122.4, 37.8]] },
+                        { coords: [[113.3, 23.1], [151.2, -33.9]] }
+                    ]
+                }
+            ]
+        });
+
+        window.addEventListener('resize', function () {
+            hjy_line.resize();
+            hjy_globe.resize();
+        });
+    })();
+</script>
+</body>
+</html>

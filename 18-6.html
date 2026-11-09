@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-05 功能：基于 Mermaid 的智能客服系统业务流程图与数据模型 ER 图（Mermaid 已本地化到 cdn 目录） -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能客服系统 · 流程图与 ER 图（Mermaid）</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-05 功能：页面样式（全部类名以 hjy_ 开头） */
+        :root {
+            --hjy_ink: #0f172a;
+            --hjy_sub: #64748b;
+            --hjy_line: #e6ebf3;
+            --hjy_blue: #2563eb;
+            --hjy_purple: #7c3aed;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(900px 520px at 8% 0%, rgba(59, 130, 246, 0.12), transparent 65%),
+                radial-gradient(820px 480px at 92% 6%, rgba(124, 58, 237, 0.11), transparent 65%),
+                linear-gradient(160deg, #f7f9fd 0%, #eef2f9 100%);
+            color: var(--hjy_ink);
+            min-height: 100vh;
+            padding: 36px 20px 44px;
+            line-height: 1.65;
+        }
+        .hjy_container { max-width: 1180px; margin: 0 auto; }
+
+        /* ===== 页头 ===== */
+        .hjy_header { text-align: center; margin-bottom: 24px; }
+        .hjy_header h1 { font-size: 2rem; font-weight: 800; letter-spacing: 1px; }
+        .hjy_header h1 span {
+            background: linear-gradient(100deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hjy_header p { color: var(--hjy_sub); font-size: 0.93rem; margin-top: 8px; }
+        .hjy_meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+        .hjy_meta_item {
+            font-size: 0.78rem; color: #475569;
+            background: #fff; border: 1px solid var(--hjy_line);
+            border-radius: 20px; padding: 4px 14px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+        .hjy_meta_item b { color: var(--hjy_blue); }
+
+        /* ===== 图卡片 ===== */
+        .hjy_card {
+            background: #fff;
+            border: 1px solid var(--hjy_line);
+            border-radius: 20px;
+            padding: 22px;
+            box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+            margin-bottom: 22px;
+        }
+        .hjy_card_head {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+            padding-bottom: 14px; margin-bottom: 14px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .hjy_card_title { font-size: 1.1rem; font-weight: 700; color: #0b1220; }
+        .hjy_card_title i { color: var(--hjy_blue); margin-right: 4px; }
+        .hjy_card_desc { font-size: 0.8rem; color: var(--hjy_sub); width: 100%; }
+        .hjy_card_tools { margin-left: auto; display: flex; gap: 8px; }
+        .hjy_btn {
+            border: 1px solid #dbe3ef; background: #f8fafc;
+            color: #334155; cursor: pointer;
+            padding: 6px 14px; border-radius: 9px;
+            font-size: 0.78rem; font-family: inherit;
+            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+        }
+        .hjy_btn:hover { background: #eef4ff; border-color: #bfdbfe; transform: translateY(-1px); }
+        .hjy_btn:active { transform: translateY(0); }
+        .hjy_btn .iconfont { margin-right: 4px; }
+
+        .hjy_diagram {
+            overflow: auto;
+            padding: 10px 4px 4px;
+            min-height: 160px;
+        }
+        .hjy_diagram svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+        .hjy_loading, .hjy_error {
+            text-align: center; font-size: 0.86rem; color: #94a3b8;
+            padding: 40px 0;
+        }
+        .hjy_error { color: #dc2626; }
+
+        /* ===== 说明 ===== */
+        .hjy_note_grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .hjy_note {
+            border-radius: 14px; padding: 18px;
+            background: linear-gradient(160deg, #fbfcff, #f4f7fd);
+            border: 1px solid var(--hjy_line);
+        }
+        .hjy_note_name { font-size: 0.94rem; font-weight: 700; color: var(--hjy_blue); margin-bottom: 6px; }
+        .hjy_note_name .iconfont { margin-right: 5px; }
+        .hjy_note_text { font-size: 0.8rem; color: #475569; line-height: 1.8; }
+        .hjy_note_text code {
+            background: #eef2f9; border-radius: 4px; padding: 1px 5px;
+            font-family: Consolas, "Courier New", monospace; color: #1d4ed8; font-size: 0.9em;
+        }
+        .hjy_footer { text-align: center; color: #94a3b8; font-size: 0.82rem; margin-top: 6px; }
+
+        @media (max-width: 860px) {
+            body { padding: 24px 12px 32px; }
+            .hjy_header h1 { font-size: 1.4rem; }
+            .hjy_card { padding: 14px; }
+            .hjy_note_grid { grid-template-columns: 1fr; }
+            .hjy_card_tools { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_container">
+
+    <header class="hjy_header">
+        <h1>智能客服系统 · <span>Mermaid 图表</span></h1>
+        <p>业务流程流程图与数据模型 ER 图 · Mermaid 已下载到本地 cdn 目录，离线可用</p>
+        <div class="hjy_meta">
+            <span class="hjy_meta_item">作者：<b>胡家瑜</b></span>
+            <span class="hjy_meta_item">绘图库：<b>Mermaid 11</b></span>
+            <span class="hjy_meta_item">本地路径：<b>cdn/mermaid.min.js</b></span>
+            <span class="hjy_meta_item">日期：<b>2026-11-05</b></span>
+        </div>
+    </header>
+
+    <!-- ========== 流程图 ========== -->
+    <section class="hjy_card">
+        <div class="hjy_card_head">
+            <div class="hjy_card_title"><i class="iconfont icon-list-icon-fuzhi"></i>智能客服业务流程图</div>
+            <div class="hjy_card_tools">
+                <button class="hjy_btn" id="hjy_flow_copy"><i class="iconfont icon-bianji"></i>复制代码</button>
+                <button class="hjy_btn" id="hjy_flow_save"><i class="iconfont icon-shoucang"></i>下载 SVG</button>
+            </div>
+            <div class="hjy_card_desc">
+                从用户发起咨询到答复返回、再到人工转接与知识迭代的完整闭环；菱形节点表示判断分支。
+            </div>
+        </div>
+        <div class="hjy_diagram" id="hjy_flow_out">
+            <div class="hjy_loading">正在渲染流程图…</div>
+        </div>
+    </section>
+
+    <!-- ========== ER 图 ========== -->
+    <section class="hjy_card">
+        <div class="hjy_card_head">
+            <div class="hjy_card_title"><i class="iconfont icon-shoucang"></i>智能客服数据模型 ER 图</div>
+            <div class="hjy_card_tools">
+                <button class="hjy_btn" id="hjy_er_copy"><i class="iconfont icon-bianji"></i>复制代码</button>
+                <button class="hjy_btn" id="hjy_er_save"><i class="iconfont icon-shoucang"></i>下载 SVG</button>
+            </div>
+            <div class="hjy_card_desc">
+                覆盖用户、会话、消息、意图、知识、切片、向量索引、工单、坐席与满意度评价共 10 个实体。
+            </div>
+        </div>
+        <div class="hjy_diagram" id="hjy_er_out">
+            <div class="hjy_loading">正在渲染 ER 图…</div>
+        </div>
+    </section>
+
+    <!-- ========== 说明 ========== -->
+    <section class="hjy_card">
+        <div class="hjy_note_grid">
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-denglu"></i>离线本地化</div>
+                <div class="hjy_note_text">
+                    通过 <code>curl</code> 将 <code>mermaid.min.js</code> 下载到项目 <code>cdn/</code> 目录，
+                    页面只引用 <code>./cdn/mermaid.min.js</code>，不依赖任何在线 CDN，断网也能正常渲染。
+                </div>
+            </div>
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-list-icon-fuzhi"></i>流程图语法</div>
+                <div class="hjy_note_text">
+                    使用 <code>flowchart TD</code> 自上而下布局，圆角节点表示起止、菱形 <code>{}</code> 表示判断、
+                    圆柱 <code>[()]</code> 表示数据存储，<code>--&gt;</code> 上的文字为分支条件。
+                </div>
+            </div>
+            <div class="hjy_note">
+                <div class="hjy_note_name"><i class="iconfont icon-shoucang"></i>ER 图语法</div>
+                <div class="hjy_note_text">
+                    使用 <code>erDiagram</code>，<code>||--o{</code> 表示一对多、<code>||--o|</code> 表示一对一；
+                    实体内声明字段类型、主键 <code>PK</code>、外键 <code>FK</code> 与中文注释。
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="hjy_footer">Made with ❤ by 胡家瑜 · 高级网页设计课程</footer>
+
+</div>
+
+<!-- 图表源代码（type=text/plain，不会被当作脚本执行） -->
+<script type="text/plain" id="hjy_flow_src">
+flowchart TD
+    A([用户发起咨询]) --> B{接入渠道}
+    B -->|Web / App| C1[在线文字客服]
+    B -->|电话呼入| C2["语音热线 + ASR 转写"]
+    B -->|微信生态| C3["小程序 / 公众号客服"]
+    C1 --> D["会话预处理<br/>去噪 · 分句 · 上下文拼接"]
+    C2 --> D
+    C3 --> D
+    D --> E[意图识别 NLU]
+    E --> F[实体槽位抽取]
+    F --> G{意图与槽位是否完整}
+    G -->|缺失信息| H[澄清追问]
+    H --> D
+    G -->|信息完整| I[知识检索]
+    I --> J["向量检索 + BM25<br/>混合召回"]
+    J --> K[重排 Rerank]
+    K --> L{是否命中可靠知识}
+    L -->|是| M[大模型生成答复]
+    M --> N["事实校验 · 引用溯源"]
+    N --> O[返回用户答复]
+    L -->|否| P[转人工坐席]
+    P --> Q["人工处理 / 工单流转"]
+    O --> R[满意度评价]
+    Q --> R
+    R --> S[(会话日志入库)]
+    S --> T[人工质检与标注]
+    T --> U[知识库与模型迭代]
+    U --> I
+    O --> Z([结束会话])
+</script>
+
+<script type="text/plain" id="hjy_er_src">
+erDiagram
+    CUSTOMER ||--o{ SESSION : "发起会话"
+    SESSION ||--o{ MESSAGE : "包含消息"
+    MESSAGE }o--|| INTENT : "识别为意图"
+    INTENT }o--o{ KNOWLEDGE : "命中知识"
+    KNOWLEDGE ||--o{ DOC_CHUNK : "切分为切片"
+    DOC_CHUNK ||--|| VECTOR_INDEX : "写入向量索引"
+    SESSION ||--o| TICKET : "转人工生成"
+    AGENT ||--o{ TICKET : "受理工单"
+    SESSION ||--o{ FEEDBACK : "产生评价"
+
+    CUSTOMER {
+        bigint customer_id PK "用户ID"
+        varchar nickname "用户昵称"
+        varchar phone "手机号"
+        varchar channel "来源渠道"
+        datetime created_at "注册时间"
+    }
+
+    SESSION {
+        bigint session_id PK "会话ID"
+        bigint customer_id FK "所属用户"
+        varchar channel "接入渠道"
+        varchar status "会话状态"
+        datetime started_at "开始时间"
+    }
+
+    MESSAGE {
+        bigint message_id PK "消息ID"
+        bigint session_id FK "所属会话"
+        varchar role "角色 user/assistant"
+        text content "消息内容"
+        decimal confidence "置信度"
+        datetime created_at "发送时间"
+    }
+
+    INTENT {
+        bigint intent_id PK "意图ID"
+        varchar intent_name "意图名称"
+        varchar category "业务类别"
+        decimal score "置信度得分"
+    }
+
+    KNOWLEDGE {
+        bigint knowledge_id PK "知识ID"
+        varchar title "知识标题"
+        varchar ktype "类型 FAQ/文档/图谱"
+        varchar status "审核状态"
+        datetime updated_at "更新时间"
+    }
+
+    DOC_CHUNK {
+        bigint chunk_id PK "切片ID"
+        bigint knowledge_id FK "所属知识"
+        text content "切片正文"
+        int token_count "Token 数量"
+        varchar embedding_model "向量模型"
+    }
+
+    VECTOR_INDEX {
+        bigint vector_id PK "向量ID"
+        bigint chunk_id FK "对应切片"
+        varchar vector "向量表示"
+        varchar metric "相似度度量"
+    }
+
+    TICKET {
+        bigint ticket_id PK "工单ID"
+        bigint session_id FK "来源会话"
+        bigint agent_id FK "处理坐席"
+        varchar priority "优先级"
+        varchar status "处理状态"
+    }
+
+    AGENT {
+        bigint agent_id PK "坐席ID"
+        varchar agent_name "坐席姓名"
+        varchar group_name "所属技能组"
+    }
+
+    FEEDBACK {
+        bigint feedback_id PK "评价ID"
+        bigint session_id FK "所属会话"
+        int rating "满意度评分"
+        varchar comment "评价内容"
+    }
+</script>
+
+<script src="./cdn/mermaid.min.js"></script>
+<script>
+    /* 姓名：胡家瑜 日期：2026-11-05 功能：初始化 Mermaid 并渲染流程图与 ER 图，提供复制与下载（变量以 hjy_ 开头） */
+    (function () {
+        if (typeof window.mermaid === 'undefined') {
+            document.getElementById('hjy_flow_out').innerHTML =
+                '<div class="hjy_error">未能加载 cdn/mermaid.min.js，请确认文件存在。</div>';
+            document.getElementById('hjy_er_out').innerHTML =
+                '<div class="hjy_error">未能加载 cdn/mermaid.min.js，请确认文件存在。</div>';
+            return;
+        }
+
+        mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: 'loose',
+            theme: 'base',
+            themeVariables: {
+                fontFamily: '"Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif',
+                fontSize: '14px',
+                primaryColor: '#eef4ff',
+                primaryBorderColor: '#93c5fd',
+                primaryTextColor: '#0f172a',
+                secondaryColor: '#f5f3ff',
+                tertiaryColor: '#ffffff',
+                lineColor: '#94a3b8',
+                edgeLabelBackground: '#ffffff',
+                clusterBkg: '#f8fafc',
+                clusterBorder: '#cbd5e1'
+            },
+            flowchart: { curve: 'basis', htmlLabels: true, padding: 14, nodeSpacing: 34, rankSpacing: 46 },
+            er: { useMaxWidth: true }
+        });
+
+        var hjy_sources = {
+            flow: document.getElementById('hjy_flow_src').textContent.trim(),
+            er: document.getElementById('hjy_er_src').textContent.trim()
+        };
+
+        function hjy_render(hjy_key) {
+            var hjy_out = document.getElementById('hjy_' + hjy_key + '_out');
+            hjy_out.innerHTML = '<div class="hjy_loading">正在渲染…</div>';
+            var hjy_id = 'hjy_mermaid_' + hjy_key + '_' + Date.now();
+            mermaid.render(hjy_id, hjy_sources[hjy_key]).then(function (hjy_res) {
+                hjy_out.innerHTML = hjy_res.svg;
+            }).catch(function (hjy_err) {
+                hjy_out.innerHTML = '<div class="hjy_error">渲染失败：' +
+                    (hjy_err && hjy_err.message ? hjy_err.message : '未知错误') + '</div>';
+            });
+        }
+
+        /* 复制源代码：优先使用剪贴板 API，失败时回退到临时 textarea */
+        function hjy_copy(hjy_text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(hjy_text);
+                return;
+            }
+            var hjy_area = document.createElement('textarea');
+            hjy_area.value = hjy_text;
+            hjy_area.style.position = 'fixed';
+            hjy_area.style.opacity = '0';
+            document.body.appendChild(hjy_area);
+            hjy_area.select();
+            try { document.execCommand('copy'); } catch (hjy_e) { }
+            document.body.removeChild(hjy_area);
+        }
+
+        /* 下载当前渲染结果的 SVG 文件 */
+        function hjy_download(hjy_key, hjy_filename) {
+            var hjy_svg = document.getElementById('hjy_' + hjy_key + '_out').querySelector('svg');
+            if (!hjy_svg) { return; }
+            var hjy_data = new XMLSerializer().serializeToString(hjy_svg);
+            var hjy_blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + hjy_data],
+                { type: 'image/svg+xml;charset=utf-8' });
+            var hjy_url = URL.createObjectURL(hjy_blob);
+            var hjy_a = document.createElement('a');
+            hjy_a.href = hjy_url;
+            hjy_a.download = hjy_filename;
+            document.body.appendChild(hjy_a);
+            hjy_a.click();
+            document.body.removeChild(hjy_a);
+            URL.revokeObjectURL(hjy_url);
+        }
+
+        document.getElementById('hjy_flow_copy').addEventListener('click', function () {
+            hjy_copy(hjy_sources.flow);
+        });
+        document.getElementById('hjy_er_copy').addEventListener('click', function () {
+            hjy_copy(hjy_sources.er);
+        });
+        document.getElementById('hjy_flow_save').addEventListener('click', function () {
+            hjy_download('flow', 'hjy_智能客服流程图.svg');
+        });
+        document.getElementById('hjy_er_save').addEventListener('click', function () {
+            hjy_download('er', 'hjy_智能客服ER图.svg');
+        });
+
+        function hjy_render_all() {
+            hjy_render('flow');
+            hjy_render('er');
+        }
+
+        /* 脚本位于 body 末尾，两个容器已存在，可直接开始渲染 */
+        hjy_render_all();
+    })();
+</script>
+</body>
+</html>

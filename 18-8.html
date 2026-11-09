@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<!-- 姓名：胡家瑜 日期：2026-11-05 功能：基于 ECharts 的智能客服运营数据大屏（三列布局，中间列上方为中国地理信息图，echarts 与地图数据已本地化到 cdn 目录） -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能客服运营数据大屏 · 胡家瑜</title>
+    <link rel="stylesheet" href="./font/font_5244836_gsc19f4yjzd/iconfont.css">
+    <style>
+        /* 姓名：胡家瑜 日期：2026-11-05 功能：数据大屏样式（全部类名以 hjy_ 开头） */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(1100px 620px at 50% -10%, rgba(37, 99, 235, 0.22), transparent 62%),
+                radial-gradient(800px 520px at 0% 100%, rgba(124, 58, 237, 0.18), transparent 65%),
+                linear-gradient(170deg, #050b1a 0%, #071227 55%, #050a18 100%);
+            color: #cfe0f5;
+            min-height: 100vh;
+            padding: 14px 18px 16px;
+        }
+        .hjy_screen { max-width: 1720px; margin: 0 auto; }
+
+        /* ===== 页头 ===== */
+        .hjy_header {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 16px; padding: 4px 6px 12px;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.22);
+            margin-bottom: 14px;
+        }
+        .hjy_head_side { font-size: 0.72rem; color: #7c93b5; line-height: 1.7; }
+        .hjy_head_side b { color: #7dd3fc; font-weight: 600; }
+        .hjy_head_mid { text-align: center; }
+        .hjy_title {
+            font-size: 1.55rem; font-weight: 800; letter-spacing: 4px;
+            background: linear-gradient(90deg, #7dd3fc, #a78bfa 60%, #67e8f9);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.35));
+        }
+        .hjy_subtitle { font-size: 0.72rem; color: #6f89ad; letter-spacing: 2px; margin-top: 2px; }
+        .hjy_clock { font-size: 1rem; color: #7dd3fc; font-variant-numeric: tabular-nums; }
+        .hjy_clock small { display: block; font-size: 0.68rem; color: #6f89ad; letter-spacing: 1px; }
+
+        /* ===== 三列布局 ===== */
+        .hjy_grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 14px;
+            height: calc(100vh - 116px);
+            min-height: 660px;
+        }
+        .hjy_col { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+
+        .hjy_panel {
+            position: relative;
+            display: flex; flex-direction: column; min-height: 0;
+            background: linear-gradient(160deg, rgba(15, 35, 68, 0.78), rgba(7, 16, 34, 0.9));
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            border-radius: 12px;
+            padding: 10px 12px 8px;
+            box-shadow: inset 0 0 34px rgba(56, 189, 248, 0.06), 0 12px 26px rgba(0, 0, 0, 0.35);
+        }
+        .hjy_panel::before, .hjy_panel::after {
+            content: ''; position: absolute; width: 14px; height: 14px;
+            border: 2px solid rgba(125, 211, 252, 0.55); pointer-events: none;
+        }
+        .hjy_panel::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; border-radius: 12px 0 0 0; }
+        .hjy_panel::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; border-radius: 0 0 12px 0; }
+
+        .hjy_panel_head { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; }
+        .hjy_panel_title { display: flex; align-items: center; gap: 7px; font-size: 0.86rem; font-weight: 700; color: #dceeff; letter-spacing: 1px; }
+        .hjy_panel_title i { color: #38bdf8; font-size: 0.9rem; }
+        .hjy_panel_title span { width: 3px; height: 13px; border-radius: 2px; background: linear-gradient(180deg, #38bdf8, #a78bfa); display: inline-block; }
+        .hjy_panel_sub { margin-left: auto; font-size: 0.66rem; color: #6b84a8; letter-spacing: 1px; }
+        .hjy_chart { flex: 1; width: 100%; min-height: 0; }
+
+        .hjy_flex_16 { flex: 1.6; }
+        .hjy_flex_1 { flex: 1; }
+        .hjy_flex_11 { flex: 1.1; }
+
+        /* ===== KPI ===== */
+        .hjy_kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .hjy_kpi {
+            border: 1px solid rgba(56, 189, 248, 0.16);
+            border-radius: 10px;
+            padding: 9px 11px;
+            background: linear-gradient(150deg, rgba(22, 52, 96, 0.55), rgba(9, 20, 40, 0.65));
+        }
+        .hjy_kpi_label { font-size: 0.7rem; color: #8fa8c8; letter-spacing: 1px; }
+        .hjy_kpi_value {
+            font-size: 1.22rem; font-weight: 800; color: #eaf6ff; margin-top: 2px;
+            font-variant-numeric: tabular-nums; text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+        }
+        .hjy_kpi_value small { font-size: 0.68rem; font-weight: 500; color: #8fa8c8; margin-left: 3px; }
+        .hjy_kpi_trend { font-size: 0.66rem; margin-top: 3px; }
+        .hjy_up { color: #34d399; }
+        .hjy_down { color: #f87171; }
+
+        /* ===== 热词榜 ===== */
+        .hjy_hot_list { display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 8px; }
+        .hjy_hot_row { display: grid; grid-template-columns: 20px 66px 1fr 46px; align-items: center; gap: 8px; }
+        .hjy_hot_rank {
+            font-size: 0.68rem; font-weight: 800; text-align: center; line-height: 18px;
+            border-radius: 5px; color: #0b1220; background: linear-gradient(140deg, #7dd3fc, #38bdf8);
+        }
+        .hjy_hot_rank_2 { background: linear-gradient(140deg, #a78bfa, #818cf8); color: #f8fafc; }
+        .hjy_hot_rank_3 { background: linear-gradient(140deg, #67e8f9, #22d3ee); }
+        .hjy_hot_rank_4, .hjy_hot_rank_5 { background: rgba(56, 189, 248, 0.16); color: #9fc4e4; }
+        .hjy_hot_name { font-size: 0.74rem; color: #cfe0f5; white-space: nowrap; }
+        .hjy_hot_bar { height: 7px; border-radius: 4px; background: rgba(56, 189, 248, 0.12); overflow: hidden; }
+        .hjy_hot_fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #2563eb, #7dd3fc); }
+        .hjy_hot_num { font-size: 0.7rem; color: #7dd3fc; text-align: right; font-variant-numeric: tabular-nums; }
+
+        .hjy_error {
+            display: flex; align-items: center; justify-content: center;
+            height: 100%; color: #f87171; font-size: 0.82rem; text-align: center; padding: 10px;
+        }
+
+        @media (max-width: 1100px) {
+            .hjy_grid { grid-template-columns: 1fr; height: auto; }
+            .hjy_col { min-height: 320px; }
+            .hjy_panel { min-height: 260px; }
+        }
+    </style>
+</head>
+<body>
+<div class="hjy_screen">
+
+    <header class="hjy_header">
+        <div class="hjy_head_side">
+            作者：<b>胡家瑜</b><br>
+            echarts 5.5.1 · <b>cdn/echarts.min.js</b>
+        </div>
+        <div class="hjy_head_mid">
+            <div class="hjy_title">智能客服运营数据大屏</div>
+            <div class="hjy_subtitle">INTELLIGENT CUSTOMER SERVICE · REAL-TIME DASHBOARD</div>
+        </div>
+        <div class="hjy_head_side" style="text-align:right">
+            <span class="hjy_clock" id="hjy_clock">--:--:--<small id="hjy_day">2026-11-05</small></span>
+        </div>
+    </header>
+
+    <div class="hjy_grid">
+
+        <!-- ========== 左列 ========== -->
+        <div class="hjy_col">
+            <section class="hjy_panel">
+                <div class="hjy_panel_head">
+                    <div class="hjy_panel_title"><span></span><i class="iconfont icon-dianzan"></i>核心指标</div>
+                    <div class="hjy_panel_sub">今日</div>
+                </div>
+                <div class="hjy_kpis">
+                    <div class="hjy_kpi">
+                        <div class="hjy_kpi_label">会话总量</div>
+                        <div class="hjy_kpi_value">128,460</div>
+                        <div class="hjy_kpi_trend hjy_up">↑ 12.4% 环比昨日</div>
+                    </div>
+                    <div class="hjy_kpi">
+                        <div class="hjy_kpi_label">平均首次响应</div>
+                        <div class="hjy_kpi_value">3.2<small>秒</small></div>
+                        <div class="hjy_kpi_trend hjy_up">↓ 0.8 秒 更迅捷</div>
+                    </div>
+                    <div class="hjy_kpi">
+                        <div class="hjy_kpi_label">一次解决率</div>
+                        <div class="hjy_kpi_value">86.7<small>%</small></div>
+                        <div class="hjy_kpi_trend hjy_up">↑ 2.6% 持续改善</div>
+                    </div>
+                    <div class="hjy_kpi">
+                        <div class="hjy_kpi_label">用户满意度</div>
+                        <div class="hjy_kpi_value">92.4<small>%</small></div>
+                        <div class="hjy_kpi_trend hjy_up">↑ 1.2% 高于目标</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="hjy_panel hjy_flex_11">
+                <div class="hjy_panel_head">
+                    <div class="hjy_panel_title"><span></span><i class="iconfont icon-tuijian"></i>近 7 日会话趋势</div>
+                    <div class="hjy_panel_sub">单位：次 / %</div>
+                </div>
+                <div class="hjy_chart" id="hjy_chart_trend"></div>
+            </section>
+
+            <section class="hjy_panel hjy_flex_1">
+                <div class="hjy_panel_head">
+                    <div class="hjy_panel_title"><span></span><i class="iconfont icon-dangao"></i>用户意图分布</div>
+                    <div class="hjy_panel_sub">TOP5</div>
+                </div>
+                <div class="hjy_chart" id="hjy_chart_intent"></div>
+            </section>
+        </div>
+
+        <!-- ========== 中间列 ========== -->
+        <div class="hjy_col">
+            <section class="hjy_panel hjy_flex_16">
+                <div class="hjy_panel_head">
+                    <div class="hjy_panel_title"><span></span><i class="iconfont icon-faxian"></i>全国用户地域分布</div>
+                    <div class="hjy_panel_sub">实时接入热力 · 会话量</div>
+                </div>
+                <div class="hjy_chart" id="hjy_chart_map"></div>
+            </section>
+
+            <section class="hjy_panel hjy_flex_1">
+                <div class="hjy_panel_head">
+                    <div class="hjy_panel_title"><span></span><i class="iconfont icon-shuaxin"></i>24 小时实时接入趋势</div>
+                    <div class="hjy_panel_sub">智能客服 / 人工坐席</div>
+                </div>
+                <div class="hjy_chart" id="hjy_chart_hour"></div>
+            </section>
+        </div>
+
+        <!-- ========== 右列 ========== -->
+        <div class="hjy_col">
+            <section class="hjy_panel hjy_flex_1">
+                <div class="hjy_panel_head">
+                    <div class="hjy_panel_title"><span></span><i class="iconfont icon-shoucang"></i>服务满意度</div>
+                    <div class="hjy_panel_sub">目标 90%</div>
+                </div>
+                <div class="hjy_chart" id="hjy_chart_gauge"></div>
+            </section>
+
+            <section class="hjy_panel hjy_flex_1">
+                <div class="hjy_panel_head">
+                    <div class="hjy_panel_title"><span></span><i class="iconfont icon-shouye"></i>咨询渠道占比</div>
+                    <div class="hjy_panel_sub">按会话量</div>
+                </div>
+                <div class="hjy_chart" id="hjy_chart_channel"></div>
+            </section>
+
+            <section class="hjy_panel hjy_flex_1">
+                <div class="hjy_panel_head">
+                    <div class="hjy_panel_title"><span></span><i class="iconfont icon-sousuo"></i>高频意图热词</div>
+                    <div class="hjy_panel_sub">今日</div>
+                </div>
+                <div class="hjy_hot_list">
+                    <div class="hjy_hot_row">
+                        <div class="hjy_hot_rank">1</div>
+                        <div class="hjy_hot_name">退款进度</div>
+                        <div class="hjy_hot_bar"><div class="hjy_hot_fill" style="width:100%"></div></div>
+                        <div class="hjy_hot_num">1,286</div>
+                    </div>
+                    <div class="hjy_hot_row">
+                        <div class="hjy_hot_rank hjy_hot_rank_2">2</div>
+                        <div class="hjy_hot_name">发票开具</div>
+                        <div class="hjy_hot_bar"><div class="hjy_hot_fill" style="width:86%"></div></div>
+                        <div class="hjy_hot_num">1,102</div>
+                    </div>
+                    <div class="hjy_hot_row">
+                        <div class="hjy_hot_rank hjy_hot_rank_3">3</div>
+                        <div class="hjy_hot_name">订单改签</div>
+                        <div class="hjy_hot_bar"><div class="hjy_hot_fill" style="width:75%"></div></div>
+                        <div class="hjy_hot_num">968</div>
+                    </div>
+                    <div class="hjy_hot_row">
+                        <div class="hjy_hot_rank hjy_hot_rank_4">4</div>
+                        <div class="hjy_hot_name">会员权益</div>
+                        <div class="hjy_hot_bar"><div class="hjy_hot_fill" style="width:66%"></div></div>
+                        <div class="hjy_hot_num">845</div>
+                    </div>
+                    <div class="hjy_hot_row">
+                        <div class="hjy_hot_rank hjy_hot_rank_5">5</div>
+                        <div class="hjy_hot_name">密码找回</div>
+                        <div class="hjy_hot_bar"><div class="hjy_hot_fill" style="width:59%"></div></div>
+                        <div class="hjy_hot_num">762</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+</div>
+
+<script src="./cdn/echarts.min.js"></script>
+<script src="./cdn/china-map.js"></script>
+<script>
+    /* 姓名：胡家瑜 日期：2026-11-05 功能：初始化数据大屏的六个 ECharts 图表（变量以 hjy_ 开头） */
+    (function () {
+        /* 运行时钟 */
+        function hjy_tick() {
+            var hjy_now = new Date();
+            var hjy_pad = function (hjy_n) { return hjy_n < 10 ? '0' + hjy_n : String(hjy_n); };
+            var hjy_week = ['日', '一', '二', '三', '四', '五', '六'];
+            document.getElementById('hjy_clock').firstChild.nodeValue =
+                hjy_pad(hjy_now.getHours()) + ':' + hjy_pad(hjy_now.getMinutes()) + ':' + hjy_pad(hjy_now.getSeconds());
+            document.getElementById('hjy_day').textContent =
+                hjy_now.getFullYear() + '-' + hjy_pad(hjy_now.getMonth() + 1) + '-' + hjy_pad(hjy_now.getDate()) +
+                ' 星期' + hjy_week[hjy_now.getDay()];
+        }
+        hjy_tick();
+        setInterval(hjy_tick, 1000);
+
+        /* 依赖检查：图表库与地图数据都在本地 cdn 目录 */
+        if (typeof window.echarts === 'undefined' || typeof window.hjy_china_geo === 'undefined') {
+            ['hjy_chart_map', 'hjy_chart_trend', 'hjy_chart_intent', 'hjy_chart_hour',
+                'hjy_chart_gauge', 'hjy_chart_channel'].forEach(function (hjy_id) {
+                document.getElementById(hjy_id).innerHTML =
+                    '<div class="hjy_error">未能加载 cdn/echarts.min.js 或 cdn/china-map.js</div>';
+            });
+            return;
+        }
+
+        echarts.registerMap('china', window.hjy_china_geo);
+
+        var hjy_charts = [];
+        function hjy_init(hjy_id) {
+            var hjy_chart = echarts.init(document.getElementById(hjy_id));
+            hjy_charts.push(hjy_chart);
+            return hjy_chart;
+        }
+
+        var hjy_axis_color = '#7d97ba';
+        var hjy_split_line = { lineStyle: { color: 'rgba(110, 160, 220, 0.14)' } };
+        var hjy_axis_line = { lineStyle: { color: 'rgba(110, 160, 220, 0.28)' } };
+        var hjy_tooltip = {
+            trigger: 'axis',
+            backgroundColor: 'rgba(6, 18, 38, 0.92)',
+            borderColor: 'rgba(56, 189, 248, 0.45)',
+            textStyle: { color: '#dceeff', fontSize: 11 }
+        };
+
+        /* ---------- 1. 近 7 日会话趋势 ---------- */
+        (function () {
+            var hjy_days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            var hjy_volume = [16200, 19800, 18500, 22600, 26100, 24300, 28900];
+            var hjy_rate = [83.2, 84.6, 84.1, 86.3, 87.4, 86.8, 88.2];
+
+            hjy_init('hjy_chart_trend').setOption({
+                backgroundColor: 'transparent',
+                tooltip: hjy_tooltip,
+                legend: {
+                    data: ['会话量', '解决率'],
+                    top: 0, right: 0, itemWidth: 10, itemHeight: 6, itemGap: 12,
+                    textStyle: { color: '#9fb7d6', fontSize: 10 }
+                },
+                grid: { left: 4, right: 4, top: 26, bottom: 2, containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: hjy_days,
+                    axisTick: { show: false },
+                    axisLine: hjy_axis_line,
+                    axisLabel: { color: hjy_axis_color, fontSize: 10 }
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '',
+                        axisLine: { show: false },
+                        axisLabel: { color: hjy_axis_color, fontSize: 10 },
+                        splitLine: hjy_split_line
+                    },
+                    {
+                        type: 'value', min: 78, max: 92,
+                        axisLine: { show: false },
+                        axisLabel: { color: hjy_axis_color, fontSize: 10, formatter: '{value}%' },
+                        splitLine: { show: false }
+                    }
+                ],
+                series: [
+                    {
+                        name: '会话量', type: 'bar', barWidth: 11, data: hjy_volume,
+                        itemStyle: {
+                            borderRadius: [3, 3, 0, 0],
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#38bdf8' },
+                                { offset: 1, color: 'rgba(56, 189, 248, 0.12)' }
+                            ])
+                        }
+                    },
+                    {
+                        name: '解决率', type: 'line', yAxisIndex: 1, smooth: true,
+                        symbolSize: 5, data: hjy_rate,
+                        lineStyle: { width: 2, color: '#a78bfa' },
+                        itemStyle: { color: '#a78bfa' }
+                    }
+                ]
+            });
+        })();
+
+        /* ---------- 2. 用户意图分布 ---------- */
+        (function () {
+            hjy_init('hjy_chart_intent').setOption({
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(6, 18, 38, 0.92)',
+                    borderColor: 'rgba(56, 189, 248, 0.45)',
+                    textStyle: { color: '#dceeff', fontSize: 11 },
+                    formatter: '{b}<br/>占比 {d}% · {c} 次'
+                },
+                color: ['#38bdf8', '#6366f1', '#a78bfa', '#22d3ee', '#818cf8'],
+                series: [{
+                    type: 'pie',
+                    radius: ['42%', '66%'],
+                    center: ['50%', '52%'],
+                    itemStyle: { borderColor: '#08152b', borderWidth: 2 },
+                    label: {
+                        color: '#cfe0f5', fontSize: 10,
+                        formatter: '{b}\n{d}%'
+                    },
+                    labelLine: { length: 8, length2: 8, lineStyle: { color: 'rgba(125, 211, 252, 0.45)' } },
+                    data: [
+                        { name: '售前咨询', value: 32 },
+                        { name: '售后工单', value: 24 },
+                        { name: '产品功能', value: 18 },
+                        { name: '账号问题', value: 14 },
+                        { name: '其他咨询', value: 12 }
+                    ]
+                }]
+            });
+        })();
+
+        /* ---------- 3. 全国用户地域分布（地理信息图） ---------- */
+        (function () {
+            var hjy_province = [
+                ['北京市', 96], ['天津市', 58], ['河北省', 62], ['山西省', 40], ['内蒙古自治区', 32],
+                ['辽宁省', 55], ['吉林省', 38], ['黑龙江省', 35], ['上海市', 92], ['江苏省', 80],
+                ['浙江省', 85], ['安徽省', 47], ['福建省', 60], ['江西省', 44], ['山东省', 74],
+                ['河南省', 66], ['湖北省', 60], ['湖南省', 55], ['广东省', 98], ['广西壮族自治区', 43],
+                ['海南省', 26], ['重庆市', 58], ['四川省', 63], ['贵州省', 34], ['云南省', 39],
+                ['西藏自治区', 12], ['陕西省', 49], ['甘肃省', 24], ['青海省', 14], ['宁夏回族自治区', 16],
+                ['新疆维吾尔自治区', 27], ['台湾省', 30], ['香港特别行政区', 36], ['澳门特别行政区', 12]
+            ].map(function (hjy_item) {
+                return { name: hjy_item[0], value: hjy_item[1] };
+            });
+
+            var hjy_cities = [
+                ['北京', 116.40, 39.90, 96],
+                ['上海', 121.47, 31.23, 92],
+                ['广州', 113.26, 23.13, 88],
+                ['深圳', 114.06, 22.54, 90],
+                ['杭州', 120.15, 30.28, 74],
+                ['成都', 104.06, 30.67, 62],
+                ['武汉', 114.30, 30.59, 58],
+                ['西安', 108.94, 34.34, 49],
+                ['重庆', 106.55, 29.57, 58],
+                ['沈阳', 123.43, 41.80, 45],
+                ['哈尔滨', 126.63, 45.75, 34],
+                ['昆明', 102.71, 25.04, 39],
+                ['乌鲁木齐', 87.62, 43.82, 24],
+                ['拉萨', 91.11, 29.97, 10]
+            ].map(function (hjy_item) {
+                return { name: hjy_item[0], value: [hjy_item[1], hjy_item[2], hjy_item[3]] };
+            });
+
+            var hjy_hub = [116.40, 39.90];
+            var hjy_lines = [['上海'], ['广州'], ['深圳'], ['成都'], ['哈尔滨'], ['乌鲁木齐']].map(function (hjy_item) {
+                var hjy_t = hjy_cities.filter(function (hjy_c) { return hjy_c.name === hjy_item[0]; })[0];
+                return {
+                    fromName: '北京',
+                    toName: hjy_t.name,
+                    coords: [hjy_hub, hjy_t.value.slice(0, 2)]
+                };
+            });
+
+            hjy_init('hjy_chart_map').setOption({
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'item',
+                    backgroundColor: 'rgba(6, 18, 38, 0.92)',
+                    borderColor: 'rgba(56, 189, 248, 0.45)',
+                    textStyle: { color: '#dceeff', fontSize: 11 }
+                },
+                visualMap: {
+                    min: 0, max: 100, seriesIndex: 0,
+                    left: 6, bottom: 6, itemWidth: 8, itemHeight: 62,
+                    text: ['高', '低'],
+                    textStyle: { color: '#8fa8c8', fontSize: 9 },
+                    inRange: { color: ['#0a2a52', '#125e9e', '#2f9be5', '#7fd4ff'] }
+                },
+                geo: {
+                    map: 'china',
+                    roam: false,
+                    layoutCenter: ['50%', '50%'],
+                    layoutSize: '100%',
+                    itemStyle: {
+                        areaColor: 'rgba(16, 58, 110, 0.55)',
+                        borderColor: 'rgba(93, 191, 255, 0.7)',
+                        borderWidth: 1,
+                        shadowColor: 'rgba(56, 189, 248, 0.45)',
+                        shadowBlur: 16
+                    },
+                    emphasis: {
+                        itemStyle: { areaColor: 'rgba(47, 155, 229, 0.85)' },
+                        label: { show: true, color: '#f4fbff', fontSize: 10 }
+                    },
+                    label: { show: false }
+                },
+                series: [
+                    {
+                        name: '会话量',
+                        type: 'map',
+                        geoIndex: 0,
+                        data: hjy_province
+                    },
+                    {
+                        name: '调度线路',
+                        type: 'lines',
+                        coordinateSystem: 'geo',
+                        zlevel: 2,
+                        effect: {
+                            show: true, period: 4, trailLength: 0.25,
+                            symbol: 'circle', symbolSize: 2.6, color: '#9be7ff'
+                        },
+                        lineStyle: {
+                            color: 'rgba(125, 211, 252, 0.5)', width: 1, curveness: 0.24
+                        },
+                        data: hjy_lines
+                    },
+                    {
+                        name: '重点城市',
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        zlevel: 3,
+                        symbolSize: function (hjy_v) { return hjy_v[2] / 4 + 4; },
+                        rippleEffect: { brushType: 'stroke', scale: 3.2 },
+                        itemStyle: {
+                            color: '#7dd3fc',
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(56, 189, 248, 0.9)'
+                        },
+                        label: {
+                            show: true, position: 'right', formatter: '{b}',
+                            color: '#cfe0f5', fontSize: 9
+                        },
+                        data: hjy_cities
+                    }
+                ]
+            });
+        })();
+
+        /* ---------- 4. 24 小时实时接入趋势 ---------- */
+        (function () {
+            var hjy_hours = [];
+            for (var hjy_i = 0; hjy_i < 24; hjy_i++) { hjy_hours.push(hjy_i + '时'); }
+            var hjy_bot = [320, 260, 210, 180, 160, 210, 420, 720, 1080, 1320, 1460, 1380,
+                1210, 1290, 1420, 1380, 1260, 1080, 940, 760, 620, 520, 430, 360];
+            var hjy_human = [60, 48, 40, 36, 32, 44, 96, 180, 260, 320, 360, 340,
+                300, 320, 350, 340, 310, 270, 230, 190, 150, 120, 96, 78];
+
+            hjy_init('hjy_chart_hour').setOption({
+                backgroundColor: 'transparent',
+                tooltip: hjy_tooltip,
+                legend: {
+                    data: ['智能客服', '人工坐席'],
+                    top: 0, right: 0, itemWidth: 10, itemHeight: 6,
+                    textStyle: { color: '#9fb7d6', fontSize: 10 }
+                },
+                grid: { left: 4, right: 8, top: 24, bottom: 2, containLabel: true },
+                xAxis: {
+                    type: 'category', boundaryGap: false, data: hjy_hours,
+                    axisTick: { show: false },
+                    axisLine: hjy_axis_line,
+                    axisLabel: { color: hjy_axis_color, fontSize: 10, interval: 3 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    axisLabel: { color: hjy_axis_color, fontSize: 10 },
+                    splitLine: hjy_split_line
+                },
+                series: [
+                    {
+                        name: '智能客服', type: 'line', smooth: true, showSymbol: false,
+                        lineStyle: { width: 2, color: '#38bdf8' },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(56, 189, 248, 0.42)' },
+                                { offset: 1, color: 'rgba(56, 189, 248, 0.02)' }
+                            ])
+                        },
+                        data: hjy_bot
+                    },
+                    {
+                        name: '人工坐席', type: 'line', smooth: true, showSymbol: false,
+                        lineStyle: { width: 2, color: '#a78bfa' },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(167, 139, 250, 0.34)' },
+                                { offset: 1, color: 'rgba(167, 139, 250, 0.02)' }
+                            ])
+                        },
+                        data: hjy_human
+                    }
+                ]
+            });
+        })();
+
+        /* ---------- 5. 服务满意度仪表盘 ---------- */
+        (function () {
+            hjy_init('hjy_chart_gauge').setOption({
+                backgroundColor: 'transparent',
+                series: [{
+                    type: 'gauge',
+                    startAngle: 210, endAngle: -30,
+                    min: 0, max: 100, splitNumber: 4,
+                    radius: '88%', center: ['50%', '58%'],
+                    axisLine: { lineStyle: { width: 10, color: [[1, 'rgba(56, 189, 248, 0.16)']] } },
+                    progress: {
+                        show: true, width: 10, roundCap: true,
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                { offset: 0, color: '#38bdf8' },
+                                { offset: 1, color: '#a78bfa' }
+                            ])
+                        }
+                    },
+                    pointer: { show: true, length: '56%', width: 4, itemStyle: { color: '#7dd3fc' } },
+                    axisTick: { show: false },
+                    splitLine: { length: 7, lineStyle: { color: 'rgba(125, 211, 252, 0.4)', width: 1 } },
+                    axisLabel: { color: hjy_axis_color, fontSize: 9, distance: 14 },
+                    title: { show: true, offsetCenter: [0, '92%'], color: '#8fa8c8', fontSize: 10 },
+                    detail: {
+                        valueAnimation: true, formatter: '{value}%',
+                        color: '#eaf6ff', fontSize: 24, fontWeight: 800, offsetCenter: [0, '58%']
+                    },
+                    data: [{ value: 92.4, name: '满意度' }]
+                }]
+            });
+        })();
+
+        /* ---------- 6. 咨询渠道占比 ---------- */
+        (function () {
+            var hjy_channels = ['App', '微信', '网页', '电话', '其他'];
+            var hjy_values = [38, 27, 19, 11, 5];
+
+            hjy_init('hjy_chart_channel').setOption({
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    backgroundColor: 'rgba(6, 18, 38, 0.92)',
+                    borderColor: 'rgba(56, 189, 248, 0.45)',
+                    textStyle: { color: '#dceeff', fontSize: 11 },
+                    formatter: '{b}: {c}%'
+                },
+                grid: { left: 2, right: 34, top: 8, bottom: 2, containLabel: true },
+                xAxis: {
+                    type: 'value', max: 44,
+                    axisLine: { show: false }, axisTick: { show: false },
+                    axisLabel: { show: false },
+                    splitLine: hjy_split_line
+                },
+                yAxis: {
+                    type: 'category', inverse: true, data: hjy_channels,
+                    axisTick: { show: false },
+                    axisLine: { show: false },
+                    axisLabel: { color: '#cfe0f5', fontSize: 10 }
+                },
+                series: [{
+                    type: 'bar', barWidth: 9, data: hjy_values,
+                    itemStyle: {
+                        borderRadius: [0, 4, 4, 0],
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                            { offset: 0, color: '#2563eb' },
+                            { offset: 1, color: '#7dd3fc' }
+                        ])
+                    },
+                    label: {
+                        show: true, position: 'right', formatter: '{c}%',
+                        color: '#7dd3fc', fontSize: 10
+                    }
+                }]
+            });
+        })();
+
+        /* ---------- 自适应 ---------- */
+        window.addEventListener('resize', function () {
+            hjy_charts.forEach(function (hjy_chart) { hjy_chart.resize(); });
+        });
+    })();
+</script>
+</body>
+</html>
